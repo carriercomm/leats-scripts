@@ -11,8 +11,8 @@ if [ ! -d $LOCATION ]; then
 fi
 # Git
 GIT_URL="git@github.com:s4mur4i/leats-scripts.git"
-USERNAME="s4mur4i"
-EMAIL="admin@szamuraj.com"
+USERNAME="gruberrichard"
+EMAIL="gruberrichard@gmail.com"
 EDITOR=vim
 DIFF=vimdiff
 PUSH=0
