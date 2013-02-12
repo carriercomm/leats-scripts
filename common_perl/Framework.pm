@@ -23,11 +23,11 @@ BEGIN {
 	use Exporter ();
 
     	@Framework::ISA         = qw(Exporter);
-    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect );
-    	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $debug);
+    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS);
+    	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length);
 
 }
-use vars qw ($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $debug);
+use vars qw ($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length);
 sub restart (;$) {
 	### Parameters: server
 	my ($virt) = @_;
@@ -208,53 +208,70 @@ sub return($) {
 	}
 }
 
-sub grade($) {
+sub grade($;$$$$$) {
 	### Parameter: booleen
-	my ($grade)=@_;
-	$debug and print "Grading user\n";
-	if ( $grade ) {
-		$verbose and print " [ ";
-		$verbose and print color 'bold red';
-		$verbose and print 'Fail';
-		$verbose and print color 'reset';
-		$verbose and print " ]\n";
-		$exercise_number++;
+	my $grade=0;
+	foreach my $g (@_){ $grade += $g; }
+
+	$verbose and print "Grading user\n";
+	
+	if ( $grade == 0 ) {
+                print " [ ";
+                print color 'bold green';
+                print 'PASS';
+                print color 'reset';
+                print " ]\n";
+                ${exercise_number}++;
+                ${exercise_success}++;
 	} else {
-		$verbose and print " [ ";
-		$verbose and print color 'bold green';
-		$verbose and print 'PASS';
-		$verbose and print color 'reset';
-		$verbose and print " ]\n";
-		${exercise_number}++;
-		${exercise_success}++;
+                print " [ ";
+                print color 'bold red';
+                print 'Fail';
+                print color 'reset';
+                print " ]\n";
+                $exercise_number++;
 	}
 }
 
+
+sub printS ($;$)
+{
+	my $Text = $_[0];
+	my $E;
+	if ((scalar (@_)) == 2) { $E = $_[1]-length($Text); }
+	else
+	{
+		my $TerminalCols=`tput cols`;
+		$E=($TerminalCols-length($Text))-($TerminalCols/1.75);
+	}
+	print "$Text"." "x${E};
+}
+
 sub useage() {
-        print "You are doing $topic topic\n";
-        print "$name \$options \$switches\n";
-        print "Options:\n";
-        print "-b | -break 	     	Break the guest\n";
-        print "-g | -grade      	Grade the solution\n";
-        print "-hint	       		Helpful hint for solution if stuck\n";
-        print "Switches::\n";
-        print "-h | -? | -help       	Help (this menu)\n";
-        print "-v | -verbose    	Verbose mode (only for developers)\n";
-        print "Designed by $author, version $version\n";
-        exit 0;
+	print "You are doing $topic topic\n";
+	print "$name \$options \$switches\n";
+	print "Options:\n";
+	print "-b | -break 	     	Break the guest\n";
+	print "-g | -grade      	Grade the solution\n";
+	print "-hint	       		Helpful hint for solution if stuck\n";
+	print "Switches::\n";
+	print "-h | -? | -help       	Help (this menu)\n";
+	print "-v | -verbose    	Verbose mode (only for developers)\n";
+	print "Designed by $author, version $version\n";
+	exit 0;
 };
 sub ssh_connect() {
-	$debug and print "SSH connection to server.\n";
+	$verbose and print "SSH connection to server.\n";
 	open my $stderr_fh, '>', '/dev/null';
 	my $ssh = Net::OpenSSH->new("server", key_path=>"/scripts/ssh-key/id_rsa", default_stderr_fh => $stderr_fh);
-  	$ssh->error and ( $verbose and print "Couldn't establish SSH connection: ". $ssh->error);
+	$ssh->error and ( $verbose and print "Couldn't establish SSH connection: ". $ssh->error);
 	return $ssh;
 }
 
 sub hint() {
-	### Hint for solution
-        print "Porblem number: $problem in $topic topic \n";
-        print "=========================================\n";
+### Hint for solution
+	print "Problem number: $problem in $topic topic \n";
+	print "=========================================\n";
 	print "$hint\n";
 	exit 0;
 };

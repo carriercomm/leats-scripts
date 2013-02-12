@@ -20,11 +20,10 @@
 #############
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
-our $version="v0.9";
+our $version="v0.92";
 our $topic="Users and groups";
 our $problem="1";
-our $description="
-- create the following users: john, mary and thomas
+our $description="- create the following users: john, mary and thomas
 - create a group named tadmins with GID 885
 - john's UID is 2342, his home directory is /home/john.
 - mary's UID is 5556 and her default shell is /bin/bash.
@@ -32,7 +31,7 @@ our $description="
 - the users john and mary are members of the group tadmins.
 - thomas should not be in the group tadmins.
 - change all users password to kuka002
-- john's account will expire on 2012-12-12";
+- john's account will expire on 2025-12-12";
 our $hint="";
 #
 #
@@ -50,20 +49,17 @@ use Term::ANSIColor;
 use File::Basename;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $debug);
-use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success &printS);
+use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess );
 ######
 ###Options
 ###
 GetOptions("help|?|h" => \$help,
-           "verbose|v" => \$verbose,
-	   "debug" => \$debug,
-	   "b|break" => \$break,
-	   "g|grade" => \$grade,
-	   "hint" => \$hint,
-        );
-
-$debug and $verbose=1;
+		"verbose|v" => \$verbose,
+		"b|break" => \$break,
+		"g|grade" => \$grade,
+		"hint" => \$hint,
+	  );
 
 #####
 # Subs
@@ -71,93 +67,104 @@ $debug and $verbose=1;
 sub break() {
 	print "Break has been selected.\n";
 	&pre();
-	$verbose and print "Pre complete breaking\n";
+	
+	$verbose and print "Pre complete breaking\n";	
 	print "Your task: $description\n";
 }
 
 sub grade() {
 	print "Grade has been selected.\n";
-	$verbose and system("clear");
+	system("clear");
 	$exercise_number = 0;
 	$exercise_success = 0;
-	
-	$verbose && print "=============================================================\n";
-	$verbose && print "$problem.\n";
-	$verbose && print "\n$description\n\n";
-	$verbose && print "=============================================================\n\n";
 
-	$verbose && print "User mary exist\t\t\t\t\t";
+	my $L=50;
+
+	print "="x$L."=========\n";
+	print "$topic/$problem.\n";
+	print "\n$description\n\n";
+	print "="x$L."=========\n\n";
+
+	printS("User mary exist","$L");
 	Framework::grade(UserGroup::userExist("mary"));
-        $verbose && print "User john exist\t\t\t\t\t";
-        Framework::grade(UserGroup::userExist("john"));
-        $verbose && print "User thomas exist\t\t\t\t";
-        Framework::grade(UserGroup::userExist("thomas"));
 
-        $verbose && print "Group tadmins exist\t\t\t\t";
-        Framework::grade(UserGroup::groupExist("tadmins"));
-	
-	$verbose && print "Group tadmins with GID 885\t\t\t";
+	printS("User john exist","$L");
+	Framework::grade(UserGroup::userExist("john"));
+
+	printS("User thomas exist","$L");
+	Framework::grade(UserGroup::userExist("thomas"));
+
+	printS("Group tadmins exist","$L");
+	Framework::grade(UserGroup::groupExist("tadmins"));
+
+	printS("Group tadmins with GID 885","$L");
 	Framework::grade(checkGroupNameAndID("tadmins","885"));
 
-	$verbose && print "John's UID is 2342:\t\t\t\t";
+	printS("John's UID is 2342:","$L");
 	Framework::grade(UserGroup::checkUserAttribute("john","UID","2342"));
 
-	$verbose && print "john's home directory is /home/john:\t\t";
+	printS("john's home directory is /home/john:","$L");
 	Framework::grade(UserGroup::checkUserAttribute("john","HOME","/home/john"));
 
-        $verbose && print "Mary's UID is 5556:\t\t\t\t";
-        Framework::grade(UserGroup::checkUserAttribute("mary","UID","5556"));
+	printS("Mary's UID is 5556","$L");
+	Framework::grade(UserGroup::checkUserAttribute("mary","UID","5556"));
 
-	$verbose && print "Mary's default shell is /bin/bash:\t\t";
+	printS("Mary's default shell is /bin/bash:","$L");
 	Framework::grade(UserGroup::checkUserAttribute("mary","SHELL","/bin/bash"));
-	
-        $verbose && print "Thomas should not have access to any shell:\t";
-        Framework::grade(UserGroup::checkUserAttribute("thomas","SHELL","/sbin/nologin"));
 
-        $verbose &&  print "User john is in Group tadmins:\t\t\t";
-        Framework::grade(checkUserGroupMembership("john","tadmins"));	
+	printS("Thomas should not have access to any shell:","$L");
+	Framework::grade(UserGroup::checkUserHasNoShellAccess("thomas"));
 
-        $verbose &&  print "User mary is in Group tadmins:\t\t\t";
-        Framework::grade(checkUserGroupMembership("mary","tadmins"));
+	printS("User john is in Group tadmins:","$L");
+	Framework::grade(checkUserGroupMembership("john","tadmins"));	
 
-	$verbose &&  print "User thomas isn't in Group tadmins:\t\t";
-        Framework::grade(!(checkUserGroupMembership("thomas","tadmins")));
+	printS("User mary is in Group tadmins:","$L");
+	Framework::grade(checkUserGroupMembership("mary","tadmins"));
 
-	$verbose &&  print "John's password is kuka002\t\t\t";
+	printS("User thomas isn't in Group tadmins:","$L");
+	Framework::grade(!(checkUserGroupMembership("thomas","tadmins")));
+
+	printS("John's password is kuka002","$L");
 	Framework::grade(checkUserPassword("john","kuka002"));
 
-        $verbose &&  print "Mary's password is kuka002\t\t\t";
-        Framework::grade(checkUserPassword("mary","kuka002"));
+	printS("Mary's password is kuka002","$L");
+	Framework::grade(checkUserPassword("mary","kuka002"));
 
-        $verbose &&  print "Thomas's password is kuka002\t\t\t";
-        Framework::grade(checkUserPassword("thomas","kuka002"));
-	
-        $verbose && print "john's account will expire on 2012-12-12\t";
-        Framework::grade(checkUserChageAttribute("john","EXPIRE_DATE","2012-12-12"));
+	printS("Thomas's password is kuka002","$L");
+	Framework::grade(checkUserPassword("thomas","kuka002"));
 
-	## Running post
+	printS("john's account will expire on 2025-12-12","$L");
+	Framework::grade(checkUserChageAttribute("john","EXPIRE_DATE","2025-12-12"));
+
+## Running post
 	&post();
 
-	(($exercise_number == $exercise_success) && exit 0) || exit 1;
-}
-
-sub pre() {
-	### Prepare the machine 
-	$verbose and print "Running pre section\n";
-}
-
-sub post() {
-	### Cleanup after succeful grade
-	$verbose and print "\n=============================================================\n";
-	$verbose and print "\n\tNumber of exercises: \t$exercise_number\n";
-	$verbose and print "\n\tSuccessful: \t\t$exercise_success\n";
+	print "\n"."="x$L."=========\n";
+	print "\n\tNumber of exercises: \t$exercise_number\n";
+	print "\n\tSuccessful: \t\t$exercise_success\n";
 	if ($exercise_number == $exercise_success) {
-	$verbose and print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset';
+		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset' and exit 0;;
 	}
 	else
 	{
-	$verbose and print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset';
+		 print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
 	}
+}
+
+sub pre() {
+### Prepare the machine 
+	$verbose and print "Running pre section\n";
+	delUser("mary","true");
+	delUser("thomas","true");
+	delUser("john","true");
+	delGroup("tadmins");
+	delGroup("mary");
+	delGroup("thomas");
+	delGroup("john");
+}
+
+sub post() {
+### Cleanup after succeful grade
 }
 
 #####

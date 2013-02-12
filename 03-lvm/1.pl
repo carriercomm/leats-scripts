@@ -21,15 +21,12 @@
 our $author='Krisztian Banhidy <krisztian@banhidy.hu>
 Richard Gruber <richard.gruber@it-services.hu>';
 #our $author='Richard Gruber <richard.gruber@it-services.hu>';
-our $version="v0.5";
-our $topic="Physical disk management";
+our $version="v0.1";
+our $topic="Logical Volume Management";
 our $problem="1";
-our $description="Additional disk has been added to your server. Initialize it, 
-create a 100 MB (+-10%) ext3 partition on it and persistently mount it on /mnt/das.
-Set the label of the filesystem to test1-label.
-There must be \"rw\" and \"acl\" among the mount options
-Increase Swap size with 50M (+-5%)\n";
-our $hint="Find the device with fdisk, create a partition, \nthen create a filesystem and create entry in fstab\n";
+our $description="Create a volume group named testVG with 4M physical extent size and 120M maximal size
+Create a Logical Volume for Volume Group testVG named testLV1 with 10 PE size\n";
+our $hint="";
 #
 #
 #
@@ -48,7 +45,7 @@ our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success &printS);
-use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize );
+use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData );
 ######
 ###Options
 ###
@@ -65,14 +62,24 @@ sub break() {
 	print "Break has been selected.\n";
 	&pre();
 	$verbose and print "Pre complete breaking\n";
-	my $ret=Disk::lv_create("vdb","200","vdb");
+
+	my $ret=Disk::lv_create("vdb","300","vdb");
 	if ( $ret != 0 ) {
 		$verbose and print "Trying to repair.\n";
 		Disk::lv_remove("vdb");
-		Disk::lv_create("vdb","200","vdb");
+		Disk::lv_create("vdb","300","vdb");
 	} else {
 		print "Disk attached to server. Local disk is vdb\n";
 	}
+##TODO Repleaced it for something beauty :)
+#	$ret=`(echo n; echo p; echo 1; echo 1; echo +80M; echo t; echo 8e; echo w) | fdisk /dev/vg_desktop/vdb; partx -va /dev/vg_desktop/vdb`;
+	$ret=`parted /dev/vg_desktop/vdb --script mklabel msdos; parted /dev/vg_desktop/vdb --script mkpart primary 0 160; parted /dev/vg_desktop/vdb --script set 1 lvm on`;
+	my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("pvcreate /dev/vdb1; vgcreate pre-test-vg /dev/vdb1; lvcreate -L 100M -n pre-test-lv1 pre-test-vg; lvcreate -L 40M -n pre-test-lv2 pre-test-vg;");
+
+
+#pvcreate /dev/vdb1
+
 	print "Your task: $description\n";
 }
 
@@ -92,36 +99,27 @@ sub grade() {
         $exercise_number = 0;
         $exercise_success = 0;
 
-        my $L=80;
+        my $L=70;
 
         print "="x$L."=========\n";
         print "$topic/$problem.\n";
         print "\n$description\n\n";
         print "="x$L."=========\n\n";
 
-		printS("Checking mount:","$L");
-		Framework::grade(checkMount("vdb","/mnt/das/"));
+		printS("Checking volume group testVG exit:","$L");
+		Framework::grade(checkVGExist("testVG"));
 
-		printS("Checking filesystem type:","$L");
- 		Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/das'),"ext3"));
+		printS("Checking PE of testVG is 4M:","$L");	
+		Framework::grade(checkVGData("testVG","PESize",4));
+	
+                printS("Checking size of testVG is 120M:","$L");
+                Framework::grade(checkVGData("testVG","VGSize",120));
 
-		printS("Checking size:","$L");
-		Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/das'),"100","10"));
-
-		printS("Checking Label is test1-label: ","$L");
-		Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
-
-		#printS("Checking mounted with UUID: ","$L");
-		#Framework::grade(checkMountedWithUUID("/mnt/das"));
-
-                printS("Checking mounted with LABEL: ","$L");
-                Framework::grade(checkMountedWithLABEL("/mnt/das"));
+		printS("Checking logical volume testLV1 in volume group testVG exist:","$L");
+		Framework::grade(checkLVExist("testVG","testLV1"));
 		
-		printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");		
-		Framework::grade(checkMountOptions("/mnt/das","rw,acl"));
-
-		printS("Checking swap size increased with 50M: ","$L");
-		Framework::grade(checkSwapSize("561","5"));
+		printS("Checking size of testVG-testLV1 is 10PE:","$L");		
+		Framework::grade(checkLVData("testVG","testLV1","LVPESize","10"));
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
