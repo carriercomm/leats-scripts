@@ -19,8 +19,7 @@
 ##along with Leats.  If not, see <http://www.gnu.org/licenses/>.
 #############
 our $author='Krisztian Banhidy <krisztian@banhidy.hu>
-Richard Gruber <richard.gruber@it-services.hu>';
-#our $author='Richard Gruber <richard.gruber@it-services.hu>';
+Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.1";
 our $topic="Logical Volume Management";
 our $problem="1";
