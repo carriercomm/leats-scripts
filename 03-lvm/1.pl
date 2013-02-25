@@ -44,7 +44,7 @@ our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success &printS);
-use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData );
+use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition );
 ######
 ###Options
 ###
@@ -70,14 +70,16 @@ sub break() {
 	} else {
 		print "Disk attached to server. Local disk is vdb\n";
 	}
-##TODO Repleaced it for something beauty :)
+##TODO Repleace it for something beauty :)
 #	$ret=`(echo n; echo p; echo 1; echo 1; echo +80M; echo t; echo 8e; echo w) | fdisk /dev/vg_desktop/vdb; partx -va /dev/vg_desktop/vdb`;
-	$ret=`parted /dev/vg_desktop/vdb --script mklabel msdos; parted /dev/vg_desktop/vdb --script mkpart primary 0 160; parted /dev/vg_desktop/vdb --script set 1 lvm on`;
-	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("pvcreate /dev/vdb1; vgcreate pre-test-vg /dev/vdb1; lvcreate -L 100M -n pre-test-lv1 pre-test-vg; lvcreate -L 40M -n pre-test-lv2 pre-test-vg;");
+#	$ret=`parted /dev/vg_desktop/vdb --script mklabel msdos; parted /dev/vg_desktop/vdb --script mkpart primary 0 160; parted /dev/vg_desktop/vdb --script set 1 lvm on`;
 
+	CreatePartition("/dev/vdb","1","+30M","lvm");
+	CreatePartition("/dev/vdb","2","+50M","swap");
+	CreatePartition("/dev/vdb","3","+25M","linux");
 
-#pvcreate /dev/vdb1
+#	my $ssh=Framework::ssh_connect;
+#        my $output=$ssh->capture("pvcreate /dev/vdb1; vgcreate pre-test-vg /dev/vdb1; lvcreate -L 100M -n pre-test-lv1 pre-test-vg; lvcreate -L 40M -n pre-test-lv2 pre-test-vg;");
 
 	print "Your task: $description\n";
 }

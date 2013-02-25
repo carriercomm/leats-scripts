@@ -28,7 +28,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Disk::ISA         = qw(Exporter);
-    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData );
+    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition );
     	@Disk::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name);
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 	close(STDERR);
@@ -887,6 +887,50 @@ sub checkSwapSize($;$)
 
 	if ($A[0] >= (((1-$margin)*$wanted_size))&&($A[0] <= ((1+$margin)*$wanted_size))) { return 0; }
 	else { return 1; }
+}
+
+#
+# Create Partitions
+#
+# 1. Parameter: Disk name inside the "server" virtual machine (e.g. /dev/vdb)
+# 2. Parameter: Partition number
+# 3. Parameter: Partition size (e.g. +40M)
+# 4. Parameter: Partition Type (swap/linux/lvm)
+#
+sub CreatePartition($$$$)
+{
+
+	my $Disk=$_[0];
+	my $P=$_[1];
+	my $PS=$_[2];
+	my $PT=lc($_[3]);
+
+	my %Type=("lvm","8e","8e","8e","ext3","83","linux","83","83","83","swap","82","82","82");
+
+	$verbose && print "\nAdd new partition to $Disk: \n\n";
+	$verbose && print "Partition number: $P\n";
+	$verbose && print "Partition size: $PS\n\n";
+	$verbose && print "Partition type: $Type{$PT}\n";
+
+	my $ssh=Framework::ssh_connect;
+	my $output=$ssh->capture("fdisk -l | grep '$Disk\[1234]' | wc -l");
+	chomp($output);
+
+
+	print "output (number of partitions) = \n$output\n\n";
+
+
+	if ($output ne 0)  {  
+		$output=$ssh->capture("(echo n; echo p; echo $P; echo \"\"; echo $PS; echo t; echo $P; echo $Type{$PT}; echo w) | fdisk $Disk; partx -va $Disk");
+	}
+	else 
+	{
+		$output=$ssh->capture("(echo n; echo p; echo $P; echo \"\"; echo $PS; echo t; echo $Type{$PT}; echo w) | fdisk $Disk; partx -va $Disk");
+	}
+	$verbose && print "Output=\n$output\n\n";
+
+
+	return 0;
 }
 
 #### We need to end with success
