@@ -47,17 +47,17 @@ use File::Basename;
 our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success &printS);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success &printS &cryptText2File &encryptFile);
 use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize );
 ######
 ###Options
 ###
 GetOptions("help|?|h" => \$help,
-           "verbose|v" => \$verbose,
-	   "b|break" => \$break,
-	   "g|grade" => \$grade,
-	   "hint" => \$hint,
-        );
+		"verbose|v" => \$verbose,
+		"b|break" => \$break,
+		"g|grade" => \$grade,
+		"hint" => \$hint,
+	  );
 #####
 # Subs
 #
@@ -85,60 +85,67 @@ sub grade() {
 #
 #	Framework::restart;
 #	Framework::grade(Framework::timedconTo("60"));
-	## Checking if mounted
-	#
+## Checking if mounted
+#
 
-        system("clear");
-        $exercise_number = 0;
-        $exercise_success = 0;
+	system("clear");
+	my $T=$topic; $T =~ s/\s//g;
+	my $fn; open($fn,">","/ALTS/RESULTS/${T}-${problem}"); print $fn ""; close($fn);
+	$exercise_number = 0;
+	$exercise_success = 0;
 
-        my $L=80;
+	my $L=80;
 
-        print "="x$L."=========\n";
-        print "$topic/$problem.\n";
-        print "\n$description\n\n";
-        print "="x$L."=========\n\n";
+	print "="x$L."=========\n";
+	print "$topic/$problem.\n";
+	print "\n$description\n\n";
+	print "="x$L."=========\n\n";
 
-		printS("Checking mount:","$L");
-		Framework::grade(checkMount("vdb","/mnt/das/"));
+	cryptText2File("<ROOT><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","/ALTS/RESULTS/${T}-${problem}");
 
-		printS("Checking filesystem type:","$L");
- 		Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/das'),"ext3"));
+	printS("Checking mount:","$L");
+	Framework::grade(checkMount("vdb","/mnt/das/"));
 
-		printS("Checking size:","$L");
-		Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/das'),"100","10"));
+	printS("Checking filesystem type:","$L");
+	Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/das'),"ext3"));
 
-		printS("Checking Label is test1-label: ","$L");
-		Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
+	printS("Checking size:","$L");
+	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/das'),"100","10"));
 
-		#printS("Checking mounted with UUID: ","$L");
-		#Framework::grade(checkMountedWithUUID("/mnt/das"));
+	printS("Checking Label is test1-label: ","$L");
+	Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
 
-                printS("Checking mounted with LABEL: ","$L");
-                Framework::grade(checkMountedWithLABEL("/mnt/das"));
-		
-		printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");		
-		Framework::grade(checkMountOptions("/mnt/das","rw,acl"));
+	#printS("Checking mounted with UUID: ","$L");
+	#Framework::grade(checkMountedWithUUID("/mnt/das"));
 
-		printS("Checking swap size increased with 50M: ","$L");
-		Framework::grade(checkSwapSize("561","5"));
+	printS("Checking mounted with LABEL: ","$L");
+	Framework::grade(checkMountedWithLABEL("/mnt/das"));
+
+	printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");		
+	Framework::grade(checkMountOptions("/mnt/das","rw,acl"));
+
+	printS("Checking swap size increased with 50M: ","$L");
+	Framework::grade(checkSwapSize("561","5"));
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
-        print "\n\tSuccessful: \t\t$exercise_success\n";
-        if ($exercise_number == $exercise_success) {
-                print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset' and exit 0;;
+	print "\n\tSuccessful: \t\t$exercise_success\n";
+
+	if ($exercise_number == $exercise_success) {
+		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","/ALTS/RESULTS/${T}-${problem}");
+		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset' and exit 0;;
 		#Running post
 		&post();
-        }
-        else
-        {
-                 print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
-        }
+	}
+	else
+	{
+		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","/ALTS/RESULTS/${T}-${problem}");
+		print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
+	}
 }
 
 sub pre() {
-	### Prepare the machine 
+### Prepare the machine 
 	$verbose and print "Running pre section\n";
 	my $free=Disk::lvm_free;
 	$verbose and print "Free space :$free\n";
@@ -157,7 +164,7 @@ sub pre() {
 }
 
 sub post() {
-	### Cleanup after succeful grade
+### Cleanup after succeful grade
 	$verbose and print "Successful grade doing some cleanup.\n";
 }
 

@@ -41,7 +41,7 @@ use Term::ANSIColor;
 use File::Basename;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success &printS &cryptText &encryptText);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success &printS &cryptText &encryptText &cryptText2File);
 ######
 ###Options
 ###
@@ -81,10 +81,14 @@ sub grade() {
 	print "Line= $Line\n";
 
 	my $CLine = cryptText("$Line");
-	print "Crypted line = $CLine\n\n";
+	print "\nKODOLT: $CLine\n\n";
 
 	print "DEKODOLVA: ".encryptText($CLine)."\n\n";
 
+
+	&cryptText2File("Szupertitkos","/tmp/a.txt");
+	&cryptText2File("kodolt uzenet","/tmp/a.txt");
+	&cryptText2File("R.G.","/tmp/a.txt");
 
 ## Running post
 	&post();

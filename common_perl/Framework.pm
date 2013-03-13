@@ -26,7 +26,7 @@ BEGIN {
 	use Exporter ();
 
     	@Framework::ISA         = qw(Exporter);
-    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &encryptText);
+    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &encryptText &cryptText2File &encryptFile );
     	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length);
 
 }
@@ -206,8 +206,8 @@ sub cryptText($)
 	my $Data=$_[0];
 	my $File=$_[1];
 
-	$verbose and print "Crypting the given Data...";
-	$verbose and print "\nText: $Data\n\n";
+#	$verbose and print "Crypting the given Data...";
+#	$verbose and print "\nText: $Data\n\n";
 	my $rsa = new Crypt::RSA;
 
 my $public = bless( {
@@ -224,7 +224,7 @@ my $public = bless( {
 
 
 	$EData =~ s/\n/\t/g;
-	$verbose and print "\nEncrypted Text: $EData\n\n";
+#	$verbose and print "\nEncrypted Text: $EData\n\n";
 
 	return $EData;
 }
@@ -235,8 +235,8 @@ my $EData=$_[0];
 
 $EData =~ s/\t/\n/g;
 
-$verbose and print "Encpting the given Data...";
-$verbose and print "\nEncrypted Data: $EData\n\n";
+#$verbose and print "Encpting the given Data...";
+#$verbose and print "\nEncrypted Data: $EData\n\n";
 
 my $rsa = new Crypt::RSA;
 
@@ -255,16 +255,49 @@ my $private = bless( {
                                 '_e' => '65537'
                               },
                  'Cipher' => 'Blowfish'
-               }, 'Crypt::RSA::Key::Private' );
+		 }, 'Crypt::RSA::Key::Private' );
 
 my $Data = $rsa->decrypt (
-                        Cyphertext => $EData,
-                        Key        => $private,
-                        Armour     => 1,
-                        ) or die $rsa->errstr();
+		Cyphertext => $EData,
+		Key        => $private,
+		Armour     => 1,
+		) or die $rsa->errstr();
 
 return $Data;
 }
+
+sub cryptText2File($$)
+{
+	my $Data = $_[0];
+	my $File = $_[1];
+
+	my $fn;
+	open($fn,">>",$File) || ( print "\nUnable to open $File\n\n" and die); 
+	print $fn cryptText($Data)."\n";
+	close($fn);
+}
+
+
+sub encryptFile($)
+{
+	my $File=$_[0];
+
+	my $EFC; #Encrypted File Content
+
+	my $fd;
+	$verbose && print "Encrypt $File...\n";
+	open($fd,"<",$File) || ( print "\nUnable to open $File !\n\n" and die);
+	my $line;
+	while($line=readline($fd))
+	{
+		chomp($line);
+		$EFC .= encryptText($line)."\n";
+	}
+	close($fd);
+
+	return $EFC;
+}
+
 
 sub return($) {
 ### Parameter: return_value
@@ -294,6 +327,8 @@ sub grade($;$$$$$) {
 		print " ]\n";
 		${exercise_number}++;
 		${exercise_success}++;
+		my $T=$topic; $T =~ s/\s//g;
+		cryptText2File("<RESULT>[ PASS ]</RESULT>","/ALTS/RESULTS/${T}-${problem}");
 	} else {
 		print " [ ";
 		print color 'bold red';
@@ -301,6 +336,8 @@ sub grade($;$$$$$) {
 		print color 'reset';
 		print " ]\n";
 		$exercise_number++;
+		my $T=$topic; $T =~ s/\s//g;
+		cryptText2File("<RESULT>[ Fail ]</RESULT>","/ALTS/RESULTS/${T}-${problem}");
 	}
 }
 
@@ -316,6 +353,9 @@ sub printS ($;$)
 		$E=($TerminalCols-length($Text))-($TerminalCols/1.75);
 	}
 	print "$Text"." "x${E};
+
+	my $T=$topic; $T =~ s/\s//g;
+	cryptText2File("<TASK>$Text</TASK>","/ALTS/RESULTS/${T}-${problem}");
 }
 
 sub useage() {
