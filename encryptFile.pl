@@ -2,6 +2,6 @@
 
 
 use lib '/scripts/common_perl/';
-use Framework qw(&encryptFile);
+use Framework qw(&decryptFile);
 
-print encryptFile($ARGV[0]);
+print decryptFile($ARGV[0]);
