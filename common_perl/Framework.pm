@@ -26,7 +26,7 @@ BEGIN {
 	use Exporter ();
 
     	@Framework::ISA         = qw(Exporter);
-    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &encryptText &cryptText2File &encryptFile &getStudent );
+    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent );
     	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file);
 
 }
@@ -232,7 +232,7 @@ my $public = bless( {
 	return $EData;
 }
 
-sub encryptText($)
+sub decryptText($)
 {
 my $EData=$_[0];
 
@@ -281,7 +281,7 @@ sub cryptText2File($$)
 }
 
 
-sub encryptFile($)
+sub decryptFile($)
 {
 	my $File=$_[0];
 
@@ -294,7 +294,7 @@ sub encryptFile($)
 	while($line=readline($fd))
 	{
 		chomp($line);
-		$EFC .= encryptText($line)."\n";
+		$EFC .= decryptText($line)."\n";
 	}
 	close($fd);
 
@@ -305,7 +305,7 @@ sub getStudent()
 {
 	print "RUNINIG getStudent....";
 	if (!(-e "$student_file")) { print "There is no ALTS user logged in! Please Login with the command LoginALTSUser!"; die; }
-	my $UserData =encryptFile("$student_file");
+	my $UserData =decryptFile("$student_file");
 	$UserData=~s/\n//g;
 	print "UD= $UserData\n\n";
 	my @A = $UserData =~ m/<STUDENT>(.*)<\/STUDENT>/;
