@@ -26,13 +26,16 @@ BEGIN {
 	use Exporter ();
 
     	@Framework::ISA         = qw(Exporter);
-    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &encryptText &cryptText2File &encryptFile );
-    	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length);
+    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &encryptText &cryptText2File &encryptFile &getStudent );
+    	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file);
 
 }
 
 
-use vars qw ($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length);
+use vars qw ($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file);
+
+$student_file="/ALTS/User.alts";
+
 sub restart (;$) {
 	### Parameters: server
 	my ($virt) = @_;
@@ -298,6 +301,17 @@ sub encryptFile($)
 	return $EFC;
 }
 
+sub getStudent()
+{
+	print "RUNINIG getStudent....";
+	if (!(-e "$student_file")) { print "There is no ALTS user logged in! Please Login with the command LoginALTSUser!"; die; }
+	my $UserData =encryptFile("$student_file");
+	$UserData=~s/\n//g;
+	print "UD= $UserData\n\n";
+	my @A = $UserData =~ m/<STUDENT>(.*)<\/STUDENT>/;
+	print "A= @A\n";
+	return "$A[0]";
+}
 
 sub return($) {
 ### Parameter: return_value

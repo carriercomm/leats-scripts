@@ -44,10 +44,11 @@ use warnings;
 use Getopt::Long;
 use Term::ANSIColor;
 use File::Basename;
+use POSIX qw/strftime/;
 our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success &printS &cryptText2File &encryptFile);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &encryptFile &getStudent);
 use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize );
 ######
 ###Options
@@ -78,6 +79,7 @@ sub break() {
 
 sub grade() {
 	system("clear");
+	my $Student = Framework::getStudent();
 	print "Grade has been selected.\n";
 	print "rebooting server:";
 ###########
@@ -90,18 +92,29 @@ sub grade() {
 
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
-	my $fn; open($fn,">","/ALTS/RESULTS/${T}-${problem}"); print $fn ""; close($fn);
+	$result_file="/ALTS/RESULTS/${T}-${problem}"; #Empty the result file
+	my $fn; open($fn,">","$result_file"); close($fn);
+	my $now = strftime "%Y/%d/%m %H:%M:%S", localtime;
 	$exercise_number = 0;
 	$exercise_success = 0;
 
 	my $L=80;
 
+
 	print "="x$L."=========\n";
-	print "$topic/$problem.\n";
+	print "Student:\t$Student\n\n";
+	print "Date:   \t$now\n";
+	print "-"x$L."---------\n\n";
+	print "$topic/$problem\n";
 	print "\n$description\n\n";
 	print "="x$L."=========\n\n";
 
-	cryptText2File("<ROOT><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","/ALTS/RESULTS/${T}-${problem}");
+	my $USERDATA=encryptFile("$student_file");
+	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");	
+
+
+
+
 
 	printS("Checking mount:","$L");
 	Framework::grade(checkMount("vdb","/mnt/das/"));
@@ -127,19 +140,22 @@ sub grade() {
 	printS("Checking swap size increased with 50M: ","$L");
 	Framework::grade(checkSwapSize("561","5"));
 
+
+
+
+
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
 	print "\n\tSuccessful: \t\t$exercise_success\n";
-
 	if ($exercise_number == $exercise_success) {
-		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","/ALTS/RESULTS/${T}-${problem}");
+		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","$result_file");
 		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset' and exit 0;;
 		#Running post
 		&post();
 	}
 	else
 	{
-		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","/ALTS/RESULTS/${T}-${problem}");
+		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","$result_file");
 		print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
 	}
 }

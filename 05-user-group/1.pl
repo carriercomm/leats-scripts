@@ -20,7 +20,7 @@
 #############
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
-our $version="v0.92";
+our $version="v0.95";
 our $topic="Users and groups";
 our $problem="1";
 our $description="- create the following users: john, mary and thomas
@@ -47,9 +47,10 @@ use warnings;
 use Getopt::Long;
 use Term::ANSIColor;
 use File::Basename;
+use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success &printS);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &encryptFile);
 use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess );
 ######
 ###Options
@@ -67,23 +68,39 @@ GetOptions("help|?|h" => \$help,
 sub break() {
 	print "Break has been selected.\n";
 	&pre();
-	
+
 	$verbose and print "Pre complete breaking\n";	
 	print "Your task: $description\n";
 }
 
 sub grade() {
-	print "Grade has been selected.\n";
+
 	system("clear");
+	my $Student = Framework::getStudent();
+
+	system("clear");
+	my $T=$topic; $T =~ s/\s//g;
+	$result_file="/ALTS/RESULTS/${T}-${problem}"; #Empty the result file
+		my $fn; open($fn,">","$result_file"); close($fn);
+	my $now = strftime "%Y/%d/%m %H:%M:%S", localtime;
 	$exercise_number = 0;
 	$exercise_success = 0;
 
-	my $L=50;
+	my $L=80;
+
 
 	print "="x$L."=========\n";
-	print "$topic/$problem.\n";
+	print "Student:\t$Student\n\n";
+	print "Date:   \t$now\n";
+	print "-"x$L."---------\n\n";
+	print "$topic/$problem\n";
 	print "\n$description\n\n";
 	print "="x$L."=========\n\n";
+
+	my $USERDATA=encryptFile("$student_file");
+	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
+
+
 
 	printS("User mary exist","$L");
 	Framework::grade(UserGroup::userExist("mary"));
@@ -136,19 +153,23 @@ sub grade() {
 	printS("john's account will expire on 2025-12-12","$L");
 	Framework::grade(checkUserChageAttribute("john","EXPIRE_DATE","2025-12-12"));
 
-## Running post
-	&post();
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
 	print "\n\tSuccessful: \t\t$exercise_success\n";
 	if ($exercise_number == $exercise_success) {
-		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset' and exit 0;;
+		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","$result_file");
+		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset' and exit 0;
+		&post();
 	}
 	else
 	{
-		 print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
+		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","$result_file");
+		print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
 	}
+
+
+
 }
 
 sub pre() {

@@ -20,7 +20,7 @@
 #############
 our $author='Krisztian Banhidy <krisztian@banhidy.hu>
 Richard Gruber <gruberrichard@gmail.com>';
-our $version="v0.1";
+our $version="v0.7";
 our $topic="Logical Volume Management";
 our $problem="1";
 our $description="Create a volume group named testVG with 4M physical extent size and 120M maximal size
@@ -40,10 +40,11 @@ use warnings;
 use Getopt::Long;
 use Term::ANSIColor;
 use File::Basename;
+use POSIX qw/strftime/;
 our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success &printS);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &encryptFile);
 use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition );
 ######
 ###Options
@@ -86,6 +87,7 @@ sub break() {
 
 sub grade() {
 	system("clear");
+	my $Student = Framework::getStudent();
 	print "Grade has been selected.\n";
 	print "rebooting server:";
 ###########
@@ -97,47 +99,63 @@ sub grade() {
 	#
 
         system("clear");
+        my $T=$topic; $T =~ s/\s//g;
+        $result_file="/ALTS/RESULTS/${T}-${problem}"; #Empty the result file
+        my $fn; open($fn,">","$result_file"); close($fn);
+        my $now = strftime "%Y/%d/%m %H:%M:%S", localtime;
         $exercise_number = 0;
         $exercise_success = 0;
 
-        my $L=70;
+        my $L=80;
+
 
         print "="x$L."=========\n";
-        print "$topic/$problem.\n";
+        print "Student:\t$Student\n\n";
+        print "Date:   \t$now\n";
+        print "-"x$L."---------\n\n";
+        print "$topic/$problem\n";
         print "\n$description\n\n";
         print "="x$L."=========\n\n";
 
-		printS("Checking volume group testVG exit:","$L");
-		Framework::grade(checkVGExist("testVG"));
+        my $USERDATA=encryptFile("$student_file");
+        cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
-		printS("Checking PE of testVG is 4M:","$L");	
-		Framework::grade(checkVGData("testVG","PESize",4));
-	
-                printS("Checking size of testVG is 120M:","$L");
-                Framework::grade(checkVGData("testVG","VGSize",120));
 
-		printS("Checking logical volume testLV1 in volume group testVG exist:","$L");
-		Framework::grade(checkLVExist("testVG","testLV1"));
-		
-		printS("Checking size of testVG-testLV1 is 10PE:","$L");		
-		Framework::grade(checkLVData("testVG","testLV1","LVPESize","10"));
+	printS("Checking volume group testVG exit:","$L");
+	Framework::grade(checkVGExist("testVG"));
 
-	print "\n"."="x$L."=========\n";
-	print "\n\tNumber of exercises: \t$exercise_number\n";
+	printS("Checking PE of testVG is 4M:","$L");	
+	Framework::grade(checkVGData("testVG","PESize",4));
+
+	printS("Checking size of testVG is 120M:","$L");
+	Framework::grade(checkVGData("testVG","VGSize",120));
+
+	printS("Checking logical volume testLV1 in volume group testVG exist:","$L");
+	Framework::grade(checkLVExist("testVG","testLV1"));
+
+	printS("Checking size of testVG-testLV1 is 10PE:","$L");		
+	Framework::grade(checkLVData("testVG","testLV1","LVPESize","10"));
+
+
+        print "\n"."="x$L."=========\n";
+        print "\n\tNumber of exercises: \t$exercise_number\n";
         print "\n\tSuccessful: \t\t$exercise_success\n";
         if ($exercise_number == $exercise_success) {
+                cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","$result_file");
                 print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset' and exit 0;;
-		#Running post
-		&post();
+		#Running Post
+                &post();
         }
         else
         {
-                 print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
+                cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","$result_file");
+                print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
         }
+
 }
 
 sub pre() {
-	### Prepare the machine 
+### Prepare the machine 
 	$verbose and print "Running pre section\n";
 	my $free=Disk::lvm_free;
 	$verbose and print "Free space :$free\n";
@@ -156,7 +174,7 @@ sub pre() {
 }
 
 sub post() {
-	### Cleanup after succeful grade
+### Cleanup after succeful grade
 	$verbose and print "Successful grade doing some cleanup.\n";
 }
 
