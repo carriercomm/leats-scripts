@@ -102,7 +102,7 @@ sub grade() {
         my $T=$topic; $T =~ s/\s//g;
         $result_file="/ALTS/RESULTS/${T}-${problem}"; #Empty the result file
         my $fn; open($fn,">","$result_file"); close($fn);
-        my $now = strftime "%Y/%d/%m %H:%M:%S", localtime;
+        my $now = strftime "%Y/%m/%d %H:%M:%S", localtime;
         $exercise_number = 0;
         $exercise_success = 0;
 

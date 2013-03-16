@@ -36,7 +36,7 @@ use vars qw ($verbose $topic $author $version $hint $problem $name $exercise_num
 
 $student_file="/ALTS/User.alts";
 
-my $key = 'PUFgob$*LKDF D)(F IDD&P?/'; #Key for encryptions
+my $key = 'sdfsdds b$*LKDF D)(F IDD&P?/'; #Key for encryptions
 
 sub restart (;$) {
 	### Parameters: server
@@ -211,7 +211,6 @@ sub cryptText($)
 	my $Data=$_[0];
 	my $File=$_[1];
 
-# 	my $key = 'PUFgob$*LKDF D)(F IDD&P?/';
 	my $EData = &encrypt ($Data, $key);
 
 	$verbose and print "\n[CryptText] Text: $Data\n\n";
@@ -225,7 +224,6 @@ sub cryptText($)
 sub decryptText($)
 {
 	my $EData=$_[0];
-#	my $key = 'PUFgob$*LKDF D)(F IDD&P?/';
 
 	$EData =~ s/|/\n/g;
 
@@ -244,7 +242,7 @@ sub cryptText2File($$)
 
 	my $fn;
 	open($fn,">>",$File) || ( print "\nUnable to open $File\n\n" and die); 
-	print $fn cryptText($Data)."\n\n";
+	print $fn cryptText($Data)."\n";
 	close($fn);
 }
 
@@ -272,13 +270,24 @@ sub decryptFile($)
 sub getStudent()
 {
 	$verbose and print "Get students data..\n";
-	if (!(-e "$student_file")) { print "There is no ALTS user logged in! Please Login with the command LoginALTSUser!"; die; }
+	if (!(-e "$student_file")) { 
+		print color 'bold red';
+		print "\n\nThere is no ALTS user logged in! Please Login with the command \"ALTSLogin\"!\n\n"; 
+		print color 'reset';
+		die; 
+	}
 	my $UserData =decryptFile("$student_file");
 	$UserData=~s/\n//g;
-#	print "UD= $UserData\n\n";
 	my @A = $UserData =~ m/<STUDENT>(.*)<\/STUDENT>/;
-#	print "A= @A\n";
-	return "$A[0]";
+	my $UserName = $A[0];
+	if ($UserName eq "") {
+		print color 'bold red';
+		print "\n\nThere is no ALTS user logged in! Please Login with the command \"ALTSLogin\"!\n\n";
+		print color 'reset';
+		die;
+	}
+
+	return "$UserName";
 }
 
 sub return($) {
