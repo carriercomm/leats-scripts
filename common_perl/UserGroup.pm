@@ -26,7 +26,7 @@ BEGIN {
 	use Exporter;
 
 	@UserGroup::ISA         = qw(Exporter);
-	@UserGroup::EXPORT      = qw( &userExist &groupExist &getUserAttribute &checkUserAttribute &checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &setupUser &setupGroup &delGroup &delUser &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes );
+	@UserGroup::EXPORT      = qw( &userExist &groupExist &getUserAttribute &checkUserAttribute &checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &setupUser &setupGroup &delGroup &delUser &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes &checkUserCrontabDenied &checkUserCrontab );
 	@UserGroup::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success);
 	
 	use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo);
@@ -256,6 +256,82 @@ if ($output =~ m/Password locked/) { return 0; }
 return 1;
 }
 
+#Check if User's crontab is denied
+#
+#1.Parameter: Username (not ID!)
+#
+#Returns 0 if user's crontab is denied
+#
+sub checkUserCrontabDenied($)
+{
+my $User = $_[0];
+if (userExist($User) != 0 ) { return 1;  }
+
+my $ssh=Framework::ssh_connect;
+my $output=$ssh->capture("cat /etc/cron.allow 2>/dev/null");
+if ($output =~ m/^$User$/) { return 1; }
+
+my $output=$ssh->capture("cat /etc/cron.deny 2>/dev/null");
+if ($output =~ m/^$User$/) { return 0; }
+else { return 1; }
+}
+
+#Check Users crontab
+#
+#1.Parameter: Username (not ID!)
+#2.Parameter: Time: minute
+#3.Parameter: Time: hour
+#4.Parameter: Time: day of the month
+#5.Parameter: Time: month
+#6.Parameter: Time: day of week
+#7.Parameter: Command
+#
+#Returns 0 if user's crontab is well setup
+#
+sub checkUserCrontab($$$$$$$)
+{
+	my $User = $_[0];
+	if (userExist($User) != 0 ) { return 1;  }
+	my $T_minute=$_[1];
+	my $T_hour=$_[2];
+	my $T_day=$_[3];
+	my $T_month=$_[4];
+	my $T_dayofweek=$_[5];
+	my $Command=$_[6];
+
+	my $ssh=Framework::ssh_connect;
+	my $output=$ssh->capture("crontab -l -u $User");
+
+#my @Cronentries = $output =~ m/^\s*(\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s*$/;
+	my @Cronentries = split("\n",$output);
+	foreach my $Cronentry (@Cronentries)
+	{
+		#print "\n++++++++++++ ENTRY: $Cronentry ++++++++++++++\n";
+		my @A = $Cronentry =~ m/\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/;
+		if (($A[0] eq "$T_minute")&&($A[1] eq "$T_hour")&&($A[2] eq "$T_day")&&($A[3] eq "$T_month")&&($A[4] eq "$T_dayofweek")) 
+		{	
+			$verbose and print "Time OK\n";			
+			my $ACommand=$A[5];
+			#print "\nWant:   $User | $T_minute $T_hour $T_day $T_month $T_dayofweek $Command\n";
+			#print "\nWCommand: $Command\nACommand: $ACommand\n\n";
+
+			if ($ACommand eq $Command) { return 0; }
+			else {
+				$ACommand=~s/"/\\"/g;
+				my $Aoutput=$ssh->capture("su $User -c \"$ACommand\"");
+				my $Woutput=$ssh->capture("su $User -c \"$Command\"");
+				if ($Aoutput eq $Woutput) { return 0; }
+			
+			}
+		}	
+		else {
+			next;
+		}	
+	}
+
+	return 1;
+}
+
 
 #
 # Checks if user has no shell access
@@ -264,15 +340,15 @@ return 1;
 #
 sub checkUserHasNoShellAccess($)
 {
-my $User = $_[0];
-if (userExist($User) != 0 ) { return 1;  }
+	my $User = $_[0];
+	if (userExist($User) != 0 ) { return 1;  }
 
-my $ssh=Framework::ssh_connect;
-my $output=$ssh->capture("su - $User -c \"\" >/dev/null 2>\&1; echo \$?");
-chomp($output);
+	my $ssh=Framework::ssh_connect;
+	my $output=$ssh->capture("su - $User -c \"\" >/dev/null 2>\&1; echo \$?");
+	chomp($output);
 
-if ($output ne "0" ) { return 0; }
-else { return 1; }
+	if ($output ne "0" ) { return 0; }
+	else { return 1; }
 
 
 }
@@ -371,25 +447,25 @@ sub setupUser($$$$$$$$)
 	if (userExist($User) != 0 ) { 
 		my $ssh=Framework::ssh_connect;
 		my $output=$ssh->capture("useradd $User");
-		#$verbose and print "Add user $User: $output \n";
+#$verbose and print "Add user $User: $output \n";
 	}
 
 	if ($User_UID =~ m/\d+/) {
-   	        my $ssh=Framework::ssh_connect;
-                my $output=$ssh->capture("usermod -u $User_UID $User");
-                #$verbose and print "Modify ${User}'s UID to $User_UID: $output \n";  
+		my $ssh=Framework::ssh_connect;
+		my $output=$ssh->capture("usermod -u $User_UID $User");
+#$verbose and print "Modify ${User}'s UID to $User_UID: $output \n";  
 	}
 
 	if ($Group ne "") {
 		my $ssh=Framework::ssh_connect;
-                my $output=$ssh->capture("usermod -g $Group $User");
-                #$verbose and print "Modify ${User}'s Primary Group to $Group: $output \n";
+		my $output=$ssh->capture("usermod -g $Group $User");
+#$verbose and print "Modify ${User}'s Primary Group to $Group: $output \n";
 	}
 
 	if ($Group_Secondary ne "") {
 		$Group_Secondary=~s/\s//g; my @GS=split(",",$Group_Secondary);
 		my $ssh=Framework::ssh_connect;
-                my $output=$ssh->capture("usermod -G \"\" $User");
+		my $output=$ssh->capture("usermod -G \"\" $User");
 		my $G;
 		foreach $G (@GS)
 		{
@@ -397,34 +473,34 @@ sub setupUser($$$$$$$$)
 			{
 				my $ssh=Framework::ssh_connect;
 				my $output=$ssh->capture("usermod -aG $G $User");
-				#$verbose and print "Add $G to ${User}'s Secondary Group(s): $output \n";
+#$verbose and print "Add $G to ${User}'s Secondary Group(s): $output \n";
 			}
 		}
 	}
- 	
+
 	if ($User_Home ne "") {
-                my $ssh=Framework::ssh_connect;
-                my $output=$ssh->capture("usermod -d $User_Home $User");
-                #$verbose and print "Modify ${User}'s Home directory to $User_Home: $output \n";
-        }
+		my $ssh=Framework::ssh_connect;
+		my $output=$ssh->capture("usermod -d $User_Home $User");
+#$verbose and print "Modify ${User}'s Home directory to $User_Home: $output \n";
+	}
 
-        if ($User_Comment ne "") {
-                my $ssh=Framework::ssh_connect;
-                my $output=$ssh->capture("usermod -c '$User_Comment' $User");
-                #$verbose and print "Modify ${User}'s Comment to $User_Comment: $output \n";
-        }
+	if ($User_Comment ne "") {
+		my $ssh=Framework::ssh_connect;
+		my $output=$ssh->capture("usermod -c '$User_Comment' $User");
+#$verbose and print "Modify ${User}'s Comment to $User_Comment: $output \n";
+	}
 
-        if ($User_Shell ne "") {
-                my $ssh=Framework::ssh_connect;
-                my $output=$ssh->capture("usermod -s $User_Shell $User");
-                #$verbose and print "Modify ${User}'s default shell to $User_Shell: $output \n";
-        }
+	if ($User_Shell ne "") {
+		my $ssh=Framework::ssh_connect;
+		my $output=$ssh->capture("usermod -s $User_Shell $User");
+#$verbose and print "Modify ${User}'s default shell to $User_Shell: $output \n";
+	}
 
-        if ($User_Generate_SSH_Key eq "true") {
-                my $ssh=Framework::ssh_connect;		
-                my $output=$ssh->capture("su - $User -c \"mkdir ./.ssh; rm -f ./.ssh/*; ssh-keygen -q -t rsa -f ./.ssh/id_rsa -N ''\"");
-                #$verbose and print "Generate ssh key for $User: $output \n";
-        }		
+	if ($User_Generate_SSH_Key eq "true") {
+		my $ssh=Framework::ssh_connect;		
+		my $output=$ssh->capture("su - $User -c \"mkdir ./.ssh; rm -f ./.ssh/*; ssh-keygen -q -t rsa -f ./.ssh/id_rsa -N ''\"");
+#$verbose and print "Generate ssh key for $User: $output \n";
+	}		
 
 #	my $ssh=Framework::ssh_connect;
 #	my $output=$ssh->capture("cat /etc/shadow");
@@ -460,7 +536,7 @@ sub setupGroup($$$)
 	}
 	if ($Group_Members ne "") {
 		$Group_Members=~s/\s//g; my @GM=split(",",$Group_Members);	
-		my $U;
+			my $U;
 		foreach $U (@GM)
 		{
 			if (userExist($U) == 0)
@@ -516,6 +592,7 @@ sub delUser($;$)
 	else {return 0;}
 }
 
+
 #
 #File Permission Check
 #
@@ -539,9 +616,9 @@ sub checkUserFilePermission($$$)
 	chomp($output);
 	if ($output ne "0"  ) { return 1; }
 
-	#print "\n$FileName || $Permission\n\n";
+#print "\n$FileName || $Permission\n\n";
 	$ssh=Framework::ssh_connect;	
-	
+
 	if ($Permission =~ m/r../) {    #print "READABLE\n"; 
 		$output=$ssh->capture("su - $User -c 'test -r $FileName >/dev/null 2>/dev/null;echo \$?'");
 		chomp($output);
@@ -595,13 +672,13 @@ sub checkUserFileSpecialPermission($$)
 	my $FileName = $_[0];
 	my $Permission = uc($_[1]);
 
-        my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("test -e $FileName >/dev/null 2>/dev/null;echo \$?");
-        chomp($output);
-        if ($output ne "0"  ) { return 1; }
+	my $ssh=Framework::ssh_connect;
+	my $output=$ssh->capture("test -e $FileName >/dev/null 2>/dev/null;echo \$?");
+	chomp($output);
+	if ($output ne "0"  ) { return 1; }
 
 	$ssh=Framework::ssh_connect;
-	
+
 	if ($Permission eq "SETUID") {
 		$output=$ssh->capture("test -u $FileName >/dev/null 2>/dev/null; echo \$?");
 		chomp($output);
@@ -741,9 +818,9 @@ sub checkNewlyCreatedFilesAttributes($$$$$$$)
 		$ssh->capture("rm -rf $Directory/$FileName"); return 1; 
 	}
 
-        if (($Permission_NGroup ne "") && ($NGroup ne "") && (checkGroupFilePermission("$NGroup","$Directory/$FileName","$Permission_NGroup") != 0)) {
-                $ssh->capture("rm -rf $Directory/$FileName"); return 1;
-        }
+	if (($Permission_NGroup ne "") && ($NGroup ne "") && (checkGroupFilePermission("$NGroup","$Directory/$FileName","$Permission_NGroup") != 0)) {
+		$ssh->capture("rm -rf $Directory/$FileName"); return 1;
+	}
 
 	if (($Permission_Other ne "") && (checkOtherFilePermission("$Directory/$FileName","$Permission_Other") != 0)) { 
 		$ssh->capture("rm -rf $Directory/$FileName"); return 1;
