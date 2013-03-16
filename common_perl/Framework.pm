@@ -20,7 +20,7 @@ use Sys::Virt;
 use Term::ANSIColor;
 use Net::OpenSSH;
 use MIME::Base64;
-use Crypt::RSA;
+use Crypt::Tea;
 use Crypt::Random;
 BEGIN {
 	use Exporter ();
@@ -35,6 +35,8 @@ BEGIN {
 use vars qw ($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file);
 
 $student_file="/ALTS/User.alts";
+
+my $key = 'PUFgob$*LKDF D)(F IDD&P?/'; #Key for encryptions
 
 sub restart (;$) {
 	### Parameters: server
@@ -209,64 +211,30 @@ sub cryptText($)
 	my $Data=$_[0];
 	my $File=$_[1];
 
-#	$verbose and print "Crypting the given Data...";
-#	$verbose and print "\nText: $Data\n\n";
-	my $rsa = new Crypt::RSA;
+# 	my $key = 'PUFgob$*LKDF D)(F IDD&P?/';
+	my $EData = &encrypt ($Data, $key);
 
-my $public = bless( {
-                 'e' => 65537,
-                 'n' => '110185927530538182741032138784217912951071916313574883320975228314295176610794175045816124151503972363121001080720758472285809475647093180514931501190970725426325035359206093659836137650897109900806043300415344860446319369853995999860939402408608126574409195778387386026503853537015920191570288558344165964673',
-                 'Version' => '1.99'
-               }, 'Crypt::RSA::Key::Public' );
+	$verbose and print "\n[CryptText] Text: $Data\n\n";
+	$verbose and print "\n[CryptText] Encrypted Text: $EData\n\n";
 
-	my $EData = $rsa->encrypt ( 
-			Message    => $Data,
-			Key        => $public,
-			Armour     => 1,
-			) or die $rsa->errstr();
-
-
-	$EData =~ s/\n/\t/g;
-#	$verbose and print "\nEncrypted Text: $EData\n\n";
+	$EData =~ s/\n/|/g;
 
 	return $EData;
 }
 
 sub decryptText($)
 {
-my $EData=$_[0];
+	my $EData=$_[0];
+#	my $key = 'PUFgob$*LKDF D)(F IDD&P?/';
 
-$EData =~ s/\t/\n/g;
+	$EData =~ s/|/\n/g;
 
-#$verbose and print "Encpting the given Data...";
-#$verbose and print "\nEncrypted Data: $EData\n\n";
+	my $Data =  &decrypt ($EData, $key);
 
-my $rsa = new Crypt::RSA;
+	$verbose and print "[DecrypText] Encrypt Text: $EData \n";	
+	$verbose and print "\n[DecrypText] Decrypted Data: $Data\n\n";
 
-my $private = bless( {
-                 'Version' => '1.99',
-                 'Checked' => 1,
-                 'private' => {
-                                '_phi' => '110185927530538182741032138784217912951071916313574883320975228314295176610794175045816124151503972363121001080720758472285809475647093180514931501190970703955488738272762377222866937942397942445596326809324649951751063046494262974062477095470368749497251544066300759404904887302581975174770665114999649531860',
-                                '_n' => '110185927530538182741032138784217912951071916313574883320975228314295176610794175045816124151503972363121001080720758472285809475647093180514931501190970725426325035359206093659836137650897109900806043300415344860446319369853995999860939402408608126574409195778387386026503853537015920191570288558344165964673',
-                                '_q' => '8485245867687154883482642244160775448589107722987002303200226001014411977652195261004541335270688649535423542741912983157907145756596143913048318546676083',
-                                '_p' => '12985590429399288832954326955547723718866101993504088391708469255308947755373603201302396904106388508116288543884708615808327288188420655710395025969756731',
-                                '_u' => '1920728030938391399175292649129357944966690250449115055512129892330756942087195107550699039547118226235723825563354310197906839863563727059933907805554680',
-                                '_dp' => '8091300651158114634214609999797776001092758914914215688295269092417965279741771218218482383631970964759399407633488884678103256793297616561479641736743913',
-                                '_dq' => '6748370922007261346062259167342843552975593523315509316071870540685005128388356522179512389596393392909125316917069571511610788579356763553960426313225365',
-                                '_d' => '95318384659296759575813297469100666140471355470677852739664152983057673417647511482788338536175995379019211060475497517856656276795341574623701520187388697835611616760547327681664070367980056288976275266305319199300773125989070983589393418230878524863774341811417294867047281394213688459319896974682852900793',
-                                '_e' => '65537'
-                              },
-                 'Cipher' => 'Blowfish'
-		 }, 'Crypt::RSA::Key::Private' );
-
-my $Data = $rsa->decrypt (
-		Cyphertext => $EData,
-		Key        => $private,
-		Armour     => 1,
-		) or die $rsa->errstr();
-
-return $Data;
+	return $Data;
 }
 
 sub cryptText2File($$)
@@ -276,7 +244,7 @@ sub cryptText2File($$)
 
 	my $fn;
 	open($fn,">>",$File) || ( print "\nUnable to open $File\n\n" and die); 
-	print $fn cryptText($Data)."\n";
+	print $fn cryptText($Data)."\n\n";
 	close($fn);
 }
 
@@ -287,14 +255,14 @@ sub decryptFile($)
 
 	my $EFC; #Encrypted File Content
 
-	my $fd;
-	$verbose && print "Encrypt $File...\n";
+		my $fd;
+	$verbose && print "Decrypt $File...\n";
 	open($fd,"<",$File) || ( print "\nUnable to open $File !\n\n" and die);
 	my $line;
 	while($line=readline($fd))
 	{
 		chomp($line);
-		$EFC .= decryptText($line)."\n";
+		$EFC .= decryptText($line);
 	}
 	close($fd);
 
