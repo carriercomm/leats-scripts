@@ -546,7 +546,7 @@ sub checkFilesystemType($$)
 	my $type = $_[1];
 
 	my $ssh=Framework::ssh_connect;
-	my $output=$ssh->capture("df -T $partition | tail -1");
+	my $output=$ssh->capture("df -T -P $partition | tail -1");
 	my @A = $output =~ m/\S+\s+(\S+).*/;
 
 	if ($A[0] eq $type) { return 0; }

@@ -183,17 +183,17 @@ MODULE("Disk.pm Module");
 
   MMODULE("MOUNT/DISK/FILESYSTEM (Disk.pm)");
 
-		EXERCISE('Checking mount','checkMount("vdb","/mnt/das/")');
+		EXERCISE('Checking mount','checkMount("/dev/mapper/testVG-testLV","/tmp/test/")');
 		printS("Checking mount:","$L");
-		Framework::grade(checkMount("vdb","/mnt/das/"));
+		Framework::grade(checkMount("/dev/mapper/testVG-testLV","/tmp/test/"));
 
-		EXERCISE('Checking filesystem type','getFilerMountedFrom(\'/mnt/das\'),"ext3")');
+		EXERCISE('Checking filesystem type','checkFilesystemType("/tmp/test","ext3")');
 		printS("Checking filesystem type:","$L");
-		Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/das'),"ext3"));
+		Framework::grade(checkFilesystemType('/tmp/test',"ext3"));
 
-		EXERCISE('Checking partitions size in MB with margin','checkPartitionSize("/mnt/test","150","10")');
-		printS("Checking /mnt/test partition size is 150M :","$L");
-		Framework::grade(checkPartitionSize("/mnt/test","150","10"));
+		EXERCISE('Checking partitions size in MB with margin','checkPartitionSize("/tmp/test","40","10")');
+		printS("Checking /tmp/test partition size is 40M :","$L");
+		Framework::grade(checkPartitionSize("/tmp/test","40","10"));
 
                 EXERCISE("Checking LABEL",'checkFilesystemParameter(getFilerMountedFrom(\'/mnt/das\'),"LABEL","test1-label")');
                 printS("Checking Label is test1-label: ","$L");
