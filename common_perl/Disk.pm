@@ -433,10 +433,19 @@ sub checkVGData($$$;$)
 	my $VGName=$_[0];
 	my $Parameter=$_[1];
 	my $Value=$_[2];
-	my $Margin=$_[3] || 0.1;
+	my $Margin=$_[3]*0.01 || 0;
 
+	if ($Parameter eq "VGSize")
+	{
+		my $VGSize=getVGData($VGName,$Parameter);
+		if ($VGSize >= (((1-$Margin)*$Value))&&($VGSize <= ((1+$Margin)*$Value))) { return 0; }
+                else { return 1;}
+	}
+	else
+	{
 	if ((getVGData($VGName,$Parameter) eq "$Value")) { return 0; }
 	else { return 1; }
+	}
 
 }
 
@@ -456,10 +465,19 @@ sub checkLVData($$$$;$)
 	my $LVName=$_[1];
         my $Parameter=$_[2];
         my $Value=$_[3];
-        my $Margin=$_[4] || 0.1;
+        my $Margin=$_[4]*0.01 || 0;
 
-        if ((getLVData($VGName,$LVName,$Parameter) eq "$Value")) { return 0; }
-        else { return 1; }
+	if ($Parameter eq "LVSize")
+	{
+		my $LVSize=getLVData($VGName,$LVName,$Parameter);
+		if ($LVSize >= (((1-$Margin)*$Value))&&($LVSize <= ((1+$Margin)*$Value))) { return 0; }
+	        else { return 1;}
+	}
+	else
+	{
+        	if ((getLVData($VGName,$LVName,$Parameter) eq "$Value")) { return 0; }	
+        	else { return 1; }
+	}
 }
 
 

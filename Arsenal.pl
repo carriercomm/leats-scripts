@@ -150,35 +150,35 @@ MODULE("Disk.pm Module");
 
                 EXERCISE("Checking if LV exist",'checkVGExist("testVG","testLV")');
                 printS("Checking logical volume LV in volume group testVG exist:","$L");
-                Framework::grade(checkLVExist("testLV","testVG"));
+                Framework::grade(checkLVExist("testVG","testLV"));
 		
 		#VGSize, PESize, PEFree, FreeSize
 
-                EXERCISE("Checking VG's size in MB",'checkVGData("testVG","VGSize",120)');
-                printS("Checking size of testVG is 120M:","$L");
-                Framework::grade(checkVGData("testVG","VGSize",120));
+                EXERCISE("Checking VG's size in MB",'checkVGData("testVG","VGSize",96)');
+                printS("Checking size of testVG is 96M:","$L");
+                Framework::grade(checkVGData("testVG","VGSize",96));
 
                 EXERCISE("Checking VG's PE size in MB",'checkVGData("testVG","PESize",4)');
                 printS("Checking PE of testVG is 4M:","$L");
                 Framework::grade(checkVGData("testVG","PESize",4));
 
-                EXERCISE("Checking free PEs of VG",'checkVGData("testVG","PEFree",30)');
-                printS("Checking free PEs of testVGi are 30:","$L");
-                Framework::grade(checkVGData("testVG","PEFree",30));
+                EXERCISE("Checking free PEs of VG",'checkVGData("testVG","PEFree",14)');
+                printS("Checking free PEs of testVGi are 14:","$L");
+                Framework::grade(checkVGData("testVG","PEFree",14));
 
-                EXERCISE("Checking free space of VG in MB",'checkVGData("testVG","FreeSpace",120)');
-                printS("Checking free space of testVG is 120M:","$L");
-                Framework::grade(checkVGData("testVG","FreeSpace",30));
+                EXERCISE("Checking free space of VG in MB",'checkVGData("testVG","FreeSpace",56)');
+                printS("Checking free space of testVG is 56M:","$L");
+                Framework::grade(checkVGData("testVG","FreeSpace",56));
 
 		# LVSize LVPESize
 		
-                EXERCISE("Checking size of LV in PEs",'checkLVData("testVG","testLV1","LVPESize","10")');
+                EXERCISE("Checking size of LV in PEs",'checkLVData("testVG","testLV","LVPESize","10")');
                 printS("Checking size of testVG-testLV1 is 10PE:","$L");
-                Framework::grade(checkLVData("testVG","testLV1","LVPESize","10"));
+                Framework::grade(checkLVData("testVG","testLV","LVPESize","10"));
 
-                EXERCISE("Checking size of LV in MB",'checkLVData("testVG","testLV1","LVSize","40")');
+                EXERCISE("Checking size of LV in MB",'checkLVData("testVG","testLV","LVSize","40")');
                 printS("Checking size of testVG-testLV1 is 40M:","$L");
-                Framework::grade(checkLVData("testVG","testLV1","LVPESize","40"));
+                Framework::grade(checkLVData("testVG","testLV","LVSize","40"));
 		
 
   MMODULE("MOUNT/DISK/FILESYSTEM (Disk.pm)");
@@ -248,18 +248,18 @@ MMODULE("OTHER FILESYSTEM (Disk.pm)");
 
 
 		#Recreate Disk
-		print "\n\nRecreate vdb disk...\n\n";
+#		print "\n\nRecreate vdb disk...\n\n";
 		
-		RecreateVDisk("vdb","300","vdb");
+#		RecreateVDisk("vdb","300","vdb");
 
-		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","1","+30M","lvm"');					
-	        CreatePartition("/dev/vdb","1","+40M","lvm");
+#		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","1","+30M","lvm"');					
+#	        CreatePartition("/dev/vdb","1","+40M","lvm");
 
-		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","2","+50M","swap")');
-	        CreatePartition("/dev/vdb","2","+50M","swap");
+#		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","2","+50M","swap")');
+#	        CreatePartition("/dev/vdb","2","+50M","swap");
 
-		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","3","+25M","linux")');
-        	CreatePartition("/dev/vdb","3","+25M","linux");
+#		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","3","+25M","linux")');
+ #       	CreatePartition("/dev/vdb","3","+25M","linux");
 
 #               EXERCISE("",'');
 #               printS("","$L");
