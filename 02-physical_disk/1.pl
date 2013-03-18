@@ -49,7 +49,7 @@ our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent);
-use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize );
+use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk );
 ######
 ###Options
 ###
@@ -65,15 +65,20 @@ GetOptions("help|?|h" => \$help,
 sub break() {
 	print "Break has been selected.\n";
 	&pre();
+
 	$verbose and print "Pre complete breaking\n";
-	my $ret=Disk::lv_create("vdb","200","vdb");
-	if ( $ret != 0 ) {
-		$verbose and print "Trying to repair.\n";
-		Disk::lv_remove("vdb");
-		Disk::lv_create("vdb","200","vdb");
-	} else {
-		print "Disk attached to server. Local disk is vdb\n";
-	}
+
+	RecreateVDisk("vdb","300","vdb");
+
+#	my $ret=Disk::lv_create("vdb","200","vdb");
+#	if ( $ret != 0 ) {
+#		$verbose and print "Trying to repair.\n";
+#		Disk::lv_remove("vdb");
+#		Disk::lv_create("vdb","200","vdb");
+#	} else {
+#		print "Disk attached to server. Local disk is vdb\n";
+#	}
+
 	print "Your task: $description\n";
 }
 

@@ -28,7 +28,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Disk::ISA         = qw(Exporter);
-    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition );
+    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk);
     	@Disk::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name);
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 	close(STDERR);
@@ -917,7 +917,7 @@ sub CreatePartition($$$$)
 	chomp($output);
 
 
-	print "output (number of partitions) = \n$output\n\n";
+	$verbose && print "output (number of partitions) = \n$output\n\n";
 
 
 	if ($output ne 0)  {  
@@ -931,6 +931,35 @@ sub CreatePartition($$$$)
 
 
 	return 0;
+}
+
+#
+#
+# Delete and recreate the virtual disk inside the server virtual machine
+#
+# 1. Parameter: Target inside the "server" virtual machine (e.g. vdb)
+# 2. Parameter: size of the disk in MB
+# 3. Parameter: LV name 
+# 4. Parameter: VG name (optional, default is vg_desktop)
+#
+# E.g. RecreateVDisk("vdb","300","vdb");
+#
+sub RecreateVDisk($$$;$)
+{
+my $Target=$_[0];
+my $Size=$_[1];
+my $LVName=$_[2];
+my $VGName =$_[3] || "vg_desktop";
+
+                my $ret=lv_create("$LVName","$Size","$Target","$VGName");
+                if ( $ret != 0 ) {
+                $verbose and print "Trying to repair.\n";
+                lv_remove("$LVName","$VGName");
+                lv_create("$LVName","$Size","$Target","$VGName");
+                } else {
+                print "Disk attached to server. Local disk is vdb\n";
+                }
+
 }
 
 #### We need to end with success

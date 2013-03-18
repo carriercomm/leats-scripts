@@ -46,7 +46,7 @@ our @ALTS_MODULES=("Disk");
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent);
-use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition );
+use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy &checkSwapSize &RecreateVDisk );
 
 
 ######
@@ -79,14 +79,17 @@ sub break() {
 sub MODULE($)
 {
 	print color 'cyan';
-	print "====================================\n$_[0]\n====================================\n\n";
+#	print "="x20."\n${_[0]}\n"."="x20."\n";
+	my $K=55;
+	print "="x$K."\n$_[0]\n"."="x$K."\n";
 	print color 'reset';
 }
 
 sub MMODULE($)
 {
         print color 'cyan';
-        print "\n------------\n$_[0]\n------------\n\n";
+	my $Length=length($_[0]);
+        print "\n"."-"x$Length."\n"."$_[0]\n"."-"x$Length."\n";
         print color 'reset';
 }
 
@@ -136,83 +139,131 @@ sub grade() {
 	if ("Disk" ~~ @ALTS_MODULES)
 	{	
 
-
-	MODULE("Disk.pm Module");
-
-		EXERCISE('Checking mount','checkMount("vdb","/mnt/das/")');
-		printS("Checking mount:","$L");
-		Framework::grade(checkMount("vdb","/mnt/das/"));
+MODULE("Disk.pm Module");
 
 
-		EXERCISE('Checking filesystem type','getFilerMountedFrom(\'/mnt/das\'),"ext3")');
-		printS("Checking filesystem type:","$L");
-		Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/das'),"ext3"));
+  MMODULE("LVM SPECIFIC (Disk.pm)");
 
+                EXERCISE("Checking if VG exist",'checkVGExist("testVG")');
+                printS("Checking volume group testVG exist:","$L");
+                Framework::grade(checkVGExist("testVG"));
 
-		EXERCISE("Checking filesystem size",'getFilerMountedFrom(\'/mnt/das\'),"100","10")');
-		printS("Checking size:","$L");
-		Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/das'),"100","10"));
-
-		EXERCISE("Checking Label of mounted disk",'checkFilesystemParameter(getFilerMountedFrom(\'/mnt/das\'),"LABEL","test1-label")');
-		printS("Checking Label is test1-label: ","$L");
-		Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
-
-		EXERCISE("Checking if the mounted disk is mounted with UUID",'checkMountedWithUUID("/mnt/das")');
-		printS("Checking if mounted with UUID: ","$L");
-		Framework::grade(checkMountedWithUUID("/mnt/das"));
-
-                EXERCISE("Checking if the mounted disk is mounted with LABEL",'checkMountedWithLABEL("/mnt/das)"');
-                printS("Checking if mounted with LABEL: ","$L");
-                Framework::grade(checkMountedWithLABEL("/mnt/das"));		
-
-#               printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");
-#               Framework::grade(checkMountOptions("/mnt/das","rw,acl"));
-#
-#               printS("Checking swap size increased with 50M: ","$L");
-#               Framework::grade(checkSwapSize("561","5"));
-#
-			
-	MMODULE("LVM SPECIFIC");
-
-		EXERCISE("Checking if VG exist",'checkVGExist("testVG")');
-	        printS("Checking volume group testVG exist:","$L");
-        	Framework::grade(checkVGExist("testVG"));
-
-		EXERCISE("Checking if LV exist",'checkVGExist("testVG","testLV")');
-		printS("Checking logical volume LV in volume group testVG exist:","$L");
-		Framework::grade(checkLVExist("testLV","testVG"));
+                EXERCISE("Checking if LV exist",'checkVGExist("testVG","testLV")');
+                printS("Checking logical volume LV in volume group testVG exist:","$L");
+                Framework::grade(checkLVExist("testLV","testVG"));
 		
 		#VGSize, PESize, PEFree, FreeSize
 
-		EXERCISE("Checking VG's size in MB",'checkVGData("testVG","VGSize",120)');
+                EXERCISE("Checking VG's size in MB",'checkVGData("testVG","VGSize",120)');
                 printS("Checking size of testVG is 120M:","$L");
                 Framework::grade(checkVGData("testVG","VGSize",120));
-		
-		EXERCISE("Checking VG's PE size in MB",'checkVGData("testVG","PESize",4)');
-        	printS("Checking PE of testVG is 4M:","$L");
-	        Framework::grade(checkVGData("testVG","PESize",4));
 
-		EXERCISE("Checking free PEs of VG",'checkVGData("testVG","PEFree",30)');
+                EXERCISE("Checking VG's PE size in MB",'checkVGData("testVG","PESize",4)');
+                printS("Checking PE of testVG is 4M:","$L");
+                Framework::grade(checkVGData("testVG","PESize",4));
+
+                EXERCISE("Checking free PEs of VG",'checkVGData("testVG","PEFree",30)');
                 printS("Checking free PEs of testVGi are 30:","$L");
                 Framework::grade(checkVGData("testVG","PEFree",30));
 
                 EXERCISE("Checking free space of VG in MB",'checkVGData("testVG","FreeSpace",120)');
                 printS("Checking free space of testVG is 120M:","$L");
                 Framework::grade(checkVGData("testVG","FreeSpace",30));
-		
+
 		# LVSize LVPESize
 		
-		EXERCISE("Checking size of LV in PEs",'checkLVData("testVG","testLV1","LVPESize","10")');
-		printS("Checking size of testVG-testLV1 is 10PE:","$L");
-	        Framework::grade(checkLVData("testVG","testLV1","LVPESize","10"));
+                EXERCISE("Checking size of LV in PEs",'checkLVData("testVG","testLV1","LVPESize","10")');
+                printS("Checking size of testVG-testLV1 is 10PE:","$L");
+                Framework::grade(checkLVData("testVG","testLV1","LVPESize","10"));
 
                 EXERCISE("Checking size of LV in MB",'checkLVData("testVG","testLV1","LVSize","40")');
                 printS("Checking size of testVG-testLV1 is 40M:","$L");
                 Framework::grade(checkLVData("testVG","testLV1","LVPESize","40"));
-				
-#                EXERCISE("",'');
-#                printS("","$L");
-#                Framework::grade();
+		
+
+  MMODULE("MOUNT/DISK/FILESYSTEM (Disk.pm)");
+
+		EXERCISE('Checking mount','checkMount("vdb","/mnt/das/")');
+		printS("Checking mount:","$L");
+		Framework::grade(checkMount("vdb","/mnt/das/"));
+
+		EXERCISE('Checking filesystem type','getFilerMountedFrom(\'/mnt/das\'),"ext3")');
+		printS("Checking filesystem type:","$L");
+		Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/das'),"ext3"));
+
+		EXERCISE('Checking partitions size in MB with margin','checkPartitionSize("/mnt/test","150","10")');
+		printS("Checking /mnt/test partition size is 150M :","$L");
+		Framework::grade(checkPartitionSize("/mnt/test","150","10"));
+
+                EXERCISE("Checking LABEL",'checkFilesystemParameter(getFilerMountedFrom(\'/mnt/das\'),"LABEL","test1-label")');
+                printS("Checking Label is test1-label: ","$L");
+                Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
+
+                EXERCISE("Checking UUID",'checkFilesystemParameter(getFilerMountedFrom(\'/mnt/das\'),"UUID","xxxxxxx")');
+                printS("Checking UUID is xxxxxxx: ","$L");
+                Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"UUID","xxxxxxx"));
+
+                EXERCISE("Checking if the mounted disk is mounted with UUID",'checkMountedWithUUID("/mnt/das")');
+                printS("Checking if mounted with UUID: ","$L");
+                Framework::grade(checkMountedWithUUID("/mnt/das"));
+
+                EXERCISE("Checking if the mounted disk is mounted with LABEL",'checkMountedWithLABEL("/mnt/das)"');
+                printS("Checking if mounted with LABEL: ","$L");
+                Framework::grade(checkMountedWithLABEL("/mnt/das"));
+
+		EXERCISE("Checking mount options",'checkMountOptions("/mnt/das","rw,acl")');
+                printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");
+                Framework::grade(checkMountOptions("/mnt/das","rw,acl"));
+
+
+MMODULE("OTHER FILESYSTEM (Disk.pm)");
+
+		EXERCISE("Checking if the two given files are the same",'fileEqual("/etc/passwd","/etc/passwd.old")');
+		printS("Checking if /etc/passwd equals /etcpasswd.old: ","$L");
+		Framework::grade(fileEqual("/etc/passwd","/etc/passwd.old"));
+
+		EXERCISE("Check the owner of the given file",'checkOwner("/tmp/test","tihamer")');
+       		printS("The owner of /tmp/test is tihamer","$L");
+	        Framework::grade(checkOwner("/tmp/test","tihamer"));
+
+		EXERCISE("Check the type of the given file",'checkType("/tmp/testdir","directory")');
+	        printS("Directory /tmo/testdir exist and it's a directory","$L");
+        	Framework::grade(checkType("/tmp/testdir","directory"));
+	
+                EXERCISE("Check the type of the given file",'checkType("/tmp/testfile","file")');
+                printS("File /tmo/testfile exist and its type is file","$L");
+                Framework::grade(checkType("/tmp/testdir","file"));
+
+                EXERCISE("Check the type of the given file",'checkType("/tmp/testsymlink","symbolic link")');
+                printS("File /tmo/testsymlink exist and it's a symbolic link","$L");
+                Framework::grade(checkType("/tmp/testdir","file"));
+
+		EXERCISE("Check symlink and the target of it",'checkSymlink("/tmp/testfile","/tmp/testsymlink")');
+		printS("Check /tmp/testsymlink exist and its target is /tmp/testfile","$L");		
+		Framework::grade(checkSymlink("/tmp/testfile","/tmp/testsymlink"));
+		
+		EXERCISE("Check SWAP size","checkSwapSize(\"561\",\"5\")");
+                printS("Checking swap size increased with 50M: ","$L");
+                Framework::grade(checkSwapSize("561","5"));
+
+
+		#Recreate Disk
+		print "\n\nRecreate vdb disk...\n\n";
+		
+		RecreateVDisk("vdb","300","vdb");
+
+		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","1","+30M","lvm"');					
+	        CreatePartition("/dev/vdb","1","+40M","lvm");
+
+		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","2","+50M","swap")');
+	        CreatePartition("/dev/vdb","2","+50M","swap");
+
+		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","3","+25M","linux")');
+        	CreatePartition("/dev/vdb","3","+25M","linux");
+
+#               EXERCISE("",'');
+#               printS("","$L");
+#               Framework::grade();
 		
 
 	}
