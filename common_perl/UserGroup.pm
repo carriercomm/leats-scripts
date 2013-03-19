@@ -212,7 +212,9 @@ sub checkUserSecondaryGroupMembership($$)
 	my $User = $_[0];
 	my $Group = $_[1];
 	my @M;
+
 	if (userExist($User) != 0 ) { return 1;  }
+
 	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("getent group $Group");
 	if (@M = $output =~ m/^$Group:x:\d+:([^:]*)$/) 
@@ -236,6 +238,7 @@ sub checkUserPrimaryGroup($$)
 	my $Group = $_[1];
 
  	if (userExist($User) != 0 ) { return 1;  }
+
 	if ($Group eq getGroupName(UserGroup::getUserAttribute("$User","GID"))) { return 0; }
 	else {	return 1; }
 }
@@ -369,6 +372,7 @@ sub checkUserGroupMembership($$)
 	my $User = $_[0];
 	my $Group = $_[1];
 	if (userExist($User) != 0 ) { return 1; }
+
 	if ((checkUserPrimaryGroup($User,$Group)==0) || (checkUserSecondaryGroupMembership($User,$Group)==0)) { return 0 ; }
 	else { return 1; }
 }

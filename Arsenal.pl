@@ -49,8 +49,7 @@ our @ALTS_MODULES=("UserGroup");
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent);
 use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy &checkSwapSize &RecreateVDisk );
-use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &checkUserCrontab);
-
+use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &checkUserCrontab &setupGroup &setupUser &delUser &delGroup  &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes);
 
 ######
 ###Options
@@ -314,12 +313,10 @@ MODULE("Disk.pm Module");
                 printS("Mary's default shell is /bin/bash:","$L");
                 Framework::grade(UserGroup::checkUserAttribute("mary","HOME","/home/mary"));
 
-
-
-		EXERCISE("Checking users password",'checkUserPassword("mary","kuka002")');
-	        printS("Mary's password is kuka002:","$L");
-        	Framework::grade(checkUserPassword("mary","kuka002"));
-        				
+                EXERCISE("Checking user has no shell access:",'checkUserHasNoShellAccess("thomas")');
+                printS("Thomas should not have access to any shell:","$L");
+                Framework::grade(UserGroup::checkUserHasNoShellAccess("thomas"));
+		
 		EXERCISE("Checking groups name and ID:",'checkGroupNameAndID("tadmins","885")');
         	printS("Group tadmins with GID 885","$L");
         	Framework::grade(checkGroupNameAndID("tadmins","885"));
@@ -332,13 +329,61 @@ MODULE("Disk.pm Module");
                 printS("John's secondary group is ftp","$L");
                 Framework::grade(checkUserSecondaryGroupMembership("john","ftp"));
 
+	MMODULE("User password (UserGroup.pm)");
+
+
+                EXERCISE("Checkig users password",'checkUserPassword("mary","kuka002")');
+                printS("Mary's password is kuka002:","$L");
+                Framework::grade(checkUserPassword("mary","kuka002"));
+
 		EXERCISE("Checking user password is locked",'checkUserLocked(tihamer)');			
 		printS("Tihamer is locked","$L");
 		Framework::grade("checkUserLocked(tihamer)");
 
-		EXERCISE("Checking user has no shell access:",'checkUserHasNoShellAccess("thomas")');		
-	        printS("Thomas should not have access to any shell:","$L");
-	        Framework::grade(UserGroup::checkUserHasNoShellAccess("thomas"));
+		#EXPIRE_DATE - Account expires (date format: YYYY-MM-DD)
+		#INACTIVE - Password inactive
+		#MIN_DAYS - Minimum number of days between password change
+		#MAX_DAYS - Maximum number of days between password change
+		#WARN_DAYS - Number of days of warning before password expires
+
+		EXERCISE("Checking user password expire date",'checkUserChageAttribute("john","EXPIRE_DATE","2025-12-12")');		
+	        printS("john's account will expire on 2025-12-12","$L");
+        	Framework::grade(checkUserChageAttribute("john","EXPIRE_DATE","2025-12-12"));
+
+                EXERCISE("Checking user password inactive days (set password inactive after expiration)",'checkUserChageAttribute("john","INACTIVE","20")');
+                printS("john's account inactive days:","$L");
+                Framework::grade(checkUserChageAttribute("john","INACTIVE","20"));		
+
+                EXERCISE("Checking user password MIN_DAYS (minimum number of days between password change)",'checkUserChageAttribute("john","MIN_DAYS","8")');
+                printS("john can't change password for 8 days","$L");
+                Framework::grade(checkUserChageAttribute("john","MIN_DAYS","8"));
+
+                EXERCISE("Checking user password MAX_DAYS (Maximum number of days between password change)",'checkUserChageAttribute("john","MAX_DAYS","60")');
+                printS("john must change his password after 60 days","$L");
+                Framework::grade(checkUserChageAttribute("john","MAX_DAYS","60"));
+
+                EXERCISE("Checking user password WARN_DAYS (Number of days of warning before password expires)",'checkUserChageAttribute("john","WARN_DAYS","10")');
+                printS("john will be warned 10 days before his password will expire","$L");
+                Framework::grade(checkUserChageAttribute("john","WARN_DAYS","10"));
+		
+
+	MMODULE("Create/Delete Users and groups (UserGroup.pm)");
+
+		EXERCISE("Create Group",'setupGroup("testgroup1","5778","")');
+		printS("Create group testgroup1","$L");
+		Framework::grade(setupGroup("testgroup1","5778",""));
+		
+		EXERCISE("Create User",'setupUser("test1","1233","testgroup1","ftp,users","/home/test1","This is the Test user","/bin/bash","true")');
+		printS("Create user test1","$L");
+		Framework::grade(setupUser("test1","1233","testgroup1","ftp,users","/home/test1","This is the Test user","/bin/bash","true"));
+
+		EXERCISE("Delete user (second parameter true if you want to delete the home directory too)",'delUser("test1","true")');
+		printS("Delete test1 user","$L");
+		Framework::grade(delUser("test1","true"));
+
+		EXERCISE("Delete group",'delGroup("testgroup1")');
+		printS("Delete testgroup1 group","$L");
+		Framework::grade(delGroup("testgroup1"));
 
 	MMODULE("Crontab (UserGroup.pm)");
 
@@ -351,49 +396,83 @@ MODULE("Disk.pm Module");
 	        printS("tihamer run \"/bin/echo 'crontab exam test'\" every day at 5:25","$L");
 	        Framework::grade(checkUserCrontab("tihamer","25","5","*","*","*","/bin/echo 'crontab exam test'"));
 		
+	MMODULE("User/Group file permissions (UserGroup.pm)");
 
+		EXERCISE("User permissions on file",'checkUserFilePermission("john","/tmp/testfile","rw*")');
+	        printS("User john can write and read /tmp/testfile","$L");
+        	Framework::grade(checkUserFilePermission("john","/tmp/testfile","rw*"));
+
+                EXERCISE("User permissions on file",'checkUserFilePermission("tihamer","/tmp/testfile","r*-")');		
+                printS("User tihamer can write but can't execute /tmp/testfile","$L");
+                Framework::grade(checkUserFilePermission("tihamer","/tmp/testfile","r*-"));
+
+                EXERCISE("User permissions on file",'checkUserFilePermission("mary","/tmp/testfile2","---")');
+                printS("User mary has no permissions on /tmp/testfile2","$L");
+                Framework::grade(checkUserFilePermission("mary","/tmp/testfile2","---"));
+
+		EXERCISE("Group permissions on file",'checkGroupFilePermission("group1","/tmp/test","rw*")');				
+        	printS("Members of group1 can read and write /tmp/test","$L");
+	        Framework::grade(checkGroupFilePermission("group1","/tmp/test","rw*"));
+
+		EXERCISE("Group permissions on file",'checkGroupFilePermission("group1","/tmp/test2","rwx")');
+	        printS("Members of group1 can read, write and execute /tmp/test2","$L");
+	        Framework::grade(checkGroupFilePermission("group1","/tmp/test2","rwx"));
+
+		EXERCISE("Others permissions on file",'checkOtherFilePermission("/tmp/test3","---")');
+	        printS("Other can't read, write or execute /tmp/test3","$L");
+                Framework::grade(checkOtherFilePermission("/tmp/test3","---"));
+
+	MMODULE("File special permissions (UserGroup.pm)");
+
+		EXERCISE("Special permissions on files (SETUID, NO_SETUID, SETGID, NO_SETGID, STICKY, NO_STICKY)",'checkUserFileSpecialPermission("/tmp/test2","SETUID")');
+	        printS("SETUID set on /tmp/test2","$L");
+        	Framework::grade(checkUserFileSpecialPermission("/tmp/test2","SETUID"));
+
+		EXERCISE("Special permissions on files (SETUID, NO_SETUID, SETGID, NO_SETGID, STICKY, NO_STICKY)",'checkUserFileSpecialPermission("/tmp/test","NO_STICKY")');
+        	printS("STICKY not set on /tmp/test","$L");
+	        Framework::grade(checkUserFileSpecialPermission("/tmp/test","NO_STICKY"));
+
+
+	MMODULE("Newly created file attributes (UserGroup.pm)");
+
+		#  Parameter 1: Directory
+		#  Parameter 2: Group of the newly created file (optional)
+		#  Parameter 3: The user, whos permissions you want to check (optional)
+		#  Parameter 4: Permission of this user (optional)
+		#  Parameter 5: The group, which permissions you want to check (optinal)
+		#  Parameter 6: Permission of this group (optional)
+		#  Parameter 7: Permission others
+		# 
+		#    About permissions:
+		#         use * if you don't want to check, or it doesn't matter
+		#         e.g. r*- means, that it has to be readable, it can be writable or not writable either, it musn't be executable
+
+		
+                EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'checkNewlyCreatedFilesAttributes("/tmp/testdir","group1","","","","","")');
+                printS("The group of every newly created file in this directory is group1","$L");
+                Framework::grade(checkNewlyCreatedFilesAttributes("/tmp/testdir","group1","","","","",""));
+		
+		EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'checkNewlyCreatedFilesAttributes("/tmp/test/testdir","john","r-*","","","","")');
+		printS("A newly created file in /tmp/test/testdir shuld be readable but not writable for user john","$L");
+		Framework::grade(checkNewlyCreatedFilesAttributes("/tmp/test/testdir","","john","r**","","",""));
+
+                EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'checkNewlyCreatedFilesAttributes("/tmp/test/testdir","","","","group1","rw*","")');
+                printS("A newly created file in /tmp/test/testdir shuld be readable and writable for group group1","$L");
+                Framework::grade(checkNewlyCreatedFilesAttributes("/tmp/test/testdir","","","","group1","rw*",""));
+		
+                EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'checkNewlyCreatedFilesAttributes("/tmp/test/testdir","","","","","","r**")');
+                printS("A newly created file in /tmp/test/testdir shuld be readable for others","$L");
+                Framework::grade(checkNewlyCreatedFilesAttributes("/tmp/test/testdir","","","","","","r**"));
+		
+
+#		EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'');
+	
+#		EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'');
+               
 #               EXERCISE("",'');
 #               printS("","$L");
 #               Framework::grade();
 #
-#        printS("Group tadmins with GID 885","$L");
-#        Framework::grade(checkGroupNameAndID("tadmins","885"));
-
-#        printS("John's UID is 2342:","$L");
-#        Framework::grade(UserGroup::checkUserAttribute("john","UID","2342"));
-
-#        printS("john's home directory is /home/john:","$L");
-#        Framework::grade(UserGroup::checkUserAttribute("john","HOME","/home/john"));
-
-#        printS("Mary's UID is 5556","$L");
-#       Framework::grade(UserGroup::checkUserAttribute("mary","UID","5556"));
-
-#        printS("Mary's default shell is /bin/bash:","$L");
-#        Framework::grade(UserGroup::checkUserAttribute("mary","SHELL","/bin/bash"));
-
-#        printS("Thomas should not have access to any shell:","$L");
-#        Framework::grade(UserGroup::checkUserHasNoShellAccess("thomas"));
-
-#        printS("User john is in Group tadmins:","$L");
-#        Framework::grade(checkUserGroupMembership("john","tadmins"));
-
-#        printS("User mary is in Group tadmins:","$L");
-#        Framework::grade(checkUserGroupMembership("mary","tadmins"));
-
-#        printS("User thomas isn't in Group tadmins:","$L");
-#        Framework::grade(!(checkUserGroupMembership("thomas","tadmins")));
-
-#        printS("John's password is kuka002","$L");
-#        Framework::grade(checkUserPassword("john","kuka002"));
-
-#        printS("Mary's password is kuka002","$L");
-#        Framework::grade(checkUserPassword("mary","kuka002"));
-
-#        printS("Thomas's password is kuka002","$L");
-#        Framework::grade(checkUserPassword("thomas","kuka002"));
-
-#        printS("john's account will expire on 2025-12-12","$L");
-#        Framework::grade(checkUserChageAttribute("john","EXPIRE_DATE","2025-12-12"));
 
 		}
 

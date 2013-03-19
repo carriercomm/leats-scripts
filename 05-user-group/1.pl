@@ -139,7 +139,7 @@ sub grade() {
 	Framework::grade(checkUserGroupMembership("mary","tadmins"));
 
 	printS("User thomas isn't in Group tadmins:","$L");
-	Framework::grade(!(checkUserGroupMembership("thomas","tadmins")));
+	Framework::grade(userExist("thomas"),(!checkUserGroupMembership("thomas","tadmins")));
 
 	printS("John's password is kuka002","$L");
 	Framework::grade(checkUserPassword("john","kuka002"));
