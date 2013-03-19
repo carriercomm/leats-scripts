@@ -195,25 +195,25 @@ MODULE("Disk.pm Module");
 		printS("Checking /tmp/test partition size is 40M :","$L");
 		Framework::grade(checkPartitionSize("/tmp/test","40","10"));
 
-                EXERCISE("Checking LABEL",'checkFilesystemParameter(getFilerMountedFrom(\'/mnt/das\'),"LABEL","test1-label")');
+                EXERCISE("Checking LABEL",'checkFilesystemParameter(getFilerMountedFrom(\'/tmp/test\'),"LABEL","test1-label")');
                 printS("Checking Label is test1-label: ","$L");
-                Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
+                Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/tmp/test'),"LABEL","test1-label"));
 
-                EXERCISE("Checking UUID",'checkFilesystemParameter(getFilerMountedFrom(\'/mnt/das\'),"UUID","xxxxxxx")');
-                printS("Checking UUID is xxxxxxx: ","$L");
-                Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"UUID","xxxxxxx"));
+                EXERCISE("Checking UUID",'checkFilesystemParameter(getFilerMountedFrom(\'/tmp/test\'),"UUID","7080795d-0c0c-422c-b268-3bead2208fce")');
+                printS("Checking UUID is 7080795d-0c0c-422c-b268-3bead2208fce: ","$L");
+                Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/tmp/test'),"UUID","7080795d-0c0c-422c-b268-3bead2208fce"));
 
-                EXERCISE("Checking if the mounted disk is mounted with UUID",'checkMountedWithUUID("/mnt/das")');
+                EXERCISE("Checking if the mounted disk is mounted with UUID",'checkMountedWithUUID("/tmp/test")');
                 printS("Checking if mounted with UUID: ","$L");
-                Framework::grade(checkMountedWithUUID("/mnt/das"));
+                Framework::grade(checkMountedWithUUID("/tmp/test"));
 
-                EXERCISE("Checking if the mounted disk is mounted with LABEL",'checkMountedWithLABEL("/mnt/das)"');
+                EXERCISE("Checking if the mounted disk is mounted with LABEL",'checkMountedWithLABEL("/tmp/test)"');
                 printS("Checking if mounted with LABEL: ","$L");
-                Framework::grade(checkMountedWithLABEL("/mnt/das"));
+                Framework::grade(checkMountedWithLABEL("/tmp/test"));
 
-		EXERCISE("Checking mount options",'checkMountOptions("/mnt/das","rw,acl")');
+		EXERCISE("Checking mount options",'checkMountOptions("/tmp/test","rw,acl")');
                 printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");
-                Framework::grade(checkMountOptions("/mnt/das","rw,acl"));
+                Framework::grade(checkMountOptions("/tmp/test","rw,acl"));
 
 
 MMODULE("OTHER FILESYSTEM (Disk.pm)");
@@ -227,16 +227,16 @@ MMODULE("OTHER FILESYSTEM (Disk.pm)");
 	        Framework::grade(checkOwner("/tmp/test","tihamer"));
 
 		EXERCISE("Check the type of the given file",'checkType("/tmp/testdir","directory")');
-	        printS("Directory /tmo/testdir exist and it's a directory","$L");
+	        printS("Directory /tmp/testdir exist and it's a directory","$L");
         	Framework::grade(checkType("/tmp/testdir","directory"));
 	
-                EXERCISE("Check the type of the given file",'checkType("/tmp/testfile","file")');
-                printS("File /tmo/testfile exist and its type is file","$L");
-                Framework::grade(checkType("/tmp/testdir","file"));
+                EXERCISE("Check the type of the given file",'checkType("/tmp/testfile","regular file")');
+                printS("File /tmp/testfile exist and its type is file","$L");
+                Framework::grade(checkType("/tmp/testfile","regular file"));
 
                 EXERCISE("Check the type of the given file",'checkType("/tmp/testsymlink","symbolic link")');
                 printS("File /tmo/testsymlink exist and it's a symbolic link","$L");
-                Framework::grade(checkType("/tmp/testdir","file"));
+                Framework::grade(checkType("/tmp/testsymlink","symbolic link"));
 
 		EXERCISE("Check symlink and the target of it",'checkSymlink("/tmp/testfile","/tmp/testsymlink")');
 		printS("Check /tmp/testsymlink exist and its target is /tmp/testfile","$L");		
