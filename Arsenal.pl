@@ -41,12 +41,15 @@ use File::Basename;
 use POSIX qw/strftime/;
 our $name=basename($0);
 
-our @ALTS_MODULES=("Disk");
+#our @ALTS_MODULES=("Disk");
+our @ALTS_MODULES=("UserGroup");
+
 
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent);
 use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy &checkSwapSize &RecreateVDisk );
+use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &checkUserCrontab);
 
 
 ######
@@ -87,10 +90,10 @@ sub MODULE($)
 
 sub MMODULE($)
 {
-        print color 'cyan';
+	print color 'cyan';
 	my $Length=length($_[0]);
-        print "\n"."-"x$Length."\n"."$_[0]\n"."-"x$Length."\n";
-        print color 'reset';
+	print "\n"."-"x$Length."\n"."$_[0]\n"."-"x$Length."\n";
+	print color 'reset';
 }
 
 
@@ -121,7 +124,7 @@ sub grade() {
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
 	$result_file="/ALTS/RESULTS/${T}-${problem}"; #Empty the result file
-	my $fn; open($fn,">","$result_file"); close($fn);
+		my $fn; open($fn,">","$result_file"); close($fn);
 	my $now = strftime "%Y/%m/%d %H:%M:%S", localtime;
 	$exercise_number = 0;
 	$exercise_success = 0;
@@ -136,52 +139,53 @@ sub grade() {
 #		MODULE("Module 1: Boot");
 #	}
 
+
 	if ("Disk" ~~ @ALTS_MODULES)
 	{	
 
 MODULE("Disk.pm Module");
 
 
-  MMODULE("LVM SPECIFIC (Disk.pm)");
+	MMODULE("LVM SPECIFIC (Disk.pm)");
 
-                EXERCISE("Checking if VG exist",'checkVGExist("testVG")');
-                printS("Checking volume group testVG exist:","$L");
-                Framework::grade(checkVGExist("testVG"));
+		EXERCISE("Checking if VG exist",'checkVGExist("testVG")');
+		printS("Checking volume group testVG exist:","$L");
+		Framework::grade(checkVGExist("testVG"));
 
-                EXERCISE("Checking if LV exist",'checkVGExist("testVG","testLV")');
-                printS("Checking logical volume LV in volume group testVG exist:","$L");
-                Framework::grade(checkLVExist("testVG","testLV"));
-		
-		#VGSize, PESize, PEFree, FreeSize
+		EXERCISE("Checking if LV exist",'checkVGExist("testVG","testLV")');
+		printS("Checking logical volume LV in volume group testVG exist:","$L");
+		Framework::grade(checkLVExist("testVG","testLV"));
 
-                EXERCISE("Checking VG's size in MB",'checkVGData("testVG","VGSize",96)');
-                printS("Checking size of testVG is 96M:","$L");
-                Framework::grade(checkVGData("testVG","VGSize",96));
+#VGSize, PESize, PEFree, FreeSize
 
-                EXERCISE("Checking VG's PE size in MB",'checkVGData("testVG","PESize",4)');
-                printS("Checking PE of testVG is 4M:","$L");
-                Framework::grade(checkVGData("testVG","PESize",4));
+		EXERCISE("Checking VG's size in MB",'checkVGData("testVG","VGSize",96)');
+		printS("Checking size of testVG is 96M:","$L");
+		Framework::grade(checkVGData("testVG","VGSize",96));
 
-                EXERCISE("Checking free PEs of VG",'checkVGData("testVG","PEFree",14)');
-                printS("Checking free PEs of testVGi are 14:","$L");
-                Framework::grade(checkVGData("testVG","PEFree",14));
+		EXERCISE("Checking VG's PE size in MB",'checkVGData("testVG","PESize",4)');
+		printS("Checking PE of testVG is 4M:","$L");
+		Framework::grade(checkVGData("testVG","PESize",4));
 
-                EXERCISE("Checking free space of VG in MB",'checkVGData("testVG","FreeSpace",56)');
-                printS("Checking free space of testVG is 56M:","$L");
-                Framework::grade(checkVGData("testVG","FreeSpace",56));
+		EXERCISE("Checking free PEs of VG",'checkVGData("testVG","PEFree",14)');
+		printS("Checking free PEs of testVGi are 14:","$L");
+		Framework::grade(checkVGData("testVG","PEFree",14));
 
-		# LVSize LVPESize
-		
-                EXERCISE("Checking size of LV in PEs",'checkLVData("testVG","testLV","LVPESize","10")');
-                printS("Checking size of testVG-testLV1 is 10PE:","$L");
-                Framework::grade(checkLVData("testVG","testLV","LVPESize","10"));
+		EXERCISE("Checking free space of VG in MB",'checkVGData("testVG","FreeSpace",56)');
+		printS("Checking free space of testVG is 56M:","$L");
+		Framework::grade(checkVGData("testVG","FreeSpace",56));
 
-                EXERCISE("Checking size of LV in MB",'checkLVData("testVG","testLV","LVSize","40")');
-                printS("Checking size of testVG-testLV1 is 40M:","$L");
-                Framework::grade(checkLVData("testVG","testLV","LVSize","40"));
-		
+# LVSize LVPESize
 
-  MMODULE("MOUNT/DISK/FILESYSTEM (Disk.pm)");
+		EXERCISE("Checking size of LV in PEs",'checkLVData("testVG","testLV","LVPESize","10")');
+		printS("Checking size of testVG-testLV1 is 10PE:","$L");
+		Framework::grade(checkLVData("testVG","testLV","LVPESize","10"));
+
+		EXERCISE("Checking size of LV in MB",'checkLVData("testVG","testLV","LVSize","40")');
+		printS("Checking size of testVG-testLV1 is 40M:","$L");
+		Framework::grade(checkLVData("testVG","testLV","LVSize","40"));
+
+
+	MMODULE("MOUNT/DISK/FILESYSTEM (Disk.pm)");
 
 		EXERCISE('Checking mount','checkMount("/dev/mapper/testVG-testLV","/tmp/test/")');
 		printS("Checking mount:","$L");
@@ -195,61 +199,60 @@ MODULE("Disk.pm Module");
 		printS("Checking /tmp/test partition size is 40M :","$L");
 		Framework::grade(checkPartitionSize("/tmp/test","40","10"));
 
-                EXERCISE("Checking LABEL",'checkFilesystemParameter(getFilerMountedFrom(\'/tmp/test\'),"LABEL","test1-label")');
-                printS("Checking Label is test1-label: ","$L");
-                Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/tmp/test'),"LABEL","test1-label"));
+		EXERCISE("Checking LABEL",'checkFilesystemParameter(getFilerMountedFrom(\'/tmp/test\'),"LABEL","test1-label")');
+		printS("Checking Label is test1-label: ","$L");
+		Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/tmp/test'),"LABEL","test1-label"));
 
-                EXERCISE("Checking UUID",'checkFilesystemParameter(getFilerMountedFrom(\'/tmp/test\'),"UUID","7080795d-0c0c-422c-b268-3bead2208fce")');
-                printS("Checking UUID is 7080795d-0c0c-422c-b268-3bead2208fce: ","$L");
-                Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/tmp/test'),"UUID","7080795d-0c0c-422c-b268-3bead2208fce"));
+		EXERCISE("Checking UUID",'checkFilesystemParameter(getFilerMountedFrom(\'/tmp/test\'),"UUID","7080795d-0c0c-422c-b268-3bead2208fce")');
+		printS("Checking UUID is 7080795d-0c0c-422c-b268-3bead2208fce: ","$L");
+		Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/tmp/test'),"UUID","7080795d-0c0c-422c-b268-3bead2208fce"));
 
-                EXERCISE("Checking if the mounted disk is mounted with UUID",'checkMountedWithUUID("/tmp/test")');
-                printS("Checking if mounted with UUID: ","$L");
-                Framework::grade(checkMountedWithUUID("/tmp/test"));
+		EXERCISE("Checking if the mounted disk is mounted with UUID",'checkMountedWithUUID("/tmp/test")');
+		printS("Checking if mounted with UUID: ","$L");
+		Framework::grade(checkMountedWithUUID("/tmp/test"));
 
-                EXERCISE("Checking if the mounted disk is mounted with LABEL",'checkMountedWithLABEL("/tmp/test)"');
-                printS("Checking if mounted with LABEL: ","$L");
-                Framework::grade(checkMountedWithLABEL("/tmp/test"));
+		EXERCISE("Checking if the mounted disk is mounted with LABEL",'checkMountedWithLABEL("/tmp/test)"');
+		printS("Checking if mounted with LABEL: ","$L");
+		Framework::grade(checkMountedWithLABEL("/tmp/test"));
 
 		EXERCISE("Checking mount options",'checkMountOptions("/tmp/test","rw,acl")');
-                printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");
-                Framework::grade(checkMountOptions("/tmp/test","rw,acl"));
+		printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");
+		Framework::grade(checkMountOptions("/tmp/test","rw,acl"));
 
-
-MMODULE("OTHER FILESYSTEM (Disk.pm)");
+	MMODULE("OTHER FILESYSTEM (Disk.pm)");
 
 		EXERCISE("Checking if the two given files are the same",'fileEqual("/etc/passwd","/etc/passwd.old")');
 		printS("Checking if /etc/passwd equals /etcpasswd.old: ","$L");
 		Framework::grade(fileEqual("/etc/passwd","/etc/passwd.old"));
 
 		EXERCISE("Check the owner of the given file",'checkOwner("/tmp/test","tihamer")');
-       		printS("The owner of /tmp/test is tihamer","$L");
-	        Framework::grade(checkOwner("/tmp/test","tihamer"));
+		printS("The owner of /tmp/test is tihamer","$L");
+		Framework::grade(checkOwner("/tmp/test","tihamer"));
 
 		EXERCISE("Check the type of the given file",'checkType("/tmp/testdir","directory")');
-	        printS("Directory /tmp/testdir exist and it's a directory","$L");
-        	Framework::grade(checkType("/tmp/testdir","directory"));
-	
-                EXERCISE("Check the type of the given file",'checkType("/tmp/testfile","regular file")');
-                printS("File /tmp/testfile exist and its type is file","$L");
-                Framework::grade(checkType("/tmp/testfile","regular file"));
+		printS("Directory /tmp/testdir exist and it's a directory","$L");
+		Framework::grade(checkType("/tmp/testdir","directory"));
 
-                EXERCISE("Check the type of the given file",'checkType("/tmp/testsymlink","symbolic link")');
-                printS("File /tmo/testsymlink exist and it's a symbolic link","$L");
-                Framework::grade(checkType("/tmp/testsymlink","symbolic link"));
+		EXERCISE("Check the type of the given file",'checkType("/tmp/testfile","regular file")');
+		printS("File /tmp/testfile exist and its type is file","$L");
+		Framework::grade(checkType("/tmp/testfile","regular file"));
+
+		EXERCISE("Check the type of the given file",'checkType("/tmp/testsymlink","symbolic link")');
+		printS("File /tmo/testsymlink exist and it's a symbolic link","$L");
+		Framework::grade(checkType("/tmp/testsymlink","symbolic link"));
 
 		EXERCISE("Check symlink and the target of it",'checkSymlink("/tmp/testfile","/tmp/testsymlink")');
 		printS("Check /tmp/testsymlink exist and its target is /tmp/testfile","$L");		
 		Framework::grade(checkSymlink("/tmp/testfile","/tmp/testsymlink"));
-		
+
 		EXERCISE("Check SWAP size","checkSwapSize(\"561\",\"5\")");
-                printS("Checking swap size increased with 50M: ","$L");
-                Framework::grade(checkSwapSize("561","5"));
+		printS("Checking swap size increased with 50M: ","$L");
+		Framework::grade(checkSwapSize("561","5"));
 
 
-		#Recreate Disk
+#Recreate Disk
 #		print "\n\nRecreate vdb disk...\n\n";
-		
+
 #		RecreateVDisk("vdb","300","vdb");
 
 #		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","1","+30M","lvm"');					
@@ -259,31 +262,158 @@ MMODULE("OTHER FILESYSTEM (Disk.pm)");
 #	        CreatePartition("/dev/vdb","2","+50M","swap");
 
 #		EXERCISE("Create a primary partition",'CreatePartition("/dev/vdb","3","+25M","linux")');
- #       	CreatePartition("/dev/vdb","3","+25M","linux");
+#       	CreatePartition("/dev/vdb","3","+25M","linux");
 
 #               EXERCISE("",'');
 #               printS("","$L");
 #               Framework::grade();
+
+
+		}
+
+
+
+		if ("UserGroup" ~~ @ALTS_MODULES)
+		{
+		MODULE("UserGroup.pm Module");
+
+		MMODULE("Users and Groups (UserGroup.pm)");
+
+		EXERCISE("Checking if user exist",'userExist("mary")');
+		printS("Checking User mary exist:","$L");
+		Framework::grade(userExist("mary"));
+
+                EXERCISE("Checking if group exist",'groupExist("mary")');
+                printS("Checking Group mary exist:","$L");
+                Framework::grade(groupExist("mary"));
+
+		#       UID - User ID
+		#       GID - Primary Group ID
+		#       DESC - Description of the user
+		#       HOME - Home of the user
+		#       SHELL - Shell of the user
+		#
+        	
+                EXERCISE("Checking Users UID",'checkUserAttribute("mary","UID","5556")');
+		printS("Mary's UID is 5556: ","$L");
+	       	Framework::grade(UserGroup::checkUserAttribute("mary","UID","5556"));
+
+                EXERCISE("Checking Users primary group  withGID",'checkUserAttribute("mary","GID","5556")');
+                printS("Mary's GID is 5556: ","$L");
+                Framework::grade(UserGroup::checkUserAttribute("mary","GID","5556"));
+
+                EXERCISE("Checking Users description",'checkUserAttribute("mary","DESC","This is Mary")');
+                printS("Mary's desription is 'This is Mary': ","$L");
+                Framework::grade(UserGroup::checkUserAttribute("mary","DESC","This is Mary"));
+
+                EXERCISE("Checking Users home directory",'checkUserAttribute("mary","HOME","/home/mary")');
+                printS("Mary's home directory is /home/mary:","$L");
+                Framework::grade(UserGroup::checkUserAttribute("mary","HOME","/home/mary"));
+
+                EXERCISE("Checking Users default shell",'checkUserAttribute("mary","SHELL","/bin/bash")');
+                printS("Mary's default shell is /bin/bash:","$L");
+                Framework::grade(UserGroup::checkUserAttribute("mary","HOME","/home/mary"));
+
+
+
+		EXERCISE("Checking users password",'checkUserPassword("mary","kuka002")');
+	        printS("Mary's password is kuka002:","$L");
+        	Framework::grade(checkUserPassword("mary","kuka002"));
+        				
+		EXERCISE("Checking groups name and ID:",'checkGroupNameAndID("tadmins","885")');
+        	printS("Group tadmins with GID 885","$L");
+        	Framework::grade(checkGroupNameAndID("tadmins","885"));
+	
+		EXERCISE("Checking primary group of the user:",'checkUserPrimaryGroup("john","tadmins")');
+		printS("John's primary group is tadmins","$L");
+		Framework::grade(checkUserPrimaryGroup("john","tadmins"));
+
+                EXERCISE("Checking secondary group of the user:",'checkUserSecondaryGroupMembership("john","ftp")');
+                printS("John's secondary group is ftp","$L");
+                Framework::grade(checkUserSecondaryGroupMembership("john","ftp"));
+
+		EXERCISE("Checking user password is locked",'checkUserLocked(tihamer)');			
+		printS("Tihamer is locked","$L");
+		Framework::grade("checkUserLocked(tihamer)");
+
+		EXERCISE("Checking user has no shell access:",'checkUserHasNoShellAccess("thomas")');		
+	        printS("Thomas should not have access to any shell:","$L");
+	        Framework::grade(UserGroup::checkUserHasNoShellAccess("thomas"));
+
+	MMODULE("Crontab (UserGroup.pm)");
+
+
+		EXERCISE("Checking users crontab is denied",'UserGroup::checkUserCrontabDenied("william")');
+	        printS("william's crontab is denied","$L");
+        	Framework::grade(UserGroup::checkUserCrontabDenied("william"));
+
+		EXERCISE("Checking users crontab entries",'checkUserCrontab("tihamer","25","5","*","*","*","/bin/echo \'crontab exam test\'")');
+	        printS("tihamer run \"/bin/echo 'crontab exam test'\" every day at 5:25","$L");
+	        Framework::grade(checkUserCrontab("tihamer","25","5","*","*","*","/bin/echo 'crontab exam test'"));
 		
 
-	}
+#               EXERCISE("",'');
+#               printS("","$L");
+#               Framework::grade();
+#
+#        printS("Group tadmins with GID 885","$L");
+#        Framework::grade(checkGroupNameAndID("tadmins","885"));
+
+#        printS("John's UID is 2342:","$L");
+#        Framework::grade(UserGroup::checkUserAttribute("john","UID","2342"));
+
+#        printS("john's home directory is /home/john:","$L");
+#        Framework::grade(UserGroup::checkUserAttribute("john","HOME","/home/john"));
+
+#        printS("Mary's UID is 5556","$L");
+#       Framework::grade(UserGroup::checkUserAttribute("mary","UID","5556"));
+
+#        printS("Mary's default shell is /bin/bash:","$L");
+#        Framework::grade(UserGroup::checkUserAttribute("mary","SHELL","/bin/bash"));
+
+#        printS("Thomas should not have access to any shell:","$L");
+#        Framework::grade(UserGroup::checkUserHasNoShellAccess("thomas"));
+
+#        printS("User john is in Group tadmins:","$L");
+#        Framework::grade(checkUserGroupMembership("john","tadmins"));
+
+#        printS("User mary is in Group tadmins:","$L");
+#        Framework::grade(checkUserGroupMembership("mary","tadmins"));
+
+#        printS("User thomas isn't in Group tadmins:","$L");
+#        Framework::grade(!(checkUserGroupMembership("thomas","tadmins")));
+
+#        printS("John's password is kuka002","$L");
+#        Framework::grade(checkUserPassword("john","kuka002"));
+
+#        printS("Mary's password is kuka002","$L");
+#        Framework::grade(checkUserPassword("mary","kuka002"));
+
+#        printS("Thomas's password is kuka002","$L");
+#        Framework::grade(checkUserPassword("thomas","kuka002"));
+
+#        printS("john's account will expire on 2025-12-12","$L");
+#        Framework::grade(checkUserChageAttribute("john","EXPIRE_DATE","2025-12-12"));
+
+		}
 
 
 
-	print "\n"."="x$L."=========\n";
-	print "\n\tNumber of exercises: \t$exercise_number\n";
-	print "\n\tSuccessful: \t\t$exercise_success\n";
-	if ($exercise_number == $exercise_success) {
-		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","$result_file");
-		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset' and exit 0;;
+
+print "\n"."="x$L."=========\n";
+print "\n\tNumber of exercises: \t$exercise_number\n";
+print "\n\tSuccessful: \t\t$exercise_success\n";
+if ($exercise_number == $exercise_success) {
+	cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","$result_file");
+	print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset' and exit 0;;
 #Running post
-		&post();
-	}
-	else
-	{
-		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","$result_file");
-		print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
-	}
+	&post();
+}
+else
+{
+	cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","$result_file");
+	print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
+}
 }
 
 sub pre() {

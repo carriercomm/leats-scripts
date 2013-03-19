@@ -234,6 +234,7 @@ sub checkUserPrimaryGroup($$)
 {
 	my $User = $_[0];
 	my $Group = $_[1];
+
  	if (userExist($User) != 0 ) { return 1;  }
 	if ($Group eq getGroupName(UserGroup::getUserAttribute("$User","GID"))) { return 0; }
 	else {	return 1; }
@@ -269,10 +270,12 @@ if (userExist($User) != 0 ) { return 1;  }
 
 my $ssh=Framework::ssh_connect;
 my $output=$ssh->capture("cat /etc/cron.allow 2>/dev/null");
-if ($output =~ m/^$User$/) { return 1; }
+my @USER_ALLOW=split("\n","$output");
+if ($User ~~ @USER_ALLOW) { return 1; }
 
 my $output=$ssh->capture("cat /etc/cron.deny 2>/dev/null");
-if ($output =~ m/^$User$/) { return 0; }
+my @USER_DENY=split("\n","$output");
+if ($User ~~ @USER_DENY) { return 0; }
 else { return 1; }
 }
 
