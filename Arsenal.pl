@@ -42,7 +42,8 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 
 #our @ALTS_MODULES=("Disk");
-our @ALTS_MODULES=("UserGroup");
+#our @ALTS_MODULES=("UserGroup");
+our @ALTS_MODULES=("UserGroup","Disk");
 
 
 #use Sys::Virt;
