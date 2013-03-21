@@ -21,7 +21,7 @@
 our $author='Krisztian Banhidy <krisztian@banhidy.hu>
 Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.7";
-our $topic="Logical Volume Management";
+our $topic="03-lvm";
 our $problem="1";
 our $description="Create a volume group named testVG with 4M physical extent size and 120M maximal size
 Create a Logical Volume for Volume Group testVG named testLV1 with 10 PE size\n";

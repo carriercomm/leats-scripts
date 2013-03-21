@@ -41,8 +41,9 @@ my $Password = $R[1];
 #print "\nSTUDENT= $Student\n";
 #print "Password= $Password\n";
 
-if ($Student ne "$USER") {
-print "\n\n<br/><br/>The student, who is logged ($USER) in is not equals with the owner of the result ($Student).<br/><br/>Please login with command ALTSLogin!\n" and exit 1;
+if (($Student ne "$USER") || ( $Password ne $PW )) {
+print "\n\n<br/><br/>The student, who is logged ($USER) in is not equals with the owner of the result ($Student).<br/>Or is it possible that the ALTS password isn't correct!<br/><br/>Please login with command ALTSLogin!\n"; 
+exit 1;
 }
 
 #<DATE>2013/03/21 12:18:13</DATE><TOPIC>Users and groups</TOPIC><PROBLEM>1</PROBLEM><DESCRIPTION>- create the following users: john, mary and thomas
@@ -84,8 +85,15 @@ $FN =~ s/<br\/>/\n/g;
 my @T = $FN =~ m/<TASK>(.*)<\/TASK>/g;
 
 
-print "<table><tr><td>$Student</td></tr><tr><td>$Topic $Problem</td></tr><tr><td>$Date</td></tr></tr></table><br/><br/>";
+print "<table>
+<tr><td>$Student</td></tr>
+<tr><td>$Topic $Problem</td></tr>
+<tr><td>$Date</td></tr></tr>
+</table><br/><br/>";
+
+
 print "<table><tr><td>$Description</td></tr></table><br/><br/>";
+
 print '<table border="1"><tr><th>Task</th><th>Result</th></tr>';
 
 foreach my $Task (@T)

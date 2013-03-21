@@ -21,7 +21,7 @@
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
-our $topic="Crontab";
+our $topic="19-crontab";
 our $problem="1";
 our $description="- User william's crontab has to be denied
 - User john has to run \"/bin/echo 'crontab exam test'\" every day at 5:25

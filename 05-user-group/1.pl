@@ -21,7 +21,7 @@
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
-our $topic="Users and groups";
+our $topic="05-user-group";
 our $problem="1";
 our $description="- create the following users: john, mary and thomas
 - create a group named tadmins with GID 885

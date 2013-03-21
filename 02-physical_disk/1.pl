@@ -22,7 +22,7 @@ our $author='Krisztian Banhidy <krisztian@banhidy.hu>
 Richard Gruber <gruberrichard@gmail.com>';
 #our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.5";
-our $topic="Physical disk management";
+our $topic="02-physical_disk";
 our $problem="1";
 our $description="Additional disk has been added to your server. Initialize it, 
 create a 100 MB (+-10%) ext3 partition on it and persistently mount it on /mnt/das.

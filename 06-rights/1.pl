@@ -21,7 +21,7 @@
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.2";
-our $topic="Rights";
+our $topic="06-rights";
 our $problem="1";
 our $description="Make sure that the following settings are set up
 - Copy /etc/issue to /tmp as test

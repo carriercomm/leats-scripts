@@ -18,6 +18,7 @@ print '
 
 system("/var/www/cgi-bin/Result-1");
 
+system("/var/www/cgi-bin/02-physical_disk-1-grade 1>/dev/null 2>&1");
 
 print "</body>
 </html>\n";
