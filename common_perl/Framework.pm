@@ -319,7 +319,7 @@ sub grade($;$$$$$) {
 		${exercise_number}++;
 		${exercise_success}++;
 		my $T=$topic; $T =~ s/\s//g;
-		cryptText2File("<RESULT>[ PASS ]</RESULT>","/ALTS/RESULTS/${T}-${problem}");
+		cryptText2File("<RESULT>[ PASS ]</RESULT></TASK>\n","$result_file");
 	} else {
 		print " [ ";
 		print color 'bold red';
@@ -328,7 +328,7 @@ sub grade($;$$$$$) {
 		print " ]\n";
 		$exercise_number++;
 		my $T=$topic; $T =~ s/\s//g;
-		cryptText2File("<RESULT>[ Fail ]</RESULT>","/ALTS/RESULTS/${T}-${problem}");
+		cryptText2File("<RESULT>[ Fail ]</RESULT></TASK>\n","$result_file");
 	}
 }
 
@@ -346,7 +346,7 @@ sub printS ($;$)
 	print "$Text"." "x${E};
 
 	my $T=$topic; $T =~ s/\s//g;
-	cryptText2File("<TASK>$Text</TASK>","/ALTS/RESULTS/${T}-${problem}");
+	cryptText2File("<TASK><TASKDESC>$Text</TASKDESC>","$result_file");
 }
 
 sub useage() {
