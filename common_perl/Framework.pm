@@ -206,10 +206,10 @@ sub timedconTo(;$$$) {
 }
 
 
-sub cryptText($)
+sub cryptText($;$)
 {
 	my $Data=$_[0];
-	my $File=$_[1];
+	my $Key=$_[1] ||= $key; #If you don't use the deafult
 
 	my $EData = &encrypt ($Data, $key);
 
@@ -221,9 +221,10 @@ sub cryptText($)
 	return $EData;
 }
 
-sub decryptText($)
+sub decryptText($;$)
 {
 	my $EData=$_[0];
+	my $Key=$_[1] ||= $key; #If you don't use the deafult
 
 	$EData =~ s/|/\n/g;
 

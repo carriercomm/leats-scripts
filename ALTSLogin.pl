@@ -1,12 +1,15 @@
 #!/usr/bin/perl
 
 use lib '/scripts/common_perl/';
-use Framework qw(&cryptText2File &decryptFile $student_file);
+use Framework qw(&cryptText2File &decryptText &decryptFile $student_file);
 
 use Term::ReadKey;
 use Term::ANSIColor;
 
-my $fn; open($fn,">","/ALTS/User.alts"); print $fn ""; close($fn);
+#### If you want to let TestMode, then $TestModePossible=0;
+my $TestModePossible=0;
+
+my $fn; open($fn,">","$student_file"); print $fn ""; close($fn);
 
 my $UserName = "";
 while ($UserName eq "")
@@ -32,20 +35,51 @@ my $PASS2= <STDIN>;
 chomp($PASS2);
 ReadMode('restore');
 
+my $EXERCISE;
+
 if ($PASS1 ne $PASS2) {
-		print color 'bold red' and print "\n\n\n\tThe passwords are not the same. Please try it again!\n\n\n\t\t\tLogin Failed!\n\n\n"  and print color 'reset' and exit 1;		
+	print color 'bold red';
+ 	print "\n\n\n\t\tThe passwords are not the same.\n\n\n\t\t\tLogin Failed!\n\n\n";
+	print color 'reset';
+	exit 1;		
 }
 else {
-	cryptText2File("<STUDENT>$UserName</STUDENT><ALTSPASSWORD>$PASS1</ALTSPASSWORD>","$student_file");
+
+	print "\n\nExercise code: ";
+
+	if (($PASS1 eq "test")&&($TestModePossible==0)) { 
+		$EXERCISE="TEST"; 
+		print color "yellow"; 
+		print "TEST\n\nTEST Mode activated\n\n"; 
+		print color 'reset'; }
+	else{
+		my $EXERCISE_CODE= <STDIN>;
+		chomp($EXERCISE_CODE);
+		$EXERCISE=decryptText("$EXERCISE_CODE","${$UserName}${$PASS1}");
+#		print "\n\nEXERCISE= $EXERCISE_CODE || $EXERCISE\n\n";
+		if ($EXERCISE!~m/\d+/) {
+			print color 'bold red' and print "\n\n\n\tThe password or the exercise code isn't correct.\n\n\n\t\t\tLogin Failed!\n\n\n";
+			print color 'reset'; 
+			exit 1;	
+		}
+	}
+
+	cryptText2File("<STUDENT>$UserName</STUDENT><ALTSPASSWORD>$PASS1</ALTSPASSWORD><EXERCISE>$EXERCISE</EXERCISE>","$student_file");
 	my $F=decryptFile("$student_file");
-	if ($F =~ m/<STUDENT>$UserName<\/STUDENT><ALTSPASSWORD>$PASS1<\/ALTSPASSWORD>/)
-{
-	print color 'bold green' and print "\n\n\t\t\tLogin Successful!\n\n\n"  and print color 'reset' and exit 0;
-}
-else
-{
-print color 'bold red' and print "\n\n\n\t\t\tLogin Failed!\n\n\n"  and print color 'reset' and exit 1;
-}
+	if ($F =~ m/<STUDENT>$UserName<\/STUDENT><ALTSPASSWORD>$PASS1<\/ALTSPASSWORD><EXERCISE>$EXERCISE<\/EXERCISE>/)
+	{
+		print color 'bold green';
+		print "\n\n\t\t\tLogin Successful!\n\n\n"; 
+		print color 'reset';
+		exit 0;
+	}
+	else
+	{
+		print color 'bold red';
+		print "\n\n\n\t\t\tLogin Failed!\n\n\n";
+		print color 'reset';
+		exit 1;
+	}
 }
 
 
