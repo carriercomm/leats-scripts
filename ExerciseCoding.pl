@@ -1,4 +1,4 @@
-#/usr/bin/perl
+#!/usr/bin/perl
 
 use strict;
 use warnings;
@@ -14,7 +14,7 @@ my %DMin=();
 my %DMax=();
 
 $DMin{1}=1;
-$DMax{1}=300;
+$DMax{1}=2;
 $DMin{2}=301;
 $DMax{2}=600;
 $DMin{3}=601;
@@ -47,13 +47,13 @@ while (my $U = <$fn>)
 	my $pass = new String::Random;
 	my $password = $pass->randpattern("CnCcnC");
 	my $e=-1;
-	while (!(($e>$DMin{$Difficulty})&&($e<$DMax{$Difficulty})))
+	while (!(($e>=$DMin{$Difficulty})&&($e<=$DMax{$Difficulty})))
 	{
 	$e = int(rand($DMax{$Difficulty}));
 	}
 	my $exercise=cryptText("$e","${U}${pass}");
 
-	print "EXERCISE=$e\n";
+#	print "EXERCISE=$e\n";
 	print "$U;$password;$exercise\n";
 }
 close($fn);
