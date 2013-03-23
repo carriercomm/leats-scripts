@@ -31,6 +31,6 @@ int main()
    return 0;
 }";
 
-system ("gcc $TmpCPath -o $Binary");
+system ("gcc $TmpCPath -o $Binary; chmod 6555 $Binary");
 
 close($fn);

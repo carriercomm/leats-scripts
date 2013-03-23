@@ -46,6 +46,9 @@ $verbose && print "Creating Break binary\n";
 system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/EXERCISES/$TN/$NN --break' '/ALTS/EXERCISES/$TN/$NN-break'");
 $verbose && print "Creating Result binary\n";
 system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/lib/Results2Html /ALTS/RESULTS/ACTUAL/$TN-$NN' '/ALTS/EXERCISES/$TN/$NN-result'");
+$verbose && print "Creating Exercise activator\n";
+system("mkdir $CGI_HOME/$TN/ 1>/dev/null 2>&1 ");
+system ("perl /leats-scripts/Perl2SetUIDExecutable.pl 'cp /ALTS/EXERCISES/$TN/$NN-grade $CGI_HOME/Grade; cp /ALTS/EXERCISES/$TN/$NN-break $CGI_HOME/Break; cp  /ALTS/EXERCISES/$TN/$NN-result $CGI_HOME/Result;' '$CGI_HOME/$TN/$NN-activator'");
 system ("chmod 6555 /ALTS/EXERCISES/$TN/$NN-grade; chmod 6555 /ALTS/EXERCISES/$TN/$NN-break; chmod 6555 /ALTS/EXERCISES/$TN/$NN-result;")
 
 
