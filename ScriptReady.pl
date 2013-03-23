@@ -7,6 +7,7 @@ use Framework qw(&cryptText2File &decryptFile &getStudent);
 use strict;
 use warnings;
 
+my $verbose=1;
 
 my $CGI_HOME="/var/www/cgi-bin";
 my $ALTS_HOME="/leats-scripts";
@@ -21,11 +22,7 @@ if ((scalar @ARGV) < 1)
         die;
 }
 
-my $student=Framework::getStudent();
-
-print "Student= $student\n\n";
-
-print "$ARGV[0] will be transformed...\n";
+$verbose && print "$ARGV[0] will be transformed...\n";
 
 my $file =`readlink -f $ARGV[0]`;
 
@@ -38,18 +35,29 @@ my $NN=$D[1];
 
 #print "Directory =$D[0]  | Topic number. $TN $NN\n\n";
 
-#Create the binary
-system ("pp -o $CGI_HOME/${TN}-$NN $file");
+$verbose && print "Creating directory /ALTS/EXERCISES/$TN\n";
+system("mkdir -p /ALTS/EXERCISES/$TN; chmod 700 /ALTS/EXERCISES/$TN");
+#Create the binaries
+$verbose && print "Creating binary /ALTS/EXERCISES/$TN/$NN\n";
+system ("pp -o /ALTS/EXERCISES/$TN/$NN $file");
+$verbose && print "Creating Grade binary\n";
+system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/EXERCISES/$TN/$NN --grade' '/ALTS/EXERCISES/$TN/$NN-grade'");
+$verbose && print "Creating Break binary\n";
+system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/EXERCISES/$TN/$NN --break' '/ALTS/EXERCISES/$TN/$NN-break'");
+$verbose && print "Creating Result binary\n";
+system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/lib/Results2Html /ALTS/RESULTS/ACTUAL/$TN-$NN' '/ALTS/EXERCISES/$TN/$NN-result'");
+system ("chmod 6555 /ALTS/EXERCISES/$TN/$NN-grade; chmod 6555 /ALTS/EXERCISES/$TN/$NN-break; chmod 6555 /ALTS/EXERCISES/$TN/$NN-result;")
+
 
 #Create the SETIUID binary for CGI
-print "Creating $CGI_HOME/${TN}-$NN-grade..\n";
-system ("perl $ALTS_HOME/Perl2SetUIDExecutable.pl '$CGI_HOME/${TN}-$NN --grade' $CGI_HOME/${TN}-$NN-grade");
-system("chmod 4555 $CGI_HOME/${TN}-$NN-grade");
+#print "Creating $CGI_HOME/${TN}-$NN-grade..\n";
+#system ("perl $ALTS_HOME/Perl2SetUIDExecutable.pl '$CGI_HOME/${TN}-$NN --grade' $CGI_HOME/${TN}-$NN-grade");
+#system("chmod 4555 $CGI_HOME/${TN}-$NN-grade");
 
 #Create the SETIUID binary for CGI
-print "Creating $CGI_HOME/${TN}-$NN-break..\n";
-system ("perl $ALTS_HOME/Perl2SetUIDExecutable.pl '$CGI_HOME/${TN}-$NN --break' $CGI_HOME/${TN}-$NN-break");
-system("chmod 4555 $CGI_HOME/${TN}-$NN-break");
+#print "Creating $CGI_HOME/${TN}-$NN-break..\n";
+#system ("perl $ALTS_HOME/Perl2SetUIDExecutable.pl '$CGI_HOME/${TN}-$NN --break' $CGI_HOME/${TN}-$NN-break");
+#system("chmod 4555 $CGI_HOME/${TN}-$NN-break");
 
 
 #Create the SETIUID binary for CGI
