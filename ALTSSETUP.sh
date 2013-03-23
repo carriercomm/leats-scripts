@@ -15,6 +15,10 @@ mkdir -p /ALTS/RESULTS
 chmod 700 /ALTS/RESULTS
 echo -en ".";
 
+mkdir -p /ALTS/EXERCISES
+chmod 700 /ALTS/EXERCISES
+echo -en ".";
+
 mkdir -p /ALTS/lib/
 chmod 755 /ALTS/lib
 echo -en ".";

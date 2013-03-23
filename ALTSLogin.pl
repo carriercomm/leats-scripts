@@ -41,7 +41,7 @@ my $EXERCISE;
 
 if ($PASS1 ne $PASS2) {
 	print color 'bold red';
- 	print "\n\n\n\t\tThe passwords are not the same.\n\n\n\t\t\tLogin Failed!\n\n\n";
+	print "\n\n\n\t\tThe passwords are not the same.\n\n\n\t\t\tLogin Failed!\n\n\n";
 	print color 'reset';
 	exit 1;		
 }
@@ -70,16 +70,25 @@ else {
 	my $F=decryptFile("$student_file");
 	if ($F =~ m/<STUDENT>$UserName<\/STUDENT><ALTSPASSWORD>$PASS1<\/ALTSPASSWORD><EXERCISE>$EXERCISE<\/EXERCISE>/)
 	{
-		#/ALTS/RESULTS/rigruber-EXAM-1
-		system("/ALTS/lib/Perl2SetUIDExecutable '/ALTS/lib/Results2Html /ALTS/RESULTS/$UserName-EXAM-$EXERCISE' '$CGI_HOME/Result';");
-		system("chmod +s $CGI_HOME/Result");
-		system("/ALTS/lib/Perl2SetUIDExecutable '/ALTS/EXAM/$EXERCISE --grade' '$CGI_HOME/Grade'");
-		system("chmod +s $CGI_HOME/Grade");
-		system("/ALTS/lib/Perl2SetUIDExecutable '/ALTS/EXAM/$EXERCISE --break' '$CGI_HOME/Break'");
-		system("chmod +s $CGI_HOME/Break");
-		system("ln -s $CGI_HOME/Grade /ALTS/Grade");
-		system("ln -s $CGI_HOME/Break /ALTS/Break");
-
+		system("mkdir -p /ALTS/RESULTS/$UserName; chmod 700 /ALTS/RESULTS/$UserName");
+		system("unlink /ALTS/RESULTS/ACTUAL 1>/dev/null 2>&1; ln -s /ALTS/RESULTS/$UserName /ALTS/RESULTS/ACTUAL");
+		system("unlink /ALTS/Grade 1>/dev/null 2>&1; unlink /ALTS/Break 1>/dev/null 2>&1");		
+		if ($EXERCISE ne "TEST")
+		{		
+			system("/ALTS/lib/Perl2SetUIDExecutable '/ALTS/lib/Results2Html /ALTS/RESULTS/ACTUAL/EXAM-$EXERCISE' '$CGI_HOME/Result';");
+			system("chmod +s $CGI_HOME/Result");
+			system("/ALTS/lib/Perl2SetUIDExecutable '/ALTS/EXAM/$EXERCISE --grade' '$CGI_HOME/Grade'");
+			system("chmod +s $CGI_HOME/Grade");
+			system("/ALTS/lib/Perl2SetUIDExecutable '/ALTS/EXAM/$EXERCISE --break' '$CGI_HOME/Break'");
+			system("chmod +s $CGI_HOME/Break");
+			system("unlink /ALTS/Grade 1>/dev/null 2>&1; ln -s $CGI_HOME/Grade /ALTS/Grade");
+			system("unlink /ALTS/Break 1>/dev/null 2>&1; ln -s $CGI_HOME/Break /ALTS/Break");
+			system("chmod 700 /ALTS/EXERCISES");
+		}
+		else
+		{		
+			system("chmod 755 /ALTS/EXERCISES");
+		}	
 		print color 'bold green';
 		print "\n\n\t\t\tLogin Successful!\n\n\n"; 
 		print color 'reset';
