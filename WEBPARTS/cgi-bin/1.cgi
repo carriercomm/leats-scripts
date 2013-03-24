@@ -106,20 +106,36 @@ my $PW = $A[1];
 ###########################################################
 ##### STUDENT AND EXERCISE INFOS ###########################
 
-my $FN=decryptFile("$result_file");
+
+        my $Date = "---";
+
+	my @W = $result_file =~ m/\/ALTS\/RESULTS\/ACTUAL\/(.+)-(\d+)/sg;
+
+        my $Problem = "$W[1]";
+        my $Topic = "$W[0]";
+        my $Description="\n\n$USER hasn't done this exercise yet!\n\n";
+        my $Tasknumber="--";
+        my $Tasksuccessful="-";
+	my $Finalresult="-";
+	my @T=();
+
+
+if (-f $result_file) { 
+
+	my $FN=decryptFile("$result_file");
 
 #print "RESULT=\n\n$FN\n\n";
 
-my @R = $FN =~ m/<STUDENT>(.*)<\/STUDENT><ALTSPASSWORD>(.*)<\/ALTSPASSWORD>/;
-my $Student = $R[0];
-my $Password = $R[1];
+	my @R = $FN =~ m/<STUDENT>(.*)<\/STUDENT><ALTSPASSWORD>(.*)<\/ALTSPASSWORD>/;
+	my $Student = $R[0];
+	my $Password = $R[1];
 #print "\nSTUDENT= $Student\n";
 #print "Password= $Password\n";
 
-if (($Student ne "$USER") || ( $Password ne $PW )) {
-print "\n\n<br/><br/>The student, who is logged ($USER) in is not equals with the owner of the result ($Student).<br/>Or is it possible that the ALTS password is incorrect!<br/><br/>Please login with command ALTSLogin!\n";
-exit 1;
-}
+	if (($Student ne "$USER") || ( $Password ne $PW )) {
+		print "\n\n<br/><br/>The student, who is logged ($USER) in is not equals with the owner of the result ($Student).<br/>Or is it possible that the ALTS password is incorrect!<br/><br/>Please login with command ALTSLogin!\n";
+		exit 1;
+	}
 
 #<DATE>2013/03/21 12:18:13</DATE><TOPIC>Users and groups</TOPIC><PROBLEM>1</PROBLEM><DESCRIPTION>- create the following users: john, mary and thomas
 #- create a group named tadmins with GID 885
@@ -132,31 +148,31 @@ exit 1;
 #- john's account will expire on 2025-12-12</DESCRIPTION>
 
 
-my @D = $FN =~ m/<DATE>(.*)<\/DATE>/;
-my $Date = $D[0];
+	my @D = $FN =~ m/<DATE>(.*)<\/DATE>/;
+	$Date = $D[0];
 
-my @P = $FN =~ m/<PROBLEM>(.*)<\/PROBLEM>/;
-my $Problem = $P[0];
+	my @P = $FN =~ m/<PROBLEM>(.*)<\/PROBLEM>/;
+	$Problem = $P[0];
 
-my @TP = $FN =~ m/<TOPIC>(.*)<\/TOPIC>/;
-my $Topic = $TP[0];
+	my @TP = $FN =~ m/<TOPIC>(.*)<\/TOPIC>/;
+	$Topic = $TP[0];
 
-my @DES = $FN =~ m/<DESCRIPTION>(.*)<\/DESCRIPTION>/s;
+	my @DES = $FN =~ m/<DESCRIPTION>(.*)<\/DESCRIPTION>/s;
 
-my $Description=$DES[0];
-$Description =~ s/\n/<\/p><p>/g;
-$Description="<p>$Description";
+	$Description=$DES[0];
+	$Description =~ s/\n/<\/p><p>/g;
+	$Description="<p>$Description";
 
-my @T = $FN =~ m/<TASK>(.*)<\/TASK>/g;
+	@T = $FN =~ m/<TASK>(.*)<\/TASK>/g;
 
 #<TASKNUMBER>17</TASKNUMBER><TASKSUCCESSFUL>5</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT>
 
-my @RES = $FN =~ m/<TASKNUMBER>(.*)<\/TASKNUMBER><TASKSUCCESSFUL>(.*)<\/TASKSUCCESSFUL><FINALRESULT>(.*)<\/FINALRESULT>/;
+	my @RES = $FN =~ m/<TASKNUMBER>(.*)<\/TASKNUMBER><TASKSUCCESSFUL>(.*)<\/TASKSUCCESSFUL><FINALRESULT>(.*)<\/FINALRESULT>/;
 
-my $Tasknumber=$RES[0];
-my $Tasksuccessful=$RES[1];
-my $Finalresult=$RES[2];
-
+	$Tasknumber=$RES[0];
+	$Tasksuccessful=$RES[1];
+	$Finalresult=$RES[2];
+}
 
 ###############################################################################
 
@@ -196,7 +212,7 @@ print "
 </tbody>
 </table></th>";
 
-if ($Tasksuccessful == $Tasknumber) 
+if ($Tasksuccessful eq $Tasknumber) 
 {
 	print "    <th width=\"286\"><img src=\"http://1.1.1.1/ALTSicons/EXAMPASSED.jpg\" alt=\"PASSED\" height=\"106\" width=\"184\"></th>";	
 }
@@ -244,6 +260,8 @@ print"
 
 ################################################################################
 
+if (-f $result_file) {
+
 print "
 <tr><th scope=\"row\" width=\"61\"></th>
 <th scope=\"row\" width=\"56\">&nbsp;</th>
@@ -252,11 +270,10 @@ print "
 
 foreach my $Task (@T)
 {
-#print "$Task\n";
 	my @TT=$Task=~m/<TASKDESC>(.*)<\/TASKDESC><RESULT>(.*)<\/RESULT>/;
 #       print "\nTASK: $TT[0]\n";
 #       print "\nRESULT: $TT[1]\n\n";
-#	print "\n<tr><td>$TT[0]</td>";
+#       print "\n<tr><td>$TT[0]</td>";
 	print "<td class=\"MainTABLE_nonbold\">$TT[0]</td>";
 	if (($TT[1]) eq "[ PASS ]") {
 		print "<td><img src=\"http://1.1.1.1/ALTSicons/PASSED.jpg\" alt=\"OK\" height=\"34\" width=\"34\"></td>";
@@ -280,6 +297,9 @@ print "</tbody></table></th>
 </tbody></table>
 ";
 
+
+
+}
 
 #system("/var/www/cgi-bin/Result 2>&1");
 #system("/var/www/cgi-bin/02-physical_disk-1-grade");
