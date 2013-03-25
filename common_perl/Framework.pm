@@ -26,7 +26,7 @@ BEGIN {
 	use Exporter ();
 
     	@Framework::ISA         = qw(Exporter);
-    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent );
+    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile );
     	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file);
 
 }
@@ -35,6 +35,8 @@ BEGIN {
 use vars qw ($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file);
 
 $student_file="/ALTS/User.alts";
+
+my $AESKeyFile="/ALTS/SECURITY/ALTSkey";
 
 my $key = 'sdfsdds b$*LKDF D)(F IDD&P?/'; #Key for encryptions
 
@@ -213,8 +215,8 @@ sub cryptText($;$)
 
 	my $EData = &encrypt ($Data, $key);
 
-	$verbose and print "\n[CryptText] Text: $Data\n\n";
-	$verbose and print "\n[CryptText] Encrypted Text: $EData\n\n";
+#	$verbose and print "\n[CryptText] Text: $Data\n\n";
+#	$verbose and print "\n[CryptText] Encrypted Text: $EData\n\n";
 
 	$EData =~ s/\n/|/g;
 
@@ -230,8 +232,8 @@ sub decryptText($;$)
 
 	my $Data =  &decrypt ($EData, $key);
 
-	$verbose and print "[DecrypText] Encrypt Text: $EData \n";	
-	$verbose and print "\n[DecrypText] Decrypted Data: $Data\n\n";
+#	$verbose and print "[DecrypText] Encrypt Text: $EData \n";	
+#	$verbose and print "\n[DecrypText] Decrypted Data: $Data\n\n";
 
 	return $Data;
 }
@@ -266,6 +268,25 @@ sub decryptFile($)
 	close($fd);
 
 	return $EFC;
+}
+
+sub EncryptResultFile(;$)
+{
+	my $File = $_[0] |= "$result_file";
+	$verbose && print "Encrypting $File...\n";
+	if (!(-f $AESKeyFile)) { print "$AESKeyFile is unreachable!\n"; die; }
+	system("openssl aes-256-cbc -a -salt -in $File -out $File.alts.aes -pass file:$AESKeyFile");
+
+
+}
+
+sub DecryptResultFile(;$$)
+{
+	my $File = $_[0] |= "$result_file.alts.aes";
+	my $OutFile = $_[1] |= "$result_file";
+	if (!(-f $AESKeyFile)) { print "$AESKeyFile is unreachable!\n"; die; }
+	$verbose && print "Decrypting $File...\n";
+	system("openssl aes-256-cbc -d -a -in $File -out $OutFile -pass file:$AESKeyFile");
 }
 
 sub getStudent()

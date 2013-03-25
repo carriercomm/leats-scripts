@@ -44,7 +44,7 @@ use File::Basename;
 use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile);
 use UserGroup qw( &checkUserCrontabDenied &setupGroup &setupUser &delUser &delGroup &checkUserCrontab );
 ######
 ###Options
@@ -74,8 +74,9 @@ sub grade() {
 
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
-	$result_file="/ALTS/RESULTS/${T}/${problem}"; #Empty the result file
-		my $fn; open($fn,">","$result_file"); close($fn);
+	$result_file="/ALTS/RESULTS/${Student}/${T}-${problem}"; #Empty the result file
+
+	my $fn; open($fn,">","$result_file"); close($fn);
 	my $now = strftime "%Y/%m/%d %H:%M:%S", localtime;
 	$exercise_number = 0;
 	$exercise_success = 0;
@@ -111,13 +112,17 @@ sub grade() {
 	print "\n\tSuccessful: \t\t$exercise_success\n";
 	if ($exercise_number == $exercise_success) {
 		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","$result_file");
-		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset' and exit 0;
+		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset';
+		&EncryptResultFile();
 		&post();
+		exit 0;
 	}
 	else
 	{
 		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","$result_file");
-		print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset' and exit 1;
+		print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset';
+		&EncryptResultFile();
+		exit 1;
 	}
 
 

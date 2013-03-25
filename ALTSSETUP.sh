@@ -58,11 +58,15 @@ echo -en "[################   ] 85% \r";
 
 /ALTS/lib/Perl2SetUIDExecutable /ALTS/lib/ALTSLogout.pl /ALTS/ALTSLogout
 chmod 6755 /ALTS/ALTSLogout
-echo -en "[################## ] 95%\r";
+echo -en "[################# ] 90%\r";
+
+mkdir -p /ALTS/SECURITY; chmod -R 400 /ALTS/SECURITY
+
 
 unlink /ALTS/Grade 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Grade /ALTS/Grade
 unlink /ALTS/Break 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Break /ALTS/Break
 
 echo -en "[###################] 100%\r";
-echo "";
+echo "SETUP DONE.";
+echo ""
 

@@ -10,7 +10,8 @@ use Framework qw(&cryptText2File &decryptFile $student_file);
 use strict;
 use warnings;
 
-my $result_file="/ALTS/RESULTS/ACTUAL/02-physical_disk-1";
+#my $result_file="/ALTS/RESULTS/ACTUAL/02-physical_disk-1";
+my $result_file="/ALTS/RESULTS/ACTUAL/05-user-group-1";
 
 print "Content-type: text/html\n\n";
 
