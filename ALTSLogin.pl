@@ -22,20 +22,36 @@ while ($UserName eq "")
 	print "   ALTS User Login\n";
 	print "="x$L."=========\n\n";
 	print "Username:  ";
-	$UserName = <STDIN>;
-	chomp($UserName);
+	if ($ARGV[0] eq "") {
+		$UserName = <STDIN>;
+		chomp($UserName);
+	}
+	else {
+		$UserName=$ARGV[0];
+		print "$UserName\n";
+	}
 }
 print "\nPassword:  ";
-ReadMode('noecho');
-my $PASS1= <STDIN>;
-chomp($PASS1);
-ReadMode('normal');
 
-print "\nPassword again:  ";
-ReadMode('noecho');
-my $PASS2= <STDIN>;
-chomp($PASS2);
-ReadMode('restore');
+my $PASS1;
+my $PASS2;
+if ($ARGV[1] eq "") {
+	ReadMode('noecho');
+	$PASS1=<STDIN>;
+	chomp($PASS1);
+	ReadMode('normal');
+	print "\nPassword again:  ";
+	ReadMode('noecho');
+	$PASS2=$ARGV[1] |= <STDIN>;
+	chomp($PASS2);
+	ReadMode('restore');
+}
+else
+{
+	print "\nPassword again: \n";
+	$PASS1=$ARGV[1];
+	$PASS2=$ARGV[1];
+}
 
 my $EXERCISE;
 
@@ -55,8 +71,15 @@ else {
 		print "TEST\n\nTEST Mode activated\n\n"; 
 		print color 'reset'; }
 	else{
-		my $EXERCISE_CODE= <STDIN>;
-		chomp($EXERCISE_CODE);
+		my $EXERCISE_CODE;
+		if ($ARGV[2] eq "") {
+			$EXERCISE_CODE=<STDIN>;
+			chomp($EXERCISE_CODE);
+		}
+		else {
+			$EXERCISE_CODE=$ARGV[2];
+			print "$EXERCISE_CODE\n";
+		}
 		$EXERCISE=decryptText("$EXERCISE_CODE","${$UserName}${$PASS1}");
 #		print "\n\nEXERCISE= $EXERCISE_CODE || $EXERCISE\n\n";
 		if ($EXERCISE!~m/\d+/) {
