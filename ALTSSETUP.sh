@@ -12,7 +12,7 @@ chmod 700 /ALTS/EXAM
 echo -en "[##                  ] 10% \r";
 
 mkdir -p /ALTS/RESULTS
-chmod 700 /ALTS/RESULTS
+#chmod 700 /ALTS/RESULTS
 echo -en "[###                 ] 15% \r";
 
 
@@ -61,13 +61,14 @@ chmod 6755 /ALTS/ALTSLogout
 echo -en "[################# ] 90%\r";
 
 mkdir -p /ALTS/SECURITY; chmod -R 400 /ALTS/SECURITY
-cp -p /leats-scripts/SECURITY/* /ALTS/SECURITY/
+cp -p /leats-scripts/SECURITY/* /ALTS/SECURITY/ 1>/dev/null 2>&1;
 
 
 unlink /ALTS/Grade 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Grade /ALTS/Grade
 unlink /ALTS/Break 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Break /ALTS/Break
 
 echo -en "[###################] 100%\r";
+echo "";
 echo "SETUP DONE.";
 echo ""
 

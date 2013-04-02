@@ -127,4 +127,4 @@ else {
 }
 
 
-exit 0;
+exit 2;

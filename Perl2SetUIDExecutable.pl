@@ -27,8 +27,8 @@ print $fn "#include <stdio.h>
 int main()
 {
    setuid( 0 );
-   system( \"$Command\" );
-   return 0;
+   int i = system( \"$Command\" );
+   return i>>8;
 }";
 
 system ("gcc $TmpCPath -o $Binary; chmod 6555 $Binary");
