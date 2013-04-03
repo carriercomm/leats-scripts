@@ -49,6 +49,7 @@ my $help=0;
 my $break=0;
 my $grade=0;
 my $hint=0;
+my $desc=0;
 use strict;
 use warnings;
 use Getopt::Long;
@@ -58,7 +59,7 @@ use Exporter;
 use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
 use UserGroup qw($verbose &userExist &groupExist &getUserAttribute &checkUserAttribute &checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &setupUser &setupGroup &delGroup &delUser &checkUserFilePermission &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes );
 use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy);
 ######
@@ -69,6 +70,7 @@ GetOptions("help|?|h" => \$help,
 		"b|break" => \$break,
 		"g|grade" => \$grade,
 		"hint" => \$hint,
+		"d|description" => \$desc,
 	  );
 
 #####
@@ -190,6 +192,11 @@ if ( $help ) {
 if ( $hint ) {
 	Framework::hint;
 }
+
+if ( $desc ) {
+        Framework::showdescription;
+}
+
 
 if ( $grade and $break ) {
 	print "Break and grade cannot be requested at one time.\n";

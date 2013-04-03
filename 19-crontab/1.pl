@@ -36,6 +36,7 @@ my $help=0;
 my $break=0;
 my $grade=0;
 my $hint=0;
+my $desc=0;
 use strict;
 use warnings;
 use Getopt::Long;
@@ -44,7 +45,7 @@ use File::Basename;
 use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
 use UserGroup qw( &checkUserCrontabDenied &setupGroup &setupUser &delUser &delGroup &checkUserCrontab );
 ######
 ###Options
@@ -54,6 +55,7 @@ GetOptions("help|?|h" => \$help,
 		"b|break" => \$break,
 		"g|grade" => \$grade,
 		"hint" => \$hint,
+		"d|description" => \$desc,
 	  );
 
 #####
@@ -163,6 +165,11 @@ if ( $help ) {
 if ( $hint ) {
 	Framework::hint;
 }
+
+if ( $desc ) {
+        Framework::showdescription;
+}
+
 
 if ( $grade and $break ) {
 	print "Break and grade cannot be requested at one time.\n";

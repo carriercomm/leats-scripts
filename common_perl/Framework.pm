@@ -27,12 +27,12 @@ BEGIN {
 
     	@Framework::ISA         = qw(Exporter);
     	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile );
-    	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file);
+    	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file $description &showdescription);
 
 }
 
 
-use vars qw ($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file);
+use vars qw ($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file $description);
 
 $student_file="/ALTS/User.alts";
 
@@ -380,6 +380,7 @@ sub useage() {
 	print "-hint	       		Helpful hint for solution if stuck\n";
 	print "Switches::\n";
 	print "-h | -? | -help       	Help (this menu)\n";
+	print "-d | -description	Description of the exercise";
 	print "-v | -verbose    	Verbose mode (only for developers)\n";
 	print "Designed by $author, version $version\n";
 	exit 0;
@@ -399,6 +400,13 @@ sub hint() {
 	print "$hint\n";
 	exit 0;
 };
+
+sub showdescription() {
+
+print "$description";
+exit 0;
+
+}
 
 sub verbose () {
 	print "verbose is :'$verbose'\n";
