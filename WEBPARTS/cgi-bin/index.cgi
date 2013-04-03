@@ -10,13 +10,30 @@ use Framework qw(&cryptText2File &decryptFile $student_file);
 use strict;
 use warnings;
 
-#my $result_file="/ALTS/RESULTS/ACTUAL/02-physical_disk-1";
-my $result_file="/ALTS/RESULTS/ACTUAL/05-user-group-1";
+my $result_file="/ALTS/RESULTS/ACTUAL/02-physical_disk-1";
+#my $result_file="/ALTS/RESULTS/ACTUAL/05-user-group-1";
+
+################################################################################
+######################## THE STUDENT IS LOGGED IN ##############################
+
+my $F=decryptFile("$student_file");
+#print "F= $F\n\n";
+
+my @A = $F =~ m/<STUDENT>(.*)<\/STUDENT><ALTSPASSWORD>(.*)<\/ALTSPASSWORD>/;
+my $USER = $A[0];
+my $PW = $A[1];
+
+if ($USER eq "") { print "Location: /cgi-bin/ALTSLogin.cgi\n\n"; exit 0; }
+
+
+
+###############################################################################
 
 print "Content-type: text/html\n\n";
 
 print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">
-<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>
+<html xmlns=\"http://www.w3.org/1999/xhtml\">
+<head>
 <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">
 <title>ALTS TEST Page</title>
 ";
@@ -215,16 +232,6 @@ function showDiv() {
 ";
 
 
-###############################################################################
-####################### THE STUDENT LOGGED IN #################################
-
-my $F=decryptFile("$student_file");
-#print "F= $F\n\n";
-
-my @A = $F =~ m/<STUDENT>(.*)<\/STUDENT><ALTSPASSWORD>(.*)<\/ALTSPASSWORD>/;
-my $USER = $A[0];
-my $PW = $A[1];
-
 ###########################################################
 ##### STUDENT AND EXERCISE INFOS ###########################
 
@@ -283,7 +290,7 @@ if (-f $result_file) {
 
 	$Description=$DES[0];
 	$Description =~ s/\n/<\/p><p>/g;
-	$Description="<p>$Description";
+	$Description="<p>$Description</p>";
 
 	@T = $FN =~ m/<TASK>(.*)<\/TASK>/g;
 
@@ -380,7 +387,7 @@ print "
 <td class=\"Button_Description\">&nbsp;</td>
 </tr>
 <tr>
-<td class=\"Button_Description\">RESET</td>
+<td class=\"Button_Description\">BREAK/RESET</td>
 <td class=\"Button_Description\">GRADE</td>
 </tr>
 <tr>
