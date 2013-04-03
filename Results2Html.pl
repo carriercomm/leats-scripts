@@ -10,11 +10,11 @@ use Framework qw(&cryptText2File &decryptFile $student_file);
 use strict;
 use warnings;
 
+
+#my $result_file="/ALTS/RESULTS/ACTUAL/02-physical_disk-2";
+#my $result_file="/ALTS/RESULTS/ACTUAL/05-user-group-2";
+
 my $result_file=$ARGV[0] |= "";
-
-#my $result_file="/ALTS/RESULTS/ACTUAL/02-physical_disk-1";
-#my $result_file="/ALTS/RESULTS/ACTUAL/05-user-group-1";
-
 if ( $result_file !~ m/ALTS\/RESULTS\/ACTUAL\/\d+-(.*)-\d+/) { print "\n\nIncorrect Result file Path ($result_file)!"; die; }
 
 ################################################################################
@@ -116,6 +116,18 @@ if (-f $result_file) {
 
 #print "Content-type: text/html\n\n";
 #print "BUFFER= $ENV{'QUERY_STRING'}\n";
+
+my $Previous="$Topic-$Problem";
+my $Next="$Topic-$Problem";
+
+my $P=$Problem-1;
+my $N=$Problem+1;
+
+if (-f "/var/www/cgi-bin/$Topic/$N-activator") { $Next="$Topic-$N"; }
+if (-f "/var/www/cgi-bin/$Topic/$P-activator") { $Previous="$Topic-$P"; }
+
+#print "NEXT: $Next  || PREV: $Previous";
+
 
 system("/var/www/cgi-bin/$Topic/$Problem-activator 1>/dev/null 2>&1");
 
@@ -333,13 +345,30 @@ if (($ENV{'QUERY_STRING'} ne "GRADE") && ($ENV{'QUERY_STRING'} ne "BREAK"))
 
 
 	print "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"40\" width=\"100%\">
-		<tbody><tr class=\"Exercise\">
-		<td height=\"40\" width=\"13%\"><a id=\"btn_prev\" class=\"btn\" href=\"#\"></td>
+		<tbody><tr class=\"Exercise\">";
+	
+	if ($Previous ne "$Topic-$Problem")
+	{
+		print "	<td height=\"40\" width=\"13%\"><a id=\"btn_prev\" class=\"btn\" href=\"/cgi-bin/activate.cgi?$Previous\"></td>";
+	}
+	else
+	{
+		print " <td height=\"40\" width=\"13%\"></td>";
+	}
 
-		<td class=\"Exercise\" width=\"73%\">$Topic $Problem</td>
+	print"	<td class=\"Exercise\" width=\"73%\">$Topic $Problem</td>";
 
-		<td width=\"14%\"><a id=\"btn_next\" class=\"btn\" href=\"#\"></td>
-		</tr>
+
+        if ($Next ne "$Topic-$Problem")
+        {
+		print "	<td width=\"14%\"><a id=\"btn_next\" class=\"btn\" href=\"/cgi-bin/activate.cgi?$Next\"></td>";
+	}
+	else 
+	{
+		print " <td width=\"14%\"></td>";
+	}
+
+	print "	</tr>
 		</tbody></table>
 		<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"126\" width=\"100%\">
 		<tbody><tr>
@@ -508,7 +537,6 @@ if ($ENV{'QUERY_STRING'} eq "BREAK")
         system("/var/www/cgi-bin/Break 1>/dev/null 2>&1");
 	print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/index.cgi\">\n";
 }
-
 
 
 print "</body>

@@ -35,6 +35,10 @@ pp -o /ALTS/lib/ALTSLogout.pl /leats-scripts/ALTSLogout.pl
 chmod 6755 /ALTS/lib/ALTSLogout.pl
 echo -en "[#########          ] 45% \r";
 
+pp -o /ALTS/lib/activate.pl /leats-scripts/activate.pl
+chmod 6755 /ALTS/lib/activate.pl
+echo -en "[#########          ] 50% \r";
+
 
 pp -o /ALTS/lib/ExerciseCoding /leats-scripts/ExerciseCoding.pl
 chmod 6755 /ALTS/lib/ExerciseCoding
@@ -49,6 +53,11 @@ echo -en "[#############      ] 65% \r";
 pp -o /ALTS/lib/Results2Html /leats-scripts/Results2Html.pl 
 chmod 6755 /ALTS/lib/Results2Html
 echo -en "[###############    ] 75% \r";
+
+
+/ALTS/lib/Perl2SetUIDExecutable "/leats-scripts/activate.pl" /ALTS/activate
+chmod 6755 /ALTS/activate
+echo -en "[################   ] 80% \r";
 
 
 /ALTS/lib/Perl2SetUIDExecutable /ALTS/lib/ALTSLogin.pl /ALTS/ALTSLogin
