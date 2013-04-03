@@ -48,7 +48,7 @@ $verbose && print "Creating Result binary\n";
 system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/lib/Results2Html /ALTS/RESULTS/ACTUAL/$TN-$NN' '/ALTS/EXERCISES/$TN/$NN-result'");
 $verbose && print "Creating Exercise activator\n";
 system("mkdir $CGI_HOME/$TN/ 1>/dev/null 2>&1 ");
-system ("perl /leats-scripts/Perl2SetUIDExecutable.pl 'cp /ALTS/EXERCISES/$TN/$NN-grade $CGI_HOME/Grade; cp /ALTS/EXERCISES/$TN/$NN-break $CGI_HOME/Break; cp  /ALTS/EXERCISES/$TN/$NN-result $CGI_HOME/Result;' '$CGI_HOME/$TN/$NN-activator'");
+system ("perl /leats-scripts/Perl2SetUIDExecutable.pl 'cp /ALTS/EXERCISES/$TN/$NN-grade $CGI_HOME/Grade 1>/dev/null 2>&1; cp /ALTS/EXERCISES/$TN/$NN-break $CGI_HOME/Break 1>/dev/null 2>&1; cp  /ALTS/EXERCISES/$TN/$NN-result $CGI_HOME/Result 1>/dev/null 2>&1' '$CGI_HOME/$TN/$NN-activator'");
 system ("chmod 6555 /ALTS/EXERCISES/$TN/$NN-grade; chmod 6555 /ALTS/EXERCISES/$TN/$NN-break; chmod 6555 /ALTS/EXERCISES/$TN/$NN-result;")
 
 
@@ -61,7 +61,6 @@ system ("chmod 6555 /ALTS/EXERCISES/$TN/$NN-grade; chmod 6555 /ALTS/EXERCISES/$T
 #print "Creating $CGI_HOME/${TN}-$NN-break..\n";
 #system ("perl $ALTS_HOME/Perl2SetUIDExecutable.pl '$CGI_HOME/${TN}-$NN --break' $CGI_HOME/${TN}-$NN-break");
 #system("chmod 4555 $CGI_HOME/${TN}-$NN-break");
-
 
 #Create the SETIUID binary for CGI
 #rigruber-02-physical_disk-1

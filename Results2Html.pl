@@ -1,23 +1,24 @@
 #!/usr/bin/perl
-
+##
+## CGI script to print out the relevant environment variables.
+## It's just one big print statement, but note the use of the
+## associative %ENV array to access the environment variables.
+##
 use lib '/scripts/common_perl/';
 use Framework qw(&cryptText2File &decryptFile $student_file);
 
 use strict;
 use warnings;
 
-if ((scalar @ARGV) < 1)
-{
-        print "\n\nUsing of the script:\n";
-        print "1. argument: Your result file you want to convert to HTML\n";
-        print "\t E.g ./Results2Html /ALTS/leats-scripts/ALTS/RESULTS/Physicaldiskmanagement-1 \n\n";
-        die;
-}
+my $result_file=$ARGV[0] |= "";
 
-my $result_file = $ARGV[0];
+#my $result_file="/ALTS/RESULTS/ACTUAL/02-physical_disk-1";
+#my $result_file="/ALTS/RESULTS/ACTUAL/05-user-group-1";
 
-############################################################
-#### THE STUDENT LOGGED IN #################################
+if ( $result_file !~ m/ALTS\/RESULTS\/ACTUAL\/\d+-(.*)-\d+/) { print "\n\nIncorrect Result file Path ($result_file)!"; die; }
+
+################################################################################
+######################## THE STUDENT IS LOGGED IN ##############################
 
 my $F=decryptFile("$student_file");
 #print "F= $F\n\n";
@@ -26,25 +27,45 @@ my @A = $F =~ m/<STUDENT>(.*)<\/STUDENT><ALTSPASSWORD>(.*)<\/ALTSPASSWORD>/;
 my $USER = $A[0];
 my $PW = $A[1];
 
-#print "\n\nUSER Authenticated: $USER | $PW \n\n";
+if ($USER eq "") { print "Location: /cgi-bin/ALTSLogin.cgi\n\n"; exit 0; }
+
 
 ###########################################################
-#### STUDENT AND EXERCISE INFOS ###########################
+###### STUDENT AND EXERCISE INFOS ###########################
 
-my $FN=decryptFile("$result_file");
+
+my $Date = "---";
+
+my @W = $result_file =~ m/\/ALTS\/RESULTS\/ACTUAL\/(.+)-(\d+)/sg;
+
+my $Problem = "$W[1]";
+my $Topic = "$W[0]";
+my $Description="\n\nYou didn't do this exercise yet!\n\n";
+my $Tasknumber="--";
+my $Tasksuccessful="-";
+my $Finalresult="-";
+my @T=();
+
+my $Student="";
+
+if (-f $result_file) {
+
+	my $FN=decryptFile("$result_file");
 
 #print "RESULT=\n\n$FN\n\n";
 
-my @R = $FN =~ m/<STUDENT>(.*)<\/STUDENT><ALTSPASSWORD>(.*)<\/ALTSPASSWORD>/;
-my $Student = $R[0];
-my $Password = $R[1];
+	my @R = $FN =~ m/<STUDENT>(.*)<\/STUDENT><ALTSPASSWORD>(.*)<\/ALTSPASSWORD>/;
+	$Student = $R[0];
+	my $Password = $R[1];
 #print "\nSTUDENT= $Student\n";
 #print "Password= $Password\n";
 
-if (($Student ne "$USER") || ( $Password ne $PW )) {
-print "\n\n<br/><br/>The student, who is logged ($USER) in is not equals with the owner of the result ($Student).<br/>Or is it possible that the ALTS password isn't correct!<br/><br/>Please login with command ALTSLogin!\n"; 
-exit 1;
-}
+	if (($Student ne "$USER") || ( $Password ne $PW )) {
+		print "\n\n<br/><br/>The student, who is logged ($USER) in is not equals with the owner of the result ($Student).<br/>Or is it possible that the ALTS password is incorrect!<br/><br/>Please login with command ALTSLogin!\n";
+		exit 1;
+	}
+
+
 
 #<DATE>2013/03/21 12:18:13</DATE><TOPIC>Users and groups</TOPIC><PROBLEM>1</PROBLEM><DESCRIPTION>- create the following users: john, mary and thomas
 #- create a group named tadmins with GID 885
@@ -57,66 +78,440 @@ exit 1;
 #- john's account will expire on 2025-12-12</DESCRIPTION>
 
 
-my @D = $FN =~ m/<DATE>(.*)<\/DATE>/;
-my $Date = $D[0];
+	my @D = $FN =~ m/<DATE>(.*)<\/DATE>/;
+	$Date = $D[0];
 
-my @P = $FN =~ m/<PROBLEM>(.*)<\/PROBLEM>/;
-my $Problem = $P[0];
+	my @P = $FN =~ m/<PROBLEM>(.*)<\/PROBLEM>/;
+	$Problem = $P[0];
 
-my @TP = $FN =~ m/<TOPIC>(.*)<\/TOPIC>/;
-my $Topic = $TP[0];
+	my @TP = $FN =~ m/<TOPIC>(.*)<\/TOPIC>/;
+	$Topic = $TP[0];
 
-my @DES = $FN =~ m/<DESCRIPTION>(.*)<\/DESCRIPTION>/s;
+	my @DES = $FN =~ m/<DESCRIPTION>(.*)<\/DESCRIPTION>/s;
 
-my $Description=$DES[0];
-$Description =~ s/\n/<\/td><\/tr><tr><td>/g;
+	$Description=$DES[0];
+	$Description =~ s/\n/<\/p><p>/g;
+	$Description="<p>$Description</p>";
+
+	@T = $FN =~ m/<TASK>(.*)<\/TASK>/g;
 
 #<TASKNUMBER>17</TASKNUMBER><TASKSUCCESSFUL>5</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT>
 
-my @RES = $FN =~ m/<TASKNUMBER>(.*)<\/TASKNUMBER><TASKSUCCESSFUL>(.*)<\/TASKSUCCESSFUL><FINALRESULT>(.*)<\/FINALRESULT>/;
+	my @RES = $FN =~ m/<TASKNUMBER>(.*)<\/TASKNUMBER><TASKSUCCESSFUL>(.*)<\/TASKSUCCESSFUL><FINALRESULT>(.*)<\/FINALRESULT>/;
 
-my $Tasknumber=$RES[0];
-my $Tasksuccessful=$RES[1];
-my $Finalresult=$RES[2];
-
-###########################################################
-#### TASKS ################################################
-$FN =~ s/<br\/>/\n/g;
-my @T = $FN =~ m/<TASK>(.*)<\/TASK>/g;
-
-
-print "<table>
-<tr><td>$Student</td></tr>
-<tr><td>$Topic $Problem</td></tr>
-<tr><td>$Date</td></tr></tr>
-</table><br/><br/>";
-
-
-print "<table><tr><td>$Description</td></tr></table><br/><br/>";
-
-print '<table border="1"><tr><th>Task</th><th>Result</th></tr>';
-
-foreach my $Task (@T)
-{
-#	print "$Task\n";
-	my @TT=$Task=~m/<TASKDESC>(.*)<\/TASKDESC><RESULT>(.*)<\/RESULT>/;
-#	print "\nTASK: $TT[0]\n";
-#	print "\nRESULT: $TT[1]\n\n";
-	print "\n<tr><td>$TT[0]</td>";
-	if (($TT[1]) eq "[ PASS ]") {
-		print "<td align=\"center\" bgcolor=\"#00FF00\">DONE</td></tr>";
-	}
-	else 
-	{
-		print "<td align=\"center\" bgcolor=\"#FF0000\">FAILED</td></tr>";
-	}
+	$Tasknumber=$RES[0];
+	$Tasksuccessful=$RES[1];
+	$Finalresult=$RES[2];
 }
 
-print '</table><br/>';
+###############################################################################
 
-print "<table>
-<tr><td>Tasks number<\/td><td>$Tasknumber<\/td><\/tr>
-<tr><td>Tasks successful<\/td><td>$Tasksuccessful<\/td><\/tr>
-<tr><td>FINAL RESULT<\/td><td>$Finalresult<\/td><\/tr>
-<\/table>\n";
+#<tr>
+#<th colspan=\"7\" class=\"MainTABLE\" scope=\"row\">&nbsp;</th>
+#</tr>
+#
 
+
+###############################################################################
+
+#print "Content-type: text/html\n\n";
+#print "BUFFER= $ENV{'QUERY_STRING'}\n";
+
+system("/var/www/cgi-bin/$Topic/$Problem-activator 1>/dev/null 2>&1");
+
+print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">
+<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>
+<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">
+<title>ALTS - $USER - $Topic $Problem</title>
+<style type=\"text/css\">
+<!--
+body {
+	margin-left: 20%;
+	margin-top: 5%;
+	margin-right: 20%;
+	margin-bottom: 5%;
+	text-align: right;
+	background-color: #FFF;
+}
+a {
+color: #444;
+}
+.Table_simple {
+	font-size: 18px;
+	font-style: normal;
+	text-align: left;
+	background-color: #FFF;
+}
+.Table_student {
+	font-size: 18px;
+	text-align: left;
+color: #FFF;
+       background-color: #009;
+}
+.Table_Tag {
+	font-size: 24px;
+}
+.Table_Tag {
+	font-size: 18px;
+color: #000;
+       background-color: #DFDFDF;
+       text-align: left;
+}
+.Table_student {
+	font-size: 18px;
+	text-align: center;
+	background-color: #FFF;
+color: #000;
+       vertical-align: middle;
+       font-weight: bold;
+       font-family: Verdana, Geneva, sans-serif;
+}
+.Table_student_name {
+	background-color: #FFF;
+color: #000;
+       font-size: 24px;
+       font-weight: bold;
+       font-style: italic;
+       text-align: justify;
+       vertical-align: middle;
+}
+.Result_picture {
+	vertical-align: top;
+	text-align: center;
+}
+body p {
+	text-align: left;
+	font-weight: bold;
+}
+.MainTABLE_nonbold {
+	font-weight: normal;
+	vertical-align: middle;
+}
+.Result-table {
+	text-align: left;
+}
+.Exercise {
+	margin-right: 20px;
+	margin-left: 2px;
+	text-align: center;
+	font-weight: bold;
+	font-size: 18px;
+}
+.Button_Description {
+	text-align: center;
+color: #BCBCBC;
+}
+
+a.btn {
+display: block;
+	 background-color: transparent;
+	 background-repeat: no-repeat;
+	 background-position: 0 0;
+margin: 0 auto;
+}
+
+#btn_prev {
+width: 30px;
+height: 30px;
+	background-image: url('/ALTSicons/Button_Previous.jpg');
+}
+#btn_prev:hover {
+	background-position: -30px 0;
+}
+
+#btn_next {
+width: 30px;
+height: 30px;
+	background-image: url('/ALTSicons/Button_Next.jpg');
+}
+#btn_next:hover {
+	background-position: -30px 0;
+}
+
+#btn_grade {
+width: 78px;
+height: 78px;
+	background-image: url('/ALTSicons/play_button.png');
+}
+#btn_grade:hover {
+	background-position: -78px 0;
+}
+
+#btn_break {
+width: 78px;
+height: 78px;
+	background-image: url('/ALTSicons/break_button.png');
+}
+#btn_break:hover {
+	background-position: -78px 0;
+}
+
+#btn_details {
+width: 78px;
+height: 78px;
+	background-image: url('/ALTSicons/Details-Button_wide.jpg');
+}
+#btn_details:hover {
+	background-position: -78px 0;
+}
+
+#btn_dload {
+width: 78px;
+height: 78px;
+	background-image: url('/ALTSicons/Download-Button.jpg');
+}
+#btn_dload:hover {
+	background-position: -78px 0;
+}
+
+#btn_home {
+width: 78px;
+height: 78px;
+	background-image: url('/ALTSicons/Home-Button.jpg');
+}
+#btn_home:hover {
+	background-position: -78px 0;
+}
+-->
+</style><script language=\"javascript\" type=\"text/javascript\"> 
+function hideDiv() { 
+	if (document.getElementById) { 
+		document.getElementById('Description').style.display = 'none'; 
+		document.getElementById('DetailedDescription').style.display = 'none'; 
+		document.getElementById('Line0').style.display = 'none'; 
+		document.getElementById('Line1').style.display = 'none';  
+	} 
+} 
+function showDiv() { 
+	if (document.getElementById) 
+	{ 
+		if (document.getElementById('Description').style.display == 'none') 
+		{
+			document.getElementById('Description').style.display = 'block'; 
+			document.getElementById('DetailedDescription').style.display = 'block'; 
+			document.getElementById('Line0').style.display = 'block'; 
+			document.getElementById('Line1').style.display = 'block'; 		
+		}	
+		else
+		{
+			hideDiv()
+		}
+	}
+} 
+
+</script></head>
+
+
+<body onload=\"hideDiv()\" link=\"white\">
+
+<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"772\">
+<tbody><tr>
+<td width=\"772\"><img src=\"/ALTSicons/ALTSLOGO.jpg\" alt=\"ALTSLOGO\" height=\"191\" width=\"770\"></td>
+</tr>
+<tr>
+<td></td>
+</tr>
+<tr>
+<td><hr align=\"left\" color=\"DFDFDF\" size=\"6\"></td>
+</tr>
+<tr>
+<td height=\"229\">
+<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"33\" width=\"100%\">
+<tr><td style=\"text-align: right; color: #888\">logged in as <b>$USER</b> [<a href=\"/cgi-bin/ALTSLogout.cgi\">logout</a>]</td></tr>
+</table>
+<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"232\" width=\"100%\">
+<thead><tr>
+<td rowspan=\"3\" height=\"176\" width=\"15%\">&nbsp;</td>
+<td rowspan=\"3\" width=\"39%\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">
+<tbody><tr>
+<td height=\"179\">";
+
+
+
+if (($ENV{'QUERY_STRING'} ne "GRADE") && ($ENV{'QUERY_STRING'} ne "BREAK"))
+{
+
+
+	print "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"40\" width=\"100%\">
+		<tbody><tr class=\"Exercise\">
+		<td height=\"40\" width=\"13%\"><a id=\"btn_prev\" class=\"btn\" href=\"#\"></td>
+
+		<td class=\"Exercise\" width=\"73%\">$Topic $Problem</td>
+
+		<td width=\"14%\"><a id=\"btn_next\" class=\"btn\" href=\"#\"></td>
+		</tr>
+		</tbody></table>
+		<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"126\" width=\"100%\">
+		<tbody><tr>
+		<td colspan=\"4\" height=\"20\"><table border=\"0\" cellpadding=\"2\" cellspacing=\"4\" height=\"92\" width=\"100%\">
+		<tbody><tr>
+		<td colspan=\"3\"></td>
+		</tr>
+		<tr>
+		<td class=\"Table_Tag\" width=\"29%\">Student:</td>
+		<td width=\"6%\">&nbsp;</td>
+		<td class=\"Table_simple\" width=\"65%\">$Student</td>
+		</tr>
+		<tr>
+		<td class=\"Table_Tag\">Date:</td>
+		<td>&nbsp;</td>
+		<td class=\"Table_simple\">$Date</td>
+		</tr>
+		<tr>
+		<td class=\"Table_Tag\" height=\"24\">Result:</td>
+		<td>&nbsp;</td>
+		<td class=\"Table_simple\">$Tasksuccessful/$Tasknumber</td>
+		</tr>
+		<tr>
+		<td class=\"Result_picture\" height=\"97\" colspan=\"3\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"42\" width=\"100%\">
+		<tbody><tr>
+		<td class=\"Button_Description\">&nbsp;</td>
+		<td class=\"Button_Description\">&nbsp;</td>
+		<td class=\"Button_Description\">&nbsp;</td>
+		</tr>
+		<tr>
+		<td class=\"Button_Description\">DETAILS</td>
+		<td class=\"Button_Description\">DOWNLOAD</td>
+		<td class=\"Button_Description\">HOME</td>
+		</tr>
+		<tr>
+		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_details\" class=\"btn\" href=\"javascript:void(0)\" onclick=\"showDiv()\"></a></td>
+		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"#\"></a></td>
+		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_home\" class=\"btn\" href=\"#\"></a></td>
+		</tr>
+		</tbody></table></td>
+		</tr>
+		</tbody></table></td>
+		</tr>
+		</tbody></table>
+		<table border=\"0\" cellpadding=\"0\" cellspacing=\"3\" width=\"100%\">
+		</table>
+		</td>
+		</tr>
+		</tbody></table></td>
+		<td rowspan=\"3\" width=\"6%\">&nbsp;</td>
+		<td height=\"1\" width=\"20%\">&nbsp;</td>
+		<td rowspan=\"3\" width=\"20%\">&nbsp;</td>
+		</tr>
+		<tr>
+		";
+
+
+	if ($Tasksuccessful eq $Tasknumber) 
+	{
+		print "<td class=\"Result_picture\" height=\"114\"><img src=\"/ALTSicons/EXAMPASSED.jpg\" alt=\"PASSED\" height=\"105\" width=\"152\"></td>";	
+	}
+	else
+	{
+		print "<td class=\"Result_picture\" height=\"114\"><img src=\"/ALTSicons/EXAMFAILED.jpg\" alt=\"FAILED\" height=\"105\" width=\"152\"></td>";
+	}
+
+
+	print "       </tr>
+		<tr>
+		<td class=\"Result_picture\" height=\"97\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"42\" width=\"100%\">
+		<tbody>
+		<tr>
+		<td class=\"Button_Description\">RESET/BREAK</td>
+		<td class=\"Button_Description\">GRADE</td>
+		</tr>
+		<tr>
+		<td width=\"49%\"><a id=\"btn_break\" class=\"btn\" href=\"?BREAK\"></a></td>
+		<td width=\"51%\"><a id=\"btn_grade\" class=\"btn\" href=\"?GRADE\"></a></td>
+		</tr>
+		</tbody></table></td>
+		</tr>
+		</tbody></table>
+		</td>
+		</tr>
+		</thead>
+		<tbody id=\"details\">
+		<tr>
+		<td><div id=\"Line0\"><hr align=\"left\" color=\"DFDFDF\" size=\"3\"><hr align=\"left\" color=\"DFDFDF\" size=\"3\"></div></td>
+		</tr>
+		<tr>	
+		<td colspan=\"9\" scope=\"row\">
+		<div id=\"Description\">
+		$Description
+		</div>
+		</td>
+		</tr>
+		<tr>
+		<td><div id=\"Line1\"><hr align=\"left\" color=\"DFDFDF\" size=\"3\"><hr align=\"left\" color=\"DFDFDF\" size=\"3\"></div></td>
+		</tr> 
+		<tr>
+		<td>
+		<div id=\"DetailedDescription\">  
+		<table border=\"0\" cellpadding=\"0\" cellspacing=\"2\" width=\"100%\">
+		<tbody><tr>
+		<td width=\"11%\">&nbsp;</td>
+		";
+
+################################################################################
+
+	if (-f $result_file) {
+
+
+		foreach my $Task (@T)
+		{
+			my @TT=$Task=~m/<TASKDESC>(.*)<\/TASKDESC><RESULT>(.*)<\/RESULT>/;
+			print "<tr><td>&nbsp;</td><td class=\"Result-table\"><span>$TT[0]</span></td>";
+			if (($TT[1]) eq "[ PASS ]") {
+				print "<td><img src=\"/ALTSicons/PASSED.jpg\" alt=\"PASSED\" height=\"34\" width=\"34\"></td><td>&nbsp;</td>";
+			}
+			else
+			{
+				print "<td><img src=\"/ALTSicons/FAILED.jpg\" alt=\"FAILED\" height=\"34\" width=\"34\"></td><td>&nbsp;</td>";
+			}
+			print "</tr>";
+		}
+
+
+		print " </tbody></table>
+			</div>
+			</td>
+			</tr>
+			</tbody>
+			<tfoot>
+			<tr>
+			<td> </td>
+			</tr>
+			<tr><td><hr align=\"left\" color=\"DFDFDF\" size=\"6\"></td></tr>
+			<tr>
+			<td>&nbsp;</td>
+			</tr>
+			</tfoot></table>
+
+			";
+
+
+
+	}
+
+#system("/var/www/cgi-bin/Result 2>&1");
+#system("/var/www/cgi-bin/02-physical_disk-1-grade");
+
+}
+
+if ($ENV{'QUERY_STRING'} eq "GRADE")
+{
+
+	print "<p>Grade is in progress, this may take a few minutes..</p><p>Please be patient...</p><br/><br/>";
+	system("/var/www/cgi-bin/Grade 1>/dev/null 2>&1");
+	print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/index.cgi\">\n";
+}
+
+if ($ENV{'QUERY_STRING'} eq "BREAK")
+{
+
+        print "<p>Break is in progress, this may take a few minutes..</p><p>Please be patient...</p><br/><br/>";
+        system("/var/www/cgi-bin/Break 1>/dev/null 2>&1");
+	print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/index.cgi\">\n";
+}
+
+
+
+print "</body>
+</html>\n";
+
+exit;
