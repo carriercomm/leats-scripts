@@ -40,7 +40,7 @@ my @W = $result_file =~ m/\/ALTS\/RESULTS\/ACTUAL\/(.+)-(\d+)/sg;
 
 my $Problem = "$W[1]";
 my $Topic = "$W[0]";
-my $Description="\n\nYou didn't do this exercise yet!\n\n";
+my $Description="";
 my $Tasknumber="--";
 my $Tasksuccessful="-";
 my $Finalresult="-";
@@ -130,6 +130,8 @@ if (-f "/var/www/cgi-bin/$Topic/$P-activator") { $Previous="$Topic-$P"; }
 
 
 system("/var/www/cgi-bin/$Topic/$Problem-activator 1>/dev/null 2>&1");
+
+if ($Description eq "") { $Description = `/var/www/cgi-bin/Description`; }
 
 print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">
 <html xmlns=\"http://www.w3.org/1999/xhtml\"><head>
@@ -406,7 +408,7 @@ if (($ENV{'QUERY_STRING'} ne "GRADE") && ($ENV{'QUERY_STRING'} ne "BREAK"))
 		<tr>
 		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_details\" class=\"btn\" href=\"javascript:void(0)\" onclick=\"showDiv()\"></a></td>
 		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"#\"></a></td>
-		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_home\" class=\"btn\" href=\"#\"></a></td>
+		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_home\" class=\"btn\" href=\"/cgi-bin/home.cgi\"></a></td>
 		</tr>
 		</tbody></table></td>
 		</tr>

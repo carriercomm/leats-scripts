@@ -273,10 +273,16 @@ sub decryptFile($)
 sub EncryptResultFile(;$)
 {
 	my $File = $_[0] |= "$result_file";
+	my $AES_Directory="/ALTS/RESULTS/ACTUAL/AES";
 	$verbose && print "Encrypting $File...\n";
 	if (!(-f $AESKeyFile)) { print "$AESKeyFile is unreachable!\n"; die; }
 	system("openssl aes-256-cbc -a -salt -in $File -out $File.alts.aes -pass file:$AESKeyFile");
-
+	system("chown root:apache $AESKeyFile; chmod 750 $AESKeyFile");
+	system("chown root:root $result_file; chmod 700 $result_file");
+	if (!-d $AES_Directory) {
+		system("mkdir $AES_Directory; chown root:apache $AES_Directory; chmod 750 $AES_Directory");
+	}
+	system("ln -s /ALTS/RESULTS/ACTUAL/$topic-$problem.alts.aes $AES_Directory/$topic-$problem.alts.aes");
 
 }
 

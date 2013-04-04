@@ -93,7 +93,13 @@ else {
 	my $F=decryptFile("$student_file");
 	if ($F =~ m/<STUDENT>$UserName<\/STUDENT><ALTSPASSWORD>$PASS1<\/ALTSPASSWORD><EXERCISE>$EXERCISE<\/EXERCISE>/)
 	{
-		system("mkdir -p /ALTS/RESULTS/$UserName; chmod 700 /ALTS/RESULTS/$UserName");
+		system("mkdir -p /ALTS/RESULTS/$UserName; chmod 750 /ALTS/RESULTS/$UserName; chown root:apache /ALTS/RESULTS/$UserName");
+
+
+        	my $AES_Directory="/ALTS/RESULTS/$UserName/AES";
+	        system("mkdir $AES_Directory 1>/dev/null 2>&1; chown root:apache $AES_Directory; chmod 750 $AES_Directory");
+       
+
 		system("unlink /ALTS/RESULTS/ACTUAL 1>/dev/null 2>&1; ln -s /ALTS/RESULTS/$UserName /ALTS/RESULTS/ACTUAL");
 		system("unlink /ALTS/Grade 1>/dev/null 2>&1; unlink /ALTS/Break 1>/dev/null 2>&1");		
 		if ($EXERCISE ne "TEST")
