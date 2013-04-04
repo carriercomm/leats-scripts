@@ -13,18 +13,37 @@ my $CGI_HOME="/var/www/cgi-bin";
 my $ALTS_HOME="/leats-scripts";
 my $ALTS_RESULTS="/ALTS/RESULTS/";
 
+my @files;
 
 if ((scalar @ARGV) < 1)
 {
         print "\n\nUsing of the script:\n";
         print "1. argument: Your scheckscript file\n";
-        print "\t E.g ./ScriptReady /leats-scripts/02-physical_disk/1.pl \n\n";
+        print "\t E.g ./ScriptReady /leats-scripts/02-physical_disk/1.pl or ./ScriptReady ALL (if you want to do it for every sources)\n";
         die;
 }
 
-$verbose && print "$ARGV[0] will be transformed...\n";
+if ($ARGV[0] eq "ALL" )
+{
+	@files=("/leats-scripts/02-physical_disk/1.pl",
+		"/leats-scripts/03-lvm/1.pl",
+		"/leats-scripts/05-user-group/1.pl",
+		"/leats-scripts/05-user-group/2.pl",
+		"/leats-scripts/05-user-group/3.pl",
+		"/leats-scripts/06-rights/1.pl",
+		"/leats-scripts/19-crontab/1.pl");
+}
+else
+{
+	 @files=@ARGV;
+}
 
-my $file =`readlink -f $ARGV[0]`;
+
+
+foreach my $SourceFile (@files)
+{
+$verbose && print "\n$SourceFile will be transformed...\n";
+my $file =`readlink -f $SourceFile`;
 
 #print "FILE: $file\n\n";
 
@@ -44,13 +63,17 @@ $verbose && print "Creating Grade binary\n";
 system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/EXERCISES/$TN/$NN --grade' '/ALTS/EXERCISES/$TN/$NN-grade'");
 $verbose && print "Creating Break binary\n";
 system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/EXERCISES/$TN/$NN --break' '/ALTS/EXERCISES/$TN/$NN-break'");
+$verbose && print "Creating Description binary\n";
+system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/EXERCISES/$TN/$NN --description' '/ALTS/EXERCISES/$TN/$NN-description'");
 $verbose && print "Creating Result binary\n";
 system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/lib/Results2Html /ALTS/RESULTS/ACTUAL/$TN-$NN' '/ALTS/EXERCISES/$TN/$NN-result'");
+$verbose && print "Setup permissions\n";
+system ("chmod 6555 /ALTS/EXERCISES/$TN/$NN-grade; chmod 6555 /ALTS/EXERCISES/$TN/$NN-break; chmod 6555 /ALTS/EXERCISES/$TN/$NN-result; chmod 6555 /ALTS/EXERCISES/$TN/$NN-description");
+
 $verbose && print "Creating Exercise activator\n";
 system("mkdir $CGI_HOME/$TN/ 1>/dev/null 2>&1 ");
-system ("perl /leats-scripts/Perl2SetUIDExecutable.pl 'cp /ALTS/EXERCISES/$TN/$NN-grade $CGI_HOME/Grade 1>/dev/null 2>&1; cp /ALTS/EXERCISES/$TN/$NN-break $CGI_HOME/Break 1>/dev/null 2>&1; cp  /ALTS/EXERCISES/$TN/$NN-result $CGI_HOME/Result 1>/dev/null 2>&1' '$CGI_HOME/$TN/$NN-activator'");
-system ("chmod 6555 /ALTS/EXERCISES/$TN/$NN-grade; chmod 6555 /ALTS/EXERCISES/$TN/$NN-break; chmod 6555 /ALTS/EXERCISES/$TN/$NN-result;")
-
+system ("perl /leats-scripts/Perl2SetUIDExecutable.pl 'cp -p /ALTS/EXERCISES/$TN/$NN-grade $CGI_HOME/Grade 1>/dev/null 2>&1; cp -p /ALTS/EXERCISES/$TN/$NN-break $CGI_HOME/Break 1>/dev/null 2>&1; cp -p  /ALTS/EXERCISES/$TN/$NN-result $CGI_HOME/Result 1>/dev/null 2>&1; cp -p /ALTS/EXERCISES/$TN/$NN-description $CGI_HOME/Description 1>/dev/null 2>&1' '$CGI_HOME/$TN/$NN-activator'");
+}
 
 #Create the SETIUID binary for CGI
 #print "Creating $CGI_HOME/${TN}-$NN-grade..\n";
