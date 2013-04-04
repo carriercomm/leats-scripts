@@ -22,7 +22,7 @@
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="05-user-group";
-our $problem="1";
+our $problem="2";
 our $description="- create the following users: john, mary and thomas
 - create a group named tadmins with GID 885
 - john's UID is 2342, his home directory is /home/john.

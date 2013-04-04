@@ -23,7 +23,7 @@ echo -en "[####                ] 20% \r";
 
 
 mkdir -p /ALTS/lib/
-chmod 755 /ALTS/lib
+chmod 700 /ALTS/lib
 echo -en "[#####               ] 25% \r";
 
 

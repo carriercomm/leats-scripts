@@ -75,6 +75,8 @@ system("mkdir $CGI_HOME/$TN/ 1>/dev/null 2>&1 ");
 system ("perl /leats-scripts/Perl2SetUIDExecutable.pl 'cp -p /ALTS/EXERCISES/$TN/$NN-grade $CGI_HOME/Grade 1>/dev/null 2>&1; cp -p /ALTS/EXERCISES/$TN/$NN-break $CGI_HOME/Break 1>/dev/null 2>&1; cp -p  /ALTS/EXERCISES/$TN/$NN-result $CGI_HOME/Result 1>/dev/null 2>&1; cp -p /ALTS/EXERCISES/$TN/$NN-description $CGI_HOME/Description 1>/dev/null 2>&1' '$CGI_HOME/$TN/$NN-activator'");
 }
 
+system("rm -rf /tmp/par*");
+
 #Create the SETIUID binary for CGI
 #print "Creating $CGI_HOME/${TN}-$NN-grade..\n";
 #system ("perl $ALTS_HOME/Perl2SetUIDExecutable.pl '$CGI_HOME/${TN}-$NN --grade' $CGI_HOME/${TN}-$NN-grade");

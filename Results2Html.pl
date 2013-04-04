@@ -131,7 +131,10 @@ if (-f "/var/www/cgi-bin/$Topic/$P-activator") { $Previous="$Topic-$P"; }
 
 system("/var/www/cgi-bin/$Topic/$Problem-activator 1>/dev/null 2>&1");
 
-if ($Description eq "") { $Description = `/var/www/cgi-bin/Description`; }
+if ($Description eq "") { $Description = `/var/www/cgi-bin/Description`;
+			  $Description =~ s/\n/<\/p><p>/g;
+			  $Description="<p>$Description</p>";
+			 }
 
 print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">
 <html xmlns=\"http://www.w3.org/1999/xhtml\"><head>
@@ -407,7 +410,17 @@ if (($ENV{'QUERY_STRING'} ne "GRADE") && ($ENV{'QUERY_STRING'} ne "BREAK"))
 		</tr>
 		<tr>
 		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_details\" class=\"btn\" href=\"javascript:void(0)\" onclick=\"showDiv()\"></a></td>
-		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"#\"></a></td>
+";
+
+if (-f "/ALTS/RESULTS/ACTUAL/AES/$Topic-$Problem.alts.aes") {
+print "		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"/results/$Topic-$Problem.alts.aes\"></a></td>";
+}
+else
+{
+print "         <td width=\"33%\" style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"#\"></a></td>";
+}
+
+print "
 		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_home\" class=\"btn\" href=\"/cgi-bin/home.cgi\"></a></td>
 		</tr>
 		</tbody></table></td>
