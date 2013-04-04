@@ -286,10 +286,10 @@ sub EncryptResultFile(;$)
 
 }
 
-sub DecryptResultFile(;$$)
+sub DecryptResultFile($$)
 {
-	my $File = $_[0] |= "$result_file.alts.aes";
-	my $OutFile = $_[1] |= "$result_file";
+	my $File = $_[0];
+	my $OutFile = $_[1];
 	if (!(-f $AESKeyFile)) { print "$AESKeyFile is unreachable!\n"; die; }
 	$verbose && print "Decrypting $File...\n";
 	system("openssl aes-256-cbc -d -a -in $File -out $OutFile -pass file:$AESKeyFile");
