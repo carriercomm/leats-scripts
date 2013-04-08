@@ -20,14 +20,16 @@ if ( $result_file !~ m/ALTS\/RESULTS\/ACTUAL\/\d+-(.*)-\d+/) { print "\n\nIncorr
 ################################################################################
 ######################## THE STUDENT IS LOGGED IN ##############################
 
+if (!(-f $student_file)) { print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/ALTSLogin.cgi\">\n"; exit 1; }
 my $F=decryptFile("$student_file");
-#print "F= $F\n\n";
+if (!(defined($F))) { print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/ALTSLogin.cgi\">\n"; exit 1; }
 
 my @A = $F =~ m/<STUDENT>(.*)<\/STUDENT><ALTSPASSWORD>(.*)<\/ALTSPASSWORD>/;
+
 my $USER = $A[0];
 my $PW = $A[1];
 
-if ($USER eq "") { print "Location: /cgi-bin/ALTSLogin.cgi\n\n"; exit 0; }
+if (!(defined($USER))) { print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/ALTSLogin.cgi\">\n"; exit 1; }
 
 
 ###########################################################

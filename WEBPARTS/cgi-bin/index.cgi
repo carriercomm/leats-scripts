@@ -21,6 +21,13 @@ print "
 <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">
 <title>ALTS</title>";
 
-system("/var/www/cgi-bin/Result 2>&1");
+if (-f "/var/www/cgi-bin/Result")
+{
+	system("/var/www/cgi-bin/Result 2>/dev/null");
+}
+else
+{
+	print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/ALTSLogin.cgi\">\n"; exit 1;
+}
 
 exit;

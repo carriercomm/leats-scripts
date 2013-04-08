@@ -22,7 +22,7 @@ if ($F eq "")
 	system("chmod 700 /ALTS/EXERCISES");
  	system("unlink /ALTS/RESULTS/ACTUAL 1>/dev/null 2>&1");
         system("unlink /ALTS/Grade 1>/dev/null 2>&1; unlink /ALTS/Break 1>/dev/null 2>&1");
-
+	system("rm -rf /var/www/cgi-bin/Grade 2>/dev/null;rm -rf /var/www/cgi-bin/Break 2>/dev/null;rm -rf /var/www/cgi-bin/Description 2>/dev/null;rm -rf /var/www/cgi-bin/Result 2>/dev/null");
 	print color 'bold green' and print "\n\n\tLogout Successful!\n\n\n"  and print color 'reset' and exit 0;
 }
 else

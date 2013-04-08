@@ -337,7 +337,7 @@ else
 
 	if ($ret eq "0") { 
 		print "LOGIN SUCCESSFUL! Redirect to Home Page...";
-		print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/index.cgi\">\n";
+		print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/home.cgi\">\n";
 	}
 	else { 
 		print "LOGIN UNSUCCESSFUL!";
