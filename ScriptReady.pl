@@ -66,13 +66,18 @@ system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/EXERCISES/$TN/$NN -
 $verbose && print "Creating Description binary\n";
 system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/EXERCISES/$TN/$NN --description' '/ALTS/EXERCISES/$TN/$NN-description'");
 $verbose && print "Creating Result binary\n";
+
+system("/ALTS/EXERCISES/$TN/$NN --description > /ALTS/EXERCISES/$TN/$NN-description.txt");
+
 system ("perl /leats-scripts/Perl2SetUIDExecutable.pl '/ALTS/lib/Results2Html /ALTS/RESULTS/ACTUAL/$TN-$NN' '/ALTS/EXERCISES/$TN/$NN-result'2>/dev/null");
 $verbose && print "Setup permissions\n";
 system ("chmod 6555 /ALTS/EXERCISES/$TN/$NN-grade; chmod 6555 /ALTS/EXERCISES/$TN/$NN-break; chmod 6555 /ALTS/EXERCISES/$TN/$NN-result; chmod 6555 /ALTS/EXERCISES/$TN/$NN-description");
 
+system("/ALTS/EXERCISES/$TN/$NN --description > /ALTS/EXERCISES/$TN/$NN-description.txt; chmod 0400 /ALTS/EXERCISES/$TN/$NN-description.txt");
+
 $verbose && print "Creating Exercise activator\n";
 system("mkdir $CGI_HOME/$TN/ 1>/dev/null 2>&1 ");
-system ("perl /leats-scripts/Perl2SetUIDExecutable.pl 'cp -p /ALTS/EXERCISES/$TN/$NN-grade $CGI_HOME/Grade 1>/dev/null 2>&1; cp -p /ALTS/EXERCISES/$TN/$NN-break $CGI_HOME/Break 1>/dev/null 2>&1; cp -p  /ALTS/EXERCISES/$TN/$NN-result $CGI_HOME/Result 1>/dev/null 2>&1; cp -p /ALTS/EXERCISES/$TN/$NN-description $CGI_HOME/Description 1>/dev/null 2>&1' '$CGI_HOME/$TN/$NN-activator'");
+system ("perl /leats-scripts/Perl2SetUIDExecutable.pl 'cp -p /ALTS/EXERCISES/$TN/$NN-grade $CGI_HOME/Grade 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Grade;cp -p /ALTS/EXERCISES/$TN/$NN-break $CGI_HOME/Break 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Break; cp -p  /ALTS/EXERCISES/$TN/$NN-result $CGI_HOME/Result 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Result; cp -p /ALTS/EXERCISES/$TN/$NN-description $CGI_HOME/Description 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Description' '$CGI_HOME/$TN/$NN-activator'");
 }
 
 system("rm -rf /tmp/par*");
