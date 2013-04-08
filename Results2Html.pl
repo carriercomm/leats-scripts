@@ -447,7 +447,11 @@ print "
 	{
 		print "<td class=\"Result_picture\" height=\"114\"><img src=\"/ALTSicons/EXAMPASSED.jpg\" alt=\"PASSED\" height=\"105\" width=\"152\"></td>";	
 	}
-	else
+	elsif (($Tasksuccessful eq "-")&&($Tasknumber eq "--"))
+	{
+		print "<td class=\"Result_picture\" height=\"114\"><img src=\"/ALTSicons/EXAMNOTDONE.jpg\" alt=\"NOT DONE YET\" height=\"105\" width=\"152\"></td>";
+	}
+	else 
 	{
 		print "<td class=\"Result_picture\" height=\"114\"><img src=\"/ALTSicons/EXAMFAILED.jpg\" alt=\"FAILED\" height=\"105\" width=\"152\"></td>";
 	}
