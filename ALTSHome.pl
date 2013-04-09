@@ -105,6 +105,9 @@ my $PW = $A[1];
 
 if (!(defined $USER)) { print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/ALTSLogin.cgi\">\n"; exit 1; }
 
+system("rm -rf /ALTS/RESULTS/ACTUAL/AES/${USER}_results.tgz 2>/dev/null; tar -czf /ALTS/RESULTS/ACTUAL/AES/${USER}_results.tgz /ALTS/RESULTS/ACTUAL/*.alts.aes");
+
+
 print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">
 <html xmlns=\"http://www.w3.org/1999/xhtml\"><head>
 <meta http-equiv=\"Content-Type\" content=\"text/html;
@@ -293,6 +296,26 @@ left: 0;
 
 visibility: hidden;
 }
+
+a.btn {
+	display: block;
+	background-color: transparent;
+	background-repeat: no-repeat;
+	background-position: 0 0;
+	margin: 0 auto;
+}
+
+
+#btn_dload {
+	width: 78px;
+	height: 78px;
+	background-image: url('/ALTSicons/Download-Button.jpg');
+	}
+
+#btn_dload:hover {
+	background-position: -78px 0;
+	}
+
 -->
 </style>
 
@@ -413,7 +436,15 @@ exposeTopic("21-mail");
 print "
 </ol>
 </td>
-</tr></table>
+</tr>
+<tr>
+   <td class=\"Button_Description\">DOWNLOAD ALL RESULTS</td>
+</tr>
+<tr>
+<td style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"/results/${USER}_results.tgz\"></a></td>
+
+</tr>
+</table>
 
 </td>
 </tr>
