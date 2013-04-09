@@ -3,6 +3,8 @@
 echo "Setting up ALTS..This may take a few minutes.."
 echo "Please be patient.."
 
+echo -en "[                   ] 0% \r";
+
 mkdir /ALTS 2>/dev/null
 chmod 755 /ALTS
 
@@ -64,6 +66,16 @@ echo -en "[#########          ] 45% \r";
 /ALTS/lib/Perl2SetUIDExecutable /ALTS/lib/ALTSLogout.pl /ALTS/ALTSLogout
 chmod 6755 /ALTS/ALTSLogout
 echo -en "[##########         ] 50%\r";
+
+
+pp -o /ALTS/lib/ALTSHome.pl /leats-scripts/ALTSHome.pl
+chmod 6755 /ALTS/lib/ALTSHome.pl
+echo -en "[##########         ] 55%\r";
+
+/ALTS/lib/Perl2SetUIDExecutable /ALTS/lib/ALTSHome.pl /var/www/cgi-bin/ALTSHome
+chmod 6755 /var/www/cgi-bin/ALTSHome
+echo -en "[##########         ] 60%\r";
+
 
 mkdir -p /ALTS/SECURITY; chmod -R 400 /ALTS/SECURITY
 cp -p /leats-scripts/SECURITY/* /ALTS/SECURITY/ 1>/dev/null 2>&1;
