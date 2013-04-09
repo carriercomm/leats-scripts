@@ -77,7 +77,7 @@ system("/ALTS/EXERCISES/$TN/$NN --description > /ALTS/EXERCISES/$TN/$NN-descript
 
 $verbose && print "Creating Exercise activator\n";
 system("mkdir $CGI_HOME/$TN/ 1>/dev/null 2>&1 ");
-system ("perl /leats-scripts/Perl2SetUIDExecutable.pl 'cp -p /ALTS/EXERCISES/$TN/$NN-grade $CGI_HOME/Grade 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Grade;cp -p /ALTS/EXERCISES/$TN/$NN-break $CGI_HOME/Break 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Break; cp -p  /ALTS/EXERCISES/$TN/$NN-result $CGI_HOME/Result 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Result; cp -p /ALTS/EXERCISES/$TN/$NN-description $CGI_HOME/Description 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Description' '$CGI_HOME/$TN/$NN-activator'");
+system ("perl /leats-scripts/Perl2SetUIDExecutable.pl 'cp -p /ALTS/EXERCISES/$TN/$NN-grade $CGI_HOME/Grade 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Grade;cp -p /ALTS/EXERCISES/$TN/$NN-break $CGI_HOME/Break 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Break; cp -p  /ALTS/EXERCISES/$TN/$NN-result $CGI_HOME/Result 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Result; cp -p /ALTS/EXERCISES/$TN/$NN-description $CGI_HOME/Description 1>/dev/null 2>&1; chmod 6555 $CGI_HOME/Description; unlink /ALTS/Grade; unlink /ALTS/Break; unlink /ALTS/Description; ln -s /var/www/cgi-bin/Grade /ALTS/Grade; ln -s /var/www/cgi-bin/Break /ALTS/Break; ln -s /var/www/cgi-bin/Description /ALTS/Description' '$CGI_HOME/$TN/$NN-activator'");
 }
 
 system("rm -rf /tmp/par*");
