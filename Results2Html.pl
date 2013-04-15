@@ -251,11 +251,16 @@ height: 30px;
 width: 78px;
 height: 78px;
 	background-image: url('/ALTSicons/play_button.png');
-}
-#btn_grade:hover {
+}";
+
+if (-f "/var/www/cgi-bin/Grade") {
+print "#btn_grade:hover {
 	background-position: -78px 0;
+}";
+
 }
 
+print "
 #btn_break {
 width: 78px;
 height: 78px;
@@ -279,10 +284,15 @@ width: 78px;
 height: 78px;
 	background-image: url('/ALTSicons/Download-Button.jpg');
 }
-#btn_dload:hover {
-	background-position: -78px 0;
+";
+
+if (-f "/ALTS/RESULTS/ACTUAL/AES/$Topic-$Problem.alts.aes") {
+	print "#btn_dload:hover {
+		background-position: -78px 0;
+	}";
 }
 
+print "
 #btn_home {
 width: 78px;
 height: 78px;
@@ -466,9 +476,16 @@ print "
 		<td class=\"Button_Description\">GRADE</td>
 		</tr>
 		<tr>
-		<td width=\"49%\"><a id=\"btn_break\" class=\"btn\" href=\"?BREAK\"></a></td>
-		<td width=\"51%\"><a id=\"btn_grade\" class=\"btn\" href=\"?GRADE\"></a></td>
-		</tr>
+		<td width=\"49%\"><a id=\"btn_break\" class=\"btn\" href=\"?BREAK\"></a></td>";
+if (-f "/var/www/cgi-bin/Grade") {
+	print "		<td width=\"51%\"><a id=\"btn_grade\" class=\"btn\" href=\"?GRADE\"></a></td>";
+}
+else
+{
+	print "         <td width=\"51%\"><a id=\"btn_grade\" class=\"btn\" href=\"#\"></a></td>";
+}
+
+print "		</tr>
 		</tbody></table></td>
 		</tr>
 		</tbody></table>

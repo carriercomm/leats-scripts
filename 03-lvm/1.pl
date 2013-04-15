@@ -45,7 +45,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription &ssh_connect);
 use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition );
 ######
 ###Options
@@ -63,7 +63,15 @@ GetOptions("help|?|h" => \$help,
 sub break() {
 	print "Break has been selected.\n";
 	&pre();
+		
 	$verbose and print "Pre complete breaking\n";
+
+	$verbose and print "Remove testVG and testLV if exist.";
+
+	my $ssh=ssh_connect();
+        my $output=$ssh->capture("lvremove -f /dev/mapper/testVG-testLV; vgremove -f testVG;
+				(echo 'd'; echo '4';echo 'd';echo '3';echo 'd';echo '2';echo 'd';echo '1';echo 'w') | fdisk /dev/vdb;
+				partx -va /dev/vdb");
 
 	my $ret=Disk::lv_create("vdb","300","vdb");
 	if ( $ret != 0 ) {
@@ -129,8 +137,8 @@ sub grade() {
 	printS("Checking PE of testVG is 4M:","$L");	
 	Framework::grade(checkVGData("testVG","PESize",4));
 
-	printS("Checking size of testVG is 120M:","$L");
-	Framework::grade(checkVGData("testVG","VGSize",120));
+	printS("Checking size of testVG is 120M (+-5%):","$L");
+	Framework::grade(checkVGData("testVG","VGSize",120,5));
 
 	printS("Checking logical volume testLV1 in volume group testVG exist:","$L");
 	Framework::grade(checkLVExist("testVG","testLV1"));

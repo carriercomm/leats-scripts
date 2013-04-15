@@ -71,6 +71,11 @@ sub break() {
 	$verbose and print "Pre complete breaking\n";
 
 	RecreateVDisk("vdb","300","vdb");
+	
+	$verbose and print "Reboot server";	
+
+	Framework::restart;
+	Framework::grade(Framework::timedconTo("60"));
 
 #	my $ret=Disk::lv_create("vdb","200","vdb");
 #	if ( $ret != 0 ) {
