@@ -92,6 +92,8 @@ sub break() {
 #	my $ssh=Framework::ssh_connect;
 #        my $output=$ssh->capture("pvcreate /dev/vdb1; vgcreate pre-test-vg /dev/vdb1; lvcreate -L 100M -n pre-test-lv1 pre-test-vg; lvcreate -L 40M -n pre-test-lv2 pre-test-vg;");
 
+        system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
+
 	print "Your task: $description\n";
 }
 

@@ -85,7 +85,7 @@ unlink /ALTS/Grade 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Grade /ALTS/Grade
 unlink /ALTS/Break 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Break /ALTS/Break
 unlink /ALTS/Description 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Description /ALTS/Description
 
-#/leats-scripts/ScriptReady.pl ALL 1>/dev/null
+/leats-scripts/ScriptReady.pl ALL 1>/dev/null
 echo -en "[################# ] 95%\r";
 
 

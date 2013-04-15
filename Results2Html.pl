@@ -131,7 +131,7 @@ if (-f "/var/www/cgi-bin/$Topic/$P-activator") { $Previous="$Topic-$P"; }
 #print "NEXT: $Next  || PREV: $Previous";
 
 
-system("/var/www/cgi-bin/$Topic/$Problem-activator 1>/dev/null 2>&1");
+#system("/var/www/cgi-bin/$Topic/$Problem-activator 1>/dev/null 2>&1");
 
 if ($Description eq "") { $Description = `/var/www/cgi-bin/Description`;
 			  $Description =~ s/\n/<\/p><p>/g;

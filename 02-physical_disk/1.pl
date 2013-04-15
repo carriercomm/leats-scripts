@@ -70,12 +70,12 @@ sub break() {
 
 	$verbose and print "Pre complete breaking\n";
 
-	RecreateVDisk("vdb","300","vdb");
+#	RecreateVDisk("vdb","300","vdb");
 	
-	$verbose and print "Reboot server";	
+#	$verbose and print "Reboot server";	
 
-	Framework::restart;
-	Framework::grade(Framework::timedconTo("60"));
+#	Framework::restart;
+#	Framework::grade(Framework::timedconTo("60"));
 
 #	my $ret=Disk::lv_create("vdb","200","vdb");
 #	if ( $ret != 0 ) {
@@ -85,6 +85,8 @@ sub break() {
 #	} else {
 #		print "Disk attached to server. Local disk is vdb\n";
 #	}
+
+	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
 	print "Your task: $description\n";
 }
