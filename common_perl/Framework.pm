@@ -26,7 +26,7 @@ BEGIN {
 	use Exporter ();
 
     	@Framework::ISA         = qw(Exporter);
-    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connecto &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile );
+    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connectTo &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile );
     	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file $description &showdescription);
 
 }

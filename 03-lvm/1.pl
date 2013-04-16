@@ -69,8 +69,10 @@ sub break() {
         $verbose and print "Reseting server\n";
         system("/ALTS/RESET");
 
+	sleep 2;
         RecreateVDisk("vdb","300","vdb");
 
+	sleep 2;
         CreatePartition("/dev/vdb","1","+30M","lvm");
         CreatePartition("/dev/vdb","2","+50M","swap");
         CreatePartition("/dev/vdb","3","+25M","linux");

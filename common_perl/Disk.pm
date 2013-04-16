@@ -286,6 +286,22 @@ sub xml_parse() {
 
 
 #
+# Check if file/directory exist
+#
+# 1.Parameter: Path
+# 2. Parameter: Type  f=file, d=directory, e=both
+#
+# E.g.: Exist(/tmp,"d");
+#
+#
+sub Exist($$)
+{
+	my $ssh=Framework::ssh_connect;
+	my $output=$ssh->capture("test -d");
+	return chomp($output);
+}
+
+#
 #
 # Checks if VG exist
 #
@@ -637,6 +653,8 @@ sub checkMountedWithUUID($)
 {
 	my $mounted_to=$_[0];
 
+	if (Exist($mounted_to,"d") != 1) { return 1;}
+
 	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("cat /etc/fstab");
 
@@ -658,6 +676,8 @@ sub checkMountedWithLABEL($)
 {
 
 	my $mounted_to=$_[0];
+
+	if (Exist($mounted_to,"d") != 1) { return 1;}
 
 	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("cat /etc/fstab");
@@ -681,6 +701,9 @@ sub checkMountedWithLABEL($)
 sub checkMountOptions($$)
 {
 	my $mounted_to=$_[0];
+
+	if (Exist($mounted_to,"d") != 1) { return 1;}
+
 	my $options_list=$_[1]; $options_list=~s/\s+//g; #remove whitespaces
 		my @options = split(/,/,$options_list); # move them into an array
 
@@ -969,14 +992,11 @@ my $Size=$_[1];
 my $LVName=$_[2];
 my $VGName =$_[3] || "vg_desktop";
 
-                my $ret=lv_create("$LVName","$Size","$Target","$VGName");
-                if ( $ret != 0 ) {
-                $verbose and print "Trying to repair.\n";
-                lv_remove("$LVName","$VGName");
+                $verbose and print "Removing /dev/mapper/$VGName-$LVName\n";
+		system("lvremove -f /dev/mapper/$VGName-$LVName");
+		$verbose and print "Creating $LVName\n";
                 lv_create("$LVName","$Size","$Target","$VGName");
-                } else {
                 print "Disk attached to server. Local disk is vdb\n";
-                }
 
 }
 

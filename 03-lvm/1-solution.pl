@@ -18,7 +18,7 @@ lvcreate -l 10 -n testLV1 testVG;
 
 sub ssh_connect() {
         open my $stderr_fh, '>', '/dev/null';
-        my $ssh = Net::OpenSSH->new("server", key_path=>"/scripts/ssh-key/id_rsa", default_stderr_fh => $stderr_fh);
+        my $ssh = Net::OpenSSH->new("server", key_path=>"/ALTS/SECURITY/id_rsa", default_stderr_fh => $stderr_fh);
         $ssh->error and ( print "Couldn't establish SSH connection: ". $ssh->error);
         return $ssh;
 }

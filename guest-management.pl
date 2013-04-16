@@ -18,7 +18,7 @@ my $install=0;
 my $reset=0;
 my $output;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name);
+use Framework qw($verbose $topic $author $version $hint $problem $name &connectTo);
 
 
 GetOptions("help|?" => \$help,
@@ -180,6 +180,9 @@ if ( $install ) {
 		}
 	}
 	$p->close();
+
+	my $i=0;
+	while((connectTo("1.1.1.2","22")) && ($i<10) ) { sleep 6; $i++; $verbose and print "Trying to connect via SSH ($i/10)..\n"; };
 
         if ( $succes ) {
                 print "Server isn't up and running. There has happened something. Please try the Reinstallation.\n";
