@@ -76,6 +76,16 @@ echo -en "[##########         ] 55%\r";
 chmod 6755 /var/www/cgi-bin/ALTSHome
 echo -en "[##########         ] 60%\r";
 
+pp -o /ALTS/lib/guest-management.pl /leats-scripts/guest-management.pl
+chmod 6755 /ALTS/lib/guest-management.pl
+echo -en "[##########         ] 65%\r";
+
+/ALTS/lib/Perl2SetUIDExecutable "/ALTS/lib/guest-management.pl -reset 2>/dev/null" /ALTS/RESET
+chmod 6755 /ALTS/RESET
+/ALTS/lib/Perl2SetUIDExecutable "/ALTS/lib/guest-management.pl -install 2>/dev/null" /ALTS/REINSTALL
+chmod 6755 /ALTS/REINSTALL
+echo -en "[##########         ] 70%\r";
+
 
 mkdir -p /ALTS/SECURITY; chmod -R 400 /ALTS/SECURITY
 cp -p /leats-scripts/SECURITY/* /ALTS/SECURITY/ 1>/dev/null 2>&1;

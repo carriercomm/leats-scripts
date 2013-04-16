@@ -230,7 +230,8 @@ sub lv_create($$$;$) {
 	}
 	my $free= &lvm_free($vgname);
 	$verbose and print "Free space on $vgname: $free\n";
-	if ( $free lt $size ) {
+	$verbose and print "Size of $lvname: $size\n";
+	if ( $free < $size ) {
 		$verbose and print "I dont have enough free space. We should free up some space.\n";
 		return 1;
 	} else {
@@ -931,14 +932,13 @@ sub CreatePartition($$$$)
 	$verbose && print "Partition type: $Type{$PT}\n";
 
 	my $ssh=Framework::ssh_connect;
-	my $output=$ssh->capture("fdisk -l | grep '$Disk\[1234]' | wc -l");
+	my $output=$ssh->capture("fdisk -l | grep '$Disk\[1234]' | wc -l");	
 	chomp($output);
-
 
 	$verbose && print "output (number of partitions) = \n$output\n\n";
 
 
-	if ($output ne 0)  {  
+	if ($output ne "0")  {  
 		$output=$ssh->capture("(echo n; echo p; echo $P; echo \"\"; echo $PS; echo t; echo $P; echo $Type{$PT}; echo w) | fdisk $Disk; partx -va $Disk");
 	}
 	else 

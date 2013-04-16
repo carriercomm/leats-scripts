@@ -46,7 +46,7 @@ our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription &ssh_connect);
-use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition );
+use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk );
 ######
 ###Options
 ###
@@ -66,28 +66,38 @@ sub break() {
 		
 	$verbose and print "Pre complete breaking\n";
 
-	$verbose and print "Remove testVG and testLV if exist.";
+        $verbose and print "Reseting server\n";
+        system("/ALTS/RESET");
 
-	my $ssh=ssh_connect();
-        my $output=$ssh->capture("lvremove -f /dev/mapper/testVG-testLV; vgremove -f testVG;
-				(echo 'd'; echo '4';echo 'd';echo '3';echo 'd';echo '2';echo 'd';echo '1';echo 'w') | fdisk /dev/vdb;
-				partx -va /dev/vdb");
+        RecreateVDisk("vdb","300","vdb");
 
-	my $ret=Disk::lv_create("vdb","300","vdb");
-	if ( $ret != 0 ) {
-		$verbose and print "Trying to repair.\n";
-		Disk::lv_remove("vdb");
-		Disk::lv_create("vdb","300","vdb");
-	} else {
-		print "Disk attached to server. Local disk is vdb\n";
-	}
+        CreatePartition("/dev/vdb","1","+30M","lvm");
+        CreatePartition("/dev/vdb","2","+50M","swap");
+        CreatePartition("/dev/vdb","3","+25M","linux");
+
+
+#$verbose and print "Remove testVG and testLV if exist.";
+
+#	my $ssh=ssh_connect();
+#        my $output=$ssh->capture("lvremove -f /dev/mapper/testVG-testLV; vgremove -f testVG;
+#				(echo 'd'; echo '4';echo 'd';echo '3';echo 'd';echo '2';echo 'd';echo '1';echo 'w') | fdisk /dev/vdb;
+#				partx -va /dev/vdb");
+
+#	my $ret=Disk::lv_create("vdb","300","vdb");
+#	if ( $ret != 0 ) {
+#		$verbose and print "Trying to repair.\n";
+#		Disk::lv_remove("vdb");
+#		Disk::lv_create("vdb","300","vdb");
+#	} else {
+#		print "Disk attached to server. Local disk is vdb\n";
+#	}
 ##TODO Repleace it for something beauty :)
 #	$ret=`(echo n; echo p; echo 1; echo 1; echo +80M; echo t; echo 8e; echo w) | fdisk /dev/vg_desktop/vdb; partx -va /dev/vg_desktop/vdb`;
 #	$ret=`parted /dev/vg_desktop/vdb --script mklabel msdos; parted /dev/vg_desktop/vdb --script mkpart primary 0 160; parted /dev/vg_desktop/vdb --script set 1 lvm on`;
 
-	CreatePartition("/dev/vdb","1","+30M","lvm");
-	CreatePartition("/dev/vdb","2","+50M","swap");
-	CreatePartition("/dev/vdb","3","+25M","linux");
+#	CreatePartition("/dev/vdb","1","+30M","lvm");
+#	CreatePartition("/dev/vdb","2","+50M","swap");
+#	CreatePartition("/dev/vdb","3","+25M","linux");
 
 #	my $ssh=Framework::ssh_connect;
 #        my $output=$ssh->capture("pvcreate /dev/vdb1; vgcreate pre-test-vg /dev/vdb1; lvcreate -L 100M -n pre-test-lv1 pre-test-vg; lvcreate -L 40M -n pre-test-lv2 pre-test-vg;");

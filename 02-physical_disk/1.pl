@@ -70,7 +70,9 @@ sub break() {
 
 	$verbose and print "Pre complete breaking\n";
 
-#	RecreateVDisk("vdb","300","vdb");
+	$verbose and print "Reset server\n";
+	system("/ALTS/RESET");
+	RecreateVDisk("vdb","300","vdb");
 	
 #	$verbose and print "Reboot server";	
 

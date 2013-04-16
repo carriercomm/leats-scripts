@@ -136,11 +136,16 @@ if ( $install ) {
 	}
 } elsif ( $reset ) {
 	&clean();
-	print "Reset started....\n";
+	print "Reset the server machine to the original state....\n";
 
 	$verbose and print "Umount LVs if they are mounted";
-	$output=`umount /dev/vg_desktop/server;umount /dev/vg_desktop/server_snapshot;umount /dev/mapper/vg_desktop-vdb`;
+#	$output=`umount /dev/vg_desktop/server 2>&1;umount /dev/vg_desktop/server_snapshot 2>&1;umount /dev/mapper/vg_desktop-vdb 2>&1`;
+	$output=`umount /dev/vg_desktop/server 2>&1;umount /dev/vg_desktop/server_snapshot 2>&1`;
 	$verbose and print "$output";
+
+#	$verbose and print "Recreate vdb LV..";
+#	$output=`lvremove -f /dev/mapper/vg_desktop-vdb;lvcreate -L 300M -n vdb vg_desktop`;
+#	$verbose and print "$output";
 
 	$verbose and print "Return to LV Snapshot of server if possible..\n";
 	$output=`lvchange -an /dev/vg_desktop/server; lvchange -ay /dev/vg_desktop/server; lvchange -an /dev/vg_desktop/server;lvchange -ay /dev/vg_desktop/server;lvconvert --merge /dev/vg_desktop/server_snapshot`;
@@ -162,8 +167,8 @@ if ( $install ) {
 	my $p = Net::Ping->new();
 	my $time=0;
 	my $succes=1;
-	while ( $time < 120 ) {
-		$verbose and print "Testing if server is ready... $time\\45 seconds\n";
+	while ( $time < 90 ) {
+		$verbose and print "Testing if server is ready... $time\\90 seconds\n";
 		$time += +5;
 		if ( $p->ping("server") ) {
 			$verbose and print "Server is up\n";
@@ -176,13 +181,10 @@ if ( $install ) {
 	}
 	$p->close();
 
-	$verbose and print "Checking SSH connection...";
-
         if ( $succes ) {
                 print "Server isn't up and running. There has happened something. Please try the Reinstallation.\n";
         } else {
                 print "Server is up and running.\n";
         }
-
 
 }

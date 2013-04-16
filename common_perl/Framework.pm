@@ -394,7 +394,7 @@ sub useage() {
 sub ssh_connect() {
 	$verbose and print "SSH connection to server.\n";
 	open my $stderr_fh, '>', '/dev/null';
-	my $ssh = Net::OpenSSH->new("server", key_path=>"/scripts/ssh-key/id_rsa", default_stderr_fh => $stderr_fh);
+	my $ssh = Net::OpenSSH->new("server", key_path=>"/ALTS/SECURITY/id_rsa", default_stderr_fh => $stderr_fh);
 	$ssh->error and ( $verbose and print "Couldn't establish SSH connection: ". $ssh->error);
 	return $ssh;
 }
