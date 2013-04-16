@@ -15,7 +15,8 @@ our ($topic, $author, $version, $hint, $problem, $name);
 our $verbose=0;
 our $help=0;
 my $install=0;
-my $reinstall=0;
+my $reset=0;
+my $output;
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name);
 
@@ -23,14 +24,14 @@ use Framework qw($verbose $topic $author $version $hint $problem $name);
 GetOptions("help|?" => \$help,
            "verbose|v" => \$verbose,
 	   "i|install" => \$install,
-	    "r|reinstall" => \$reinstall,
+	    "r|reset" => \$reset,
 	);
 
 sub useage() {
 	print "Provisioning the guest\n";
 	print "$0 \$options \n";
 	print "i|install	Install the guest\n";
-	print "r|reinstall	Reinstall the guest\n";
+	print "r|reset		Reinstall the guest\n";
 	};
 
 if ( $help) {
@@ -80,12 +81,14 @@ sub clean($) {
                 	$dom->undefine();
 
 		}
-	$verbose and print "Return to LV Snapshot of server if possible..\n";
-	system("lvchange -an /dev/vg_desktop/server;lvchange -ay /dev/vg_desktop/server;lvconvert --merge /dev/vg_desktop/server_snapshot");
         }
 }
 if ( $install ) {
 	&clean();
+ 	$verbose and print "Return to LV Snapshot of server if possible..\n";
+        $output=`lvchange -an /dev/vg_desktop/server;lvchange -ay /dev/vg_desktop/server;lvconvert --merge /dev/vg_desktop/server_snapshot`;
+        $verbose and print "$output";
+
 	print "Running install, May take up to 15 minutes.\n";
 	my $time=0;
 	&install;
@@ -104,11 +107,12 @@ if ( $install ) {
 		exit 10;
 	};
 	print "Install compeleted Succesfully in $time seconds.\n";
+	system("cp -p /etc/libvirt/qemu/server.xml /ALTS/SECURITY/server.xml");
         $verbose and print "Creating snapshot\n";
-        system("lvcreate -pr --snapshot -L 2G --name server_snapshot /dev/vg_desktop/server");	
+	system("lvcreate -pr --snapshot -L 2G --name server_snapshot /dev/vg_desktop/server");	
 	print "Performing post test.\n";
 	Framework::start;
-	## Ping test if host is alive.
+## Ping test if host is alive.
 	my $p = Net::Ping->new();
 	$time=0;
 	my $succes=1;
@@ -130,8 +134,55 @@ if ( $install ) {
 	} else {
 		print "Post test Complete.\n";
 	}
-} elsif ( $reinstall ) {
+} elsif ( $reset ) {
 	&clean();
-	print "Reinstall started....but it is just a plain install...\n";
-		
+	print "Reset started....\n";
+
+	$verbose and print "Umount LVs if they are mounted";
+	$output=`umount /dev/vg_desktop/server;umount /dev/vg_desktop/server_snapshot;umount /dev/mapper/vg_desktop-vdb`;
+	$verbose and print "$output";
+
+	$verbose and print "Return to LV Snapshot of server if possible..\n";
+	$output=`lvchange -an /dev/vg_desktop/server; lvchange -ay /dev/vg_desktop/server; lvchange -an /dev/vg_desktop/server;lvchange -ay /dev/vg_desktop/server;lvconvert --merge /dev/vg_desktop/server_snapshot`;
+	$verbose and print "$output";        	
+
+        $verbose and print "Creating new snapshot..\n";
+        $output=`lvcreate -pr --snapshot -L 2G --name server_snapshot /dev/vg_desktop/server`;
+        $verbose and print "$output";
+
+	$verbose and print "Recreate /etc/libvirt/qemu/server.xml..\n";
+	system("cp -p /ALTS/SECURITY/server.xml /etc/libvirt/qemu/server.xml");
+
+	$verbose and print "Restart libvirtd service...";	
+	$output=`service libvirtd restart`;
+	$verbose and print "$output";
+
+	Framework::start;
+# Ping test if host is alive.
+	my $p = Net::Ping->new();
+	my $time=0;
+	my $succes=1;
+	while ( $time < 120 ) {
+		$verbose and print "Testing if server is ready... $time\\45 seconds\n";
+		$time += +5;
+		if ( $p->ping("server") ) {
+			$verbose and print "Server is up\n";
+			$succes=0;
+			last;
+		} else {
+			$verbose and print "Server is not up yet....\n";
+			sleep 5;
+		}
+	}
+	$p->close();
+
+	$verbose and print "Checking SSH connection...";
+
+        if ( $succes ) {
+                print "Server isn't up and running. There has happened something. Please try the Reinstallation.\n";
+        } else {
+                print "Server is up and running.\n";
+        }
+
+
 }
