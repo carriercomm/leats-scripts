@@ -71,6 +71,8 @@ sub break() {
 	print "Break has been selected.\n";
 	&pre();
 
+        $verbose and print "Reset server\n";
+        system("/ALTS/RESET");
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
