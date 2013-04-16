@@ -296,9 +296,13 @@ sub xml_parse() {
 #
 sub Exist($$)
 {
+my $File = $_[0];
+my $Option =$_[1];
+
 	my $ssh=Framework::ssh_connect;
-	my $output=$ssh->capture("test -d");
-	return chomp($output);
+	my $output=$ssh->capture("test -$Option $File; echo \$?");
+	chomp($output);
+	return $output;
 }
 
 #
@@ -653,7 +657,7 @@ sub checkMountedWithUUID($)
 {
 	my $mounted_to=$_[0];
 
-	if (Exist($mounted_to,"d") != 1) { return 1;}
+	if (Exist($mounted_to,"d") ne "0") { return 1;}
 
 	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("cat /etc/fstab");
@@ -677,7 +681,7 @@ sub checkMountedWithLABEL($)
 
 	my $mounted_to=$_[0];
 
-	if (Exist($mounted_to,"d") != 1) { return 1;}
+	if (Exist($mounted_to,"d") ne "0") { return 1;}
 
 	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("cat /etc/fstab");
@@ -702,12 +706,13 @@ sub checkMountOptions($$)
 {
 	my $mounted_to=$_[0];
 
-	if (Exist($mounted_to,"d") != 1) { return 1;}
+
+	if (Exist($mounted_to,"d") ne 0) { return 1;}
 
 	my $options_list=$_[1]; $options_list=~s/\s+//g; #remove whitespaces
-		my @options = split(/,/,$options_list); # move them into an array
+	my @options = split(/,/,$options_list); # move them into an array
 
-		my $ssh=Framework::ssh_connect;
+	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("cat /proc/mounts");
 
 	my @MO = $output =~ m/\S+\s+$mounted_to\s+\S+\s+(\S+).*/g;

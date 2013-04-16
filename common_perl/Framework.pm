@@ -189,7 +189,7 @@ sub connectTo(;$$) {
 sub timedconTo(;$$$) {
 	### Parameters: time server port
 	my ( $time, $server, $port)=@_;
-	$time ||="45";
+	$time ||="120";
 	$server ||="1.1.1.2";
         $port ||="22";
 	$verbose and print "Timed connection $server on port $port for $time seconds.\n";

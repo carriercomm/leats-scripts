@@ -24,11 +24,14 @@ Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.5";
 our $topic="02-physical_disk";
 our $problem="1";
-our $description="Additional disk has been added to your server. Initialize it, 
-create a 100 MB (+-10%) ext3 partition on it and persistently mount it on /mnt/das.
-Set the label of the filesystem to test1-label.
-There must be \"rw\" and \"acl\" among the mount options
-Increase Swap size with 50M (+-5%)\n";
+our $description="Additional disk has been added to your server.
+- Create a 100 MB (+-10%) ext3 partition on it
+- Set the label of the filesystem to test1-label.
+- Mount it with Label on /mnt/das
+- There must be \"rw\" and \"acl\" among the mount options
+- Increase Swap size with 50M (+-5%)
+(Mind that every modification has to be reboot persistently!)\n";
+
 our $hint="Find the device with fdisk, create a partition, \nthen create a filesystem and create entry in fstab\n";
 #
 #
@@ -98,13 +101,11 @@ sub grade() {
 	my $Student = Framework::getStudent();
 	print "Grade has been selected.\n";
 	print "rebooting server:";
-###########
-#kikommentelni!!!!
-#
-#	Framework::restart;
-#	Framework::grade(Framework::timedconTo("60"));
+
+	Framework::restart;
+	Framework::timedconTo("120");
+
 ## Checking if mounted
-#
 
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
@@ -130,7 +131,6 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");	
 
 	
-
 
 	printS("Checking mount:","$L");
 	Framework::grade(checkMount("vdb","/mnt/das/"));
