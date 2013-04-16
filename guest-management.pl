@@ -80,6 +80,8 @@ sub clean($) {
                 	$dom->undefine();
 
 		}
+	$verbose and print "Return to LV Snapshot of server if possible..\n";
+	system("lvchange -an /dev/vg_desktop/server;lvchange -ay /dev/vg_desktop/server;lvconvert --merge /dev/vg_desktop/server_snapshot");
         }
 }
 if ( $install ) {
@@ -102,6 +104,8 @@ if ( $install ) {
 		exit 10;
 	};
 	print "Install compeleted Succesfully in $time seconds.\n";
+        $verbose and print "Creating snapshot\n";
+        system("lvcreate -pr --snapshot -L 2G --name server_snapshot /dev/vg_desktop/server");	
 	print "Performing post test.\n";
 	Framework::start;
 	## Ping test if host is alive.
@@ -122,7 +126,7 @@ if ( $install ) {
 	}
 	$p->close();
 	if ( $succes ) {
-		print "Post test Not complete. Maye Computer is only slow....\n";
+		print "Post test Not complete. Maybe Computer is only slow....\n";
 	} else {
 		print "Post test Complete.\n";
 	}

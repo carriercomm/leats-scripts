@@ -31,7 +31,7 @@ echo "Restore server main LV..."
 lvchange -an /dev/vg_desktop/server
 lvchange -ay /dev/vg_desktop/server
 lvconvert --merge /dev/vg_desktop/server_snapshot
-lvcreate -pr --snapshot -L 1G --name server_snapshot /dev/vg_desktop/server
+lvcreate -pr --snapshot -L 2G --name server_snapshot /dev/vg_desktop/server
 
 echo "Recreate /etc/libvirt/qemu/server.xml..."
 echo "<!--
