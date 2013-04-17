@@ -32,7 +32,11 @@ our $description="Additional disk has been added to your server.
 - Increase Swap size with 50M (+-5%)
 (Mind that every modification has to be reboot persistently!)\n";
 
-our $hint="Find the device with fdisk, create a partition, \nthen create a filesystem and create entry in fstab\n";
+our $hint="Find the device and create a partition. (fdisk)
+Create a filesystem. Modify the label and create an entry with label into fstab. (mkfs,e2label)
+Mind the mount options. Create a new partition for swap.
+Don't forget to set the type of partition. Create a swap on it and activate. (fdisk,mkswap,swapon)
+It has to be set in fstab too.";
 #
 #
 #
@@ -71,26 +75,8 @@ sub break() {
 	print "Break has been selected.\n";
 	&pre();
 
-	$verbose and print "Pre complete breaking\n";
-
-	$verbose and print "Reset server\n";
-	system("/ALTS/RESET");
 	RecreateVDisk("vdb","300","vdb");
 	
-#	$verbose and print "Reboot server";	
-
-#	Framework::restart;
-#	Framework::grade(Framework::timedconTo("60"));
-
-#	my $ret=Disk::lv_create("vdb","200","vdb");
-#	if ( $ret != 0 ) {
-#		$verbose and print "Trying to repair.\n";
-#		Disk::lv_remove("vdb");
-#		Disk::lv_create("vdb","200","vdb");
-#	} else {
-#		print "Disk attached to server. Local disk is vdb\n";
-#	}
-
 	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
 	print "Your task: $description\n";
@@ -182,21 +168,9 @@ sub grade() {
 
 sub pre() {
 ### Prepare the machine 
-	$verbose and print "Running pre section\n";
-	my $free=Disk::lvm_free;
-	$verbose and print "Free space :$free\n";
-	if ( $free > 1000 ) {
-		$verbose and print "We have enough space to continue.\n";
-	} else {
-		print "Not enough space on server. We need to free up some space.";
-		if ( Disk::lv_count ne 4 ) {
-			print "You have " . Disk::lv_count . " lv-s on the server instead of 4. We should restore default settings.\n";
-			Disk::base;
-		} else {
-			print "Count is ok. Dev should investigate problem.\n";
-			exit 1;
-		}
-	}
+        $verbose and print "Reseting server machine...\n";
+        system("/ALTS/RESET");
+
 }
 
 sub post() {

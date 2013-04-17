@@ -37,9 +37,11 @@ our $description="Make sure that the following settings are set up
 - SETUID has to be set on /tmp/test2
 - STICKY must not be set on /tmp/test
 - Other can't read, write or execute /tmp/test and /tmp/test2
-
 ";
-our $hint="";
+our $hint="Copy the given files (cp). Change the owners and groups (chown, chgrp).
+Create the symlink (ln). Create the directory (mkdir). 
+Set the SETGID bit and the group on the directory. (chmod, chgrp)
+Set the SETUID bit on the file (chmod). Modify the others permission (chmod).";
 #
 #
 #

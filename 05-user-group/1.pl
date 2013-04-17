@@ -32,7 +32,9 @@ our $description="- create the following users: john, mary and thomas
 - thomas should not be in the group tadmins.
 - change all users password to kuka002
 - john's account will expire on 2025-12-12";
-our $hint="";
+our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)
+Change the passwords of the users (passwd)
+Modify the account expiration of the user (chage)";
 #
 #
 #
@@ -69,10 +71,7 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-	&pre();
-
-        $verbose and print "Reset server\n";
-        system("/ALTS/RESET");
+	&pre(); #Reseting server machine...
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -186,13 +185,9 @@ sub grade() {
 sub pre() {
 ### Prepare the machine 
 	$verbose and print "Running pre section\n";
-	delUser("mary","true");
-	delUser("thomas","true");
-	delUser("john","true");
-	delGroup("tadmins");
-	delGroup("mary");
-	delGroup("thomas");
-	delGroup("john");
+        $verbose and print "Reset server\n";
+        system("/ALTS/RESET");
+
 }
 
 sub post() {

@@ -23,9 +23,13 @@ Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.7";
 our $topic="03-lvm";
 our $problem="1";
-our $description="Create a volume group named testVG with 4M physical extent size and 120M maximal size
+our $description="Additional disk has been added to your server.
+Create a volume group named testVG with 4M physical extent size and 120M maximal size
 Create a Logical Volume for Volume Group testVG named testLV1 with 10 PE size\n";
-our $hint="";
+our $hint="Find the added disk. Create a partion for LVM. Mind the type of the partition. (fdisk)
+Initialize the partition for use by LVM. (pvcreate)
+Create a volume group on it. Mind the extent size and maximal size. (vgcreate)
+Create a logical volume on this volume group. Mind the name and the size. (lvcreate)";
 #
 #
 #
@@ -62,12 +66,9 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-	&pre();
+	&pre(); #Reset server..
 		
 	$verbose and print "Pre complete breaking\n";
-
-        $verbose and print "Reseting server\n";
-        system("/ALTS/RESET");
 
 	sleep 2;
         RecreateVDisk("vdb","300","vdb");
@@ -76,33 +77,6 @@ sub break() {
         CreatePartition("/dev/vdb","1","+30M","lvm");
         CreatePartition("/dev/vdb","2","+50M","swap");
         CreatePartition("/dev/vdb","3","+25M","linux");
-
-
-#$verbose and print "Remove testVG and testLV if exist.";
-
-#	my $ssh=ssh_connect();
-#        my $output=$ssh->capture("lvremove -f /dev/mapper/testVG-testLV; vgremove -f testVG;
-#				(echo 'd'; echo '4';echo 'd';echo '3';echo 'd';echo '2';echo 'd';echo '1';echo 'w') | fdisk /dev/vdb;
-#				partx -va /dev/vdb");
-
-#	my $ret=Disk::lv_create("vdb","300","vdb");
-#	if ( $ret != 0 ) {
-#		$verbose and print "Trying to repair.\n";
-#		Disk::lv_remove("vdb");
-#		Disk::lv_create("vdb","300","vdb");
-#	} else {
-#		print "Disk attached to server. Local disk is vdb\n";
-#	}
-##TODO Repleace it for something beauty :)
-#	$ret=`(echo n; echo p; echo 1; echo 1; echo +80M; echo t; echo 8e; echo w) | fdisk /dev/vg_desktop/vdb; partx -va /dev/vg_desktop/vdb`;
-#	$ret=`parted /dev/vg_desktop/vdb --script mklabel msdos; parted /dev/vg_desktop/vdb --script mkpart primary 0 160; parted /dev/vg_desktop/vdb --script set 1 lvm on`;
-
-#	CreatePartition("/dev/vdb","1","+30M","lvm");
-#	CreatePartition("/dev/vdb","2","+50M","swap");
-#	CreatePartition("/dev/vdb","3","+25M","linux");
-
-#	my $ssh=Framework::ssh_connect;
-#        my $output=$ssh->capture("pvcreate /dev/vdb1; vgcreate pre-test-vg /dev/vdb1; lvcreate -L 100M -n pre-test-lv1 pre-test-vg; lvcreate -L 40M -n pre-test-lv2 pre-test-vg;");
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -113,14 +87,8 @@ sub grade() {
 	system("clear");
 	my $Student = Framework::getStudent();
 	print "Grade has been selected.\n";
-	print "rebooting server:";
-###########
-#kikommentelni!!!!
-#
+#	print "rebooting server:";
 #	Framework::restart;
-#	Framework::grade(Framework::timedconTo("60"));
-	## Checking if mounted
-	#
 
         system("clear");
         my $T=$topic; $T =~ s/\s//g;
@@ -183,22 +151,9 @@ sub grade() {
 }
 
 sub pre() {
-### Prepare the machine 
-	$verbose and print "Running pre section\n";
-	my $free=Disk::lvm_free;
-	$verbose and print "Free space :$free\n";
-	if ( $free > 1000 ) {
-		$verbose and print "We have enough space to continue.\n";
-	} else {
-		print "Not enough space on server. We need to free up some space.";
-		if ( Disk::lv_count ne 4 ) {
-			print "You have " . Disk::lv_count . " lv-s on the server instead of 4. We should restore default settings.\n";
-			Disk::base;
-		} else {
-			print "Count is ok. Dev should investigate problem.\n";
-			exit 1;
-		}
-	}
+### Reset the machine 
+        $verbose and print "Reseting server machine..\n";
+        system("/ALTS/RESET");
 }
 
 sub post() {

@@ -401,8 +401,8 @@ sub ssh_connect() {
 
 sub hint() {
 ### Hint for solution
-	print "Problem number: $problem in $topic topic \n";
-	print "=========================================\n";
+#	print "$topic/$problem hints \n";
+#	print "=========================================\n\n";
 	print "$hint\n";
 	exit 0;
 };

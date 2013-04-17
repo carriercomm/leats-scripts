@@ -26,7 +26,9 @@ our $problem="1";
 our $description="- User william's crontab has to be denied
 - User tihamer has to run \"/bin/echo 'crontab exam test'\" every day at 5:25
 - User rudolf has to run \"whoami\" in every hours 16th minute";
-our $hint="";
+our $hint="Add william into /etc/cron.deny. 
+Add the given entry to the cron of tihamer. (crontab)
+Add the given entry to rudolfs cron. (crontab)";
 #
 #
 #
