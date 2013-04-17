@@ -24,7 +24,7 @@ our $version="v0.95";
 our $topic="19-crontab";
 our $problem="1";
 our $description="- User william's crontab has to be denied
-- User john has to run \"/bin/echo 'crontab exam test'\" every day at 5:25
+- User tihamer has to run \"/bin/echo 'crontab exam test'\" every day at 5:25
 - User rudolf has to run \"whoami\" in every hours 16th minute";
 our $hint="";
 #
@@ -63,10 +63,17 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-	&pre();
+	&pre(); #Reseting Server machine
 
-        $verbose and print "Reset server\n";
-        system("/ALTS/RESET");
+
+        $verbose and print "Running pre section\n";
+        $verbose and print "Create user william..\n";
+        setupUser("william","3446","","","","","/bin/bash","true");
+        $verbose and print "Create user tihamer..\n";
+        setupUser("tihamer","4999","tihamer","ftp","/home/tihamer","This is Tihamer","/bin/bash","true");
+        $verbose and print "Create user rudolf..\n";
+        setupUser("rudolf","7929","","","","","/bin/bash","true");
+
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -138,23 +145,10 @@ sub grade() {
 
 sub pre() {
 ### Prepare the machine 
+
 	$verbose and print "Running pre section\n";
-	$verbose and print "Delete user william..\n";
-	delUser("william","true");
-  	$verbose and print "Delete user tihamer..\n";
-        delUser("tihamer","true");
-        $verbose and print "Delete user rudolf..\n";
-        delUser("rudolf","true");
-	$verbose and print "Delete group william..\n";
-        delGroup("william");
-	$verbose and print "Delete group tihamer..\n";
-        delGroup("tihamer");
-	$verbose and print "Create user william..\n";
-	setupUser("william","3446","","","","","/bin/bash","true");
-	$verbose and print "Create user tihamer..\n";
-	setupUser("tihamer","4999","tihamer","ftp","/home/tihamer","This is Tihamer","/bin/bash","true");
-	$verbose and print "Create user rudolf..\n";
-	setupUser("rudolf","7929","","","","","/bin/bash","true");
+        $verbose and print "Reset server\n";
+        system("/ALTS/RESET");
 }
 
 sub post() {

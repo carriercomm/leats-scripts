@@ -44,7 +44,7 @@ sub install () {
 		   " --description \"Troubleshooting server \"".
 		   " -r 512".
 		   " --vcpus 1".
-		   " -l http://desktop/".
+		   " -l http://1.1.1.1/".
 		   " --os-type=linux".
 		   " --os-variant=rhel6".
 		   " --disk /dev/mapper/vg_desktop-server".
@@ -55,10 +55,10 @@ sub install () {
 		   " --autostart".
 		   " -x \"console=tty0".
 		   " console=ttyS0,115200n8".
-		   " ks=http://desktop/ks.cfg".
+		   " ks=http://1.1.1.1/ks.cfg".
 		   " ksdevice=link".
 		   " ip=dhcp".
-		   " method=http://desktop/".
+		   " method=http://1.1.1.1/".
 		   "\"";
 	$args .= " >/dev/null 2>&1" if (!$verbose);
 	system("virt-install $args");
@@ -85,6 +85,7 @@ sub clean($) {
 }
 if ( $install ) {
 	&clean();
+	system('http_proxy=""; https_proxy="";');
  	$verbose and print "Return to LV Snapshot of server if possible..\n";
         $output=`lvchange -an /dev/vg_desktop/server;lvchange -ay /dev/vg_desktop/server;lvconvert --merge /dev/vg_desktop/server_snapshot`;
         $verbose and print "$output";
@@ -116,8 +117,8 @@ if ( $install ) {
 	my $p = Net::Ping->new();
 	$time=0;
 	my $succes=1;
-	while ( $time < 46 ) {
-		print "Testing if server is ready... $time\\45 seconds\n";
+	while ( $time < 90 ) {
+		print "Testing if server is ready... $time\\90 seconds\n";
 		$time += +5;
 		if ( $p->ping("server") ) {
 			$verbose and print "Server is up\n";
@@ -129,6 +130,10 @@ if ( $install ) {
 		}
 	}
 	$p->close();
+
+ 	my $i=0;
+        while((connectTo("1.1.1.2","22")) && ($i<10) ) { sleep 6; $i++; $verbose and print "Trying to connect via SSH ($i/10)..\n"; };
+
 	if ( $succes ) {
 		print "Post test Not complete. Maybe Computer is only slow....\n";
 	} else {

@@ -78,10 +78,13 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-	&pre();
 
-        $verbose and print "Reset server\n";
-        system("/ALTS/RESET");
+	&pre();	#Reset server machine
+
+        setupGroup("group1","5678","tihamer");
+        setupUser("tihamer","4999","tihamer","ftp","/home/tihamer","This is Tihamer","/bin/bash","true");
+        Delete("/tmp/test","/tmp/test2","/tmp/testsymlink","/tmp/testdir");
+
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 	$verbose and print "Pre complete breaking\n";
@@ -179,9 +182,10 @@ sub pre() {
 ### Prepare the machine 
 	$verbose and print "Running pre section\n";
 
-	setupGroup("group1","5678","tihamer");
-	setupUser("tihamer","4999","tihamer","ftp","/home/tihamer","This is Tihamer","/bin/bash","true");
-	Delete("/tmp/test","/tmp/test2","/tmp/testsymlink","/tmp/testdir");	
+	$verbose and print "Reseting server...\n";
+        system("/ALTS/RESET");
+
+
 }
 
 sub post() {
