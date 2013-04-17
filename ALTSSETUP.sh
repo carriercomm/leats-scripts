@@ -55,6 +55,9 @@ echo -en "[#######            ] 35%    \r";
 
 pp -o /ALTS/lib/GetALTSParameter.pl /leats-scripts/GetALTSParameter.pl
 chmod 6755 /ALTS/lib/GetALTSParameter.pl
+pp -o /ALTS/lib/SetALTSParameter.pl /leats-scripts/SetALTSParameter.pl
+chmod 0700 /ALTS/lib/SetALTSParameter.pl
+
 echo -en "[#######            ] 40%    \r";
 
 /ALTS/lib/Perl2SetUIDExecutable "/leats-scripts/activate.pl" /ALTS/activate
@@ -94,19 +97,21 @@ echo -en "[##############     ] 75%   \r";
 mkdir -p /ALTS/SECURITY; chmod -R 400 /ALTS/SECURITY
 cp -p /leats-scripts/SECURITY/* /ALTS/SECURITY/ 1>/dev/null 2>&1;
 
-
 unlink /ALTS/Grade 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Grade /ALTS/Grade
 unlink /ALTS/Break 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Break /ALTS/Break
 unlink /ALTS/Description 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Description /ALTS/Description
 
+echo -en "[###############    ] 80%   \r";
+
 /leats-scripts/ScriptReady.pl ALL 1>/dev/null
-echo -en "[################# ] 95%     \r";
+
+echo -en "[################## ] 90%     \r";
 
 perl SetALTSParameter.pl TestModePossible 0 1>/dev/null 2>&1
 perl SetALTSParameter.pl ShowHints 0 1>/dev/null 2>&1
 perl SetALTSParameter.pl GradeOnlyAfterBreak 0 1>/dev/null 2>&1
 
-echo -en "[###################] 100%    \r";
+echo -en "[##################] 100%    \r";
 echo "";
 echo "SETUP DONE.";
 echo ""

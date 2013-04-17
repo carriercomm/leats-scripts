@@ -3,16 +3,32 @@
 use lib '/scripts/common_perl/';
 use Framework qw(&setALTSParameter &getALTSParameter);
 
+my @P=("TestModePossible","ShowHints","GradeOnlyAfterBreak");
+
+if ( $ARGV[0] eq "ALL")
+{
+	foreach my $p (@P)
+	{
+		print "$p=".getALTSParameter($p)."\n";
+	}
+exit 2;
+}
+
 if( $ARGV[0] ne "")
 {	
-	
+	if ($ARGV[0] ~~ @P) {
 	my $Value=getALTSParameter($ARGV[0]);
 	if ($Value  eq -1) { print "UNDEF"; exit 1; }
 	print "$Value";
 	exit 0;
+	}
+	else
+{
+	print "Unknown ALTS Parameter (Valid Paramters are: @P\n\n";
+}
 }
 else
 {
-	print "Usage: GetALTSParameter.pl <Parameter_name>\nE.g: GetALTSParameter.pl TestModePossible\n\n";
-	die;
+	print "Usage: GetALTSParameter.pl Parameter_name|ALL\nE.g: GetALTSParameter.pl TestModePossible\n\n";
+	exit 1;
 }
