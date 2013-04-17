@@ -26,7 +26,7 @@ BEGIN {
 	use Exporter ();
 
     	@Framework::ISA         = qw(Exporter);
-    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connectTo &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile );
+    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connectTo &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile &getALTSParameter &setALTSParameter);
     	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file $description &showdescription);
 
 }
@@ -35,6 +35,8 @@ BEGIN {
 use vars qw ($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file $description);
 
 $student_file="/ALTS/User.alts";
+
+my $settings_file="/ALTS/Settings.alts";
 
 my $AESKeyFile="/ALTS/SECURITY/ALTSkey";
 
@@ -256,7 +258,8 @@ sub decryptFile($)
 
 	my $EFC; #Encrypted File Content
 
-		my $fd;
+	if ( -z $File  ) { return ""; }
+	my $fd;
 	$verbose && print "Decrypt $File...\n";
 	open($fd,"<",$File) || ( print "\nUnable to open $File !\n\n" and die);
 	my $line;
@@ -284,6 +287,68 @@ sub EncryptResultFile(;$)
 	}
 	system("ln -s /ALTS/RESULTS/ACTUAL/$topic-$problem.alts.aes $AES_Directory/$topic-$problem.alts.aes");
 
+}
+
+sub getALTSParameter($)
+{
+	my $Parameter=$_[0];
+
+        if (-f $settings_file)
+        {
+		my $fn;		
+		my $line;
+                open($fn,"<","$settings_file") || ( print "\nUnable to open $settings_file !\n\n" and die);
+                while($line=readline($fn))
+                {
+                       if (my @A = decryptText($line) =~ m/$Parameter=(.*)/) { return $A[0]; } 
+                }
+                close($fn);
+        }	
+	else
+	{
+		return "";
+	}
+
+}
+
+sub setALTSParameter($$)
+{
+	my $Parameter=$_[0];
+	my $Value=$_[1];
+	my $found=1;
+	my $fn;
+	my $line;
+	my @S;
+	if (-f $settings_file)
+	{
+		open($fn,"<","$settings_file") || ( print "\nUnable to open $settings_file !\n\n" and die);
+		while($line=readline($fn))
+	        {
+	                chomp($line);
+        	        push(@S,decryptText($line));
+	        }
+	        close($fn);
+		
+#		print "\nSETTINGS: @S\n\n";
+#		print "\n\nSET PARAMETER: $Parameter | VALUE: $Value\n";
+
+		open($fn,">","$settings_file") || ( print "\nUnable to open $settings_file !\n\n" and die); print $fn ""; close($fn);
+		foreach $line (@S)
+		{
+#			print "+$line+\n";
+			if ($line =~ m/$Parameter=.*/) { cryptText2File("$Parameter=$Value",$settings_file); $found=0; }
+			else { cryptText2File("$line",$settings_file); }
+		}
+		if ($found == 1) { cryptText2File("$Parameter=$Value",$settings_file); };
+
+	}
+	else
+	{	$verbose and print "$settings_file not exist, it will be created now";
+		system("touch $settings_file; chmod 400 $settings_file");
+		cryptText2File("$Parameter=$Value",$settings_file);		
+	}
+	
+return 0;
 }
 
 sub DecryptResultFile($$)
@@ -409,8 +474,8 @@ sub hint() {
 
 sub showdescription() {
 
-print "$description";
-exit 0;
+	print "$description";
+	exit 0;
 
 }
 

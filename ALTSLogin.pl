@@ -1,13 +1,13 @@
 #!/usr/bin/perl
 
 use lib '/scripts/common_perl/';
-use Framework qw(&cryptText2File &decryptText &decryptFile $student_file);
+use Framework qw(&cryptText2File &decryptText &decryptFile $student_file &getALTSParameter &setALTSParameter);
 
 use Term::ReadKey;
 use Term::ANSIColor;
 
 #### If you want to let TestMode, then $TestModePossible=0;
-my $TestModePossible=0;
+my $TestModePossible=getALTSParameter("TestModePossible");
 
 my $CGI_HOME="/var/www/cgi-bin";
 
