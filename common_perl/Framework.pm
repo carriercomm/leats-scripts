@@ -469,7 +469,15 @@ sub hint() {
 ### Hint for solution
 #	print "$topic/$problem hints \n";
 #	print "=========================================\n\n";
-	print "$hint\n";
+
+	if ( getALTSParameter("ShowHints") eq "0" ) 
+	{
+		print "$hint\n";
+	}
+	else
+	{
+		print "Sorry, but hints are not allowed for you!\n(ShowHints parameter is set on false)\n";
+	}
 	exit 0;
 };
 

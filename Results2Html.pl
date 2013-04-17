@@ -45,12 +45,18 @@ my @W = $result_file =~ m/\/ALTS\/RESULTS\/ACTUAL\/(.+)-(\d+)/sg;
 my $Problem = "$W[1]";
 my $Topic = "$W[0]";
 my $Description="";
+my $Hint="";
 my $Tasknumber="--";
 my $Tasksuccessful="-";
 my $Finalresult="-";
 my @T=();
 
 my $Student="";
+
+$Hint=`/var/www/cgi-bin/Hint`;
+$Hint=~ s/\n/<br\/>/g;
+$Hint="<p>$Topic/$Problem Hints<\/p>$Hint";
+
 
 if (-f $result_file) {
 
@@ -68,6 +74,8 @@ if (-f $result_file) {
 		print "\n\n<br/><br/>The student, who is logged ($USER) in is not equals with the owner of the result ($Student).<br/>Or is it possible that the ALTS password is incorrect!<br/><br/>Please login with command ALTSLogin!\n";
 		exit 1;
 	}
+
+
 
 
 
@@ -136,9 +144,9 @@ if (-f "/var/www/cgi-bin/$Topic/$P-activator") { $Previous="$Topic-$P"; }
 #system("/var/www/cgi-bin/$Topic/$Problem-activator 1>/dev/null 2>&1");
 
 if ($Description eq "") { $Description = `/var/www/cgi-bin/Description`;
-			  $Description =~ s/\n/<\/p><p>/g;
-			  $Description="<p>$Description</p>";
-			 }
+	$Description =~ s/\n/<\/p><p>/g;
+	$Description="<p>$Description</p>";
+}
 
 print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">
 <html xmlns=\"http://www.w3.org/1999/xhtml\"><head>
@@ -147,8 +155,9 @@ print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http:/
 <!--
 Created by Richard Gruber
 Designed by Balazs Csontos and Richard Gruber
- -->
+-->
 <style type=\"text/css\">
+
 <!--
 body {
 	margin-left: 20%;
@@ -227,6 +236,10 @@ body p {
 color: #BCBCBC;
 }
 
+#Line0, #Description, #Line1, #DetailedDescription, hr {
+width: 772px;
+}
+
 a.btn {
 display: block;
 	 background-color: transparent;
@@ -257,18 +270,20 @@ height: 30px;
 width: 78px;
 height: 78px;
 	background-image: url('/ALTSicons/play_button.png');
-}";
+}
+
+";
 
 if (-f "/var/www/cgi-bin/Grade") {
-print "#btn_grade:hover {
-	background-position: -78px 0;
+	print "#btn_grade:hover {
+		background-position: -78px 0;
 }";
 
 }
 
 print "
 #btn_break {
-width: 78px;
+	width: 78px;
 height: 78px;
 	background-image: url('/ALTSicons/break_button.png');
 }
@@ -295,18 +310,47 @@ height: 78px;
 if (-f "/ALTS/RESULTS/ACTUAL/AES/$Topic-$Problem.alts.aes") {
 	print "#btn_dload:hover {
 		background-position: -78px 0;
-	}";
+}";
 }
 
 print "
 #btn_home {
-width: 78px;
+	width: 78px;
 height: 78px;
 	background-image: url('/ALTSicons/Home-Button.jpg');
 }
 #btn_home:hover {
 	background-position: -78px 0;
 }
+
+#btn_hint {
+width: 30px;
+height: 30px;
+	background-image: url('/ALTSicons/hint.jpg');
+float: right;
+}
+#btn_hint:hover {
+	background-position: -30px 0;
+}
+#btn_hint.close {
+	background-image: url('/ALTSicons/hint_close.jpg');
+}
+
+#hint {
+position: absolute;
+width: 600px;
+height: 400px;
+border: solid 3px #666;
+	border-radius: 5px;
+	background-color: #fff;
+	margin-left: 100px;
+padding: 10px;
+	 overflow-y: scroll;
+	 text-align: left;
+
+visibility: hidden;
+}
+
 -->
 </style><script language=\"javascript\" type=\"text/javascript\"> 
 function hideDiv() { 
@@ -334,32 +378,46 @@ function showDiv() {
 	}
 } 
 
-</script></head>
+function toggleHint() {
+	hint = document.getElementById(\"hint\")
+	hintLink = document.getElementById(\"btn_hint\")
 
+	if (hint.style.visibility == \"visible\") {
+		hint.style.visibility = \"hidden\";
+		hintLink.className = \"btn\"
+	}
+	else {
+		hint.style.visibility = \"visible\";
+		hintLink.className = \"btn close\"
+	}
+}
+</script></head>
 
 <body onload=\"hideDiv()\" link=\"white\">
 
 <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"772\">
-<tbody><tr>
-<td width=\"772\"><img src=\"/ALTSicons/ALTSLOGO.jpg\" alt=\"ALTSLOGO\" height=\"191\" width=\"770\"></td>
-</tr>
-<tr>
-<td></td>
-</tr>
-<tr>
-<td><hr align=\"left\" color=\"DFDFDF\" size=\"6\"></td>
-</tr>
-<tr>
-<td height=\"229\">
-<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"33\" width=\"100%\">
-<tr><td style=\"text-align: right; color: #888\">logged in as <b>$USER</b> [<a href=\"/cgi-bin/ALTSLogout.cgi\">logout</a>]</td></tr>
-</table>
-<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"232\" width=\"100%\">
-<thead><tr>
-<td rowspan=\"3\" height=\"176\" width=\"15%\">&nbsp;</td>
-<td rowspan=\"3\" width=\"39%\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">
-<tbody><tr>
-<td height=\"179\">";
+  <tbody><tr>
+    <td width=\"772\"><img src=\"/ALTSicons/ALTSLOGO.jpg\" alt=\"ALTSLOGO\" height=\"191\" width=\"770\"></td>
+  </tr>
+  <tr>
+    <td></td>
+  </tr>
+      <tr>
+    <td><hr align=\"left\" color=\"DFDFDF\" size=\"6\"></td>
+  </tr>
+  <tr>
+    <td height=\"229\">
+	  <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"33\" width=\"100%\">
+		<tr><td style=\"text-align: right; color: #888\">logged in as <b>$USER</b> [<a href=\"#\">logout</a>]</td></tr>
+	  </table>
+      <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"232\" width=\"100%\">
+        <thead><tr>
+          <td rowspan=\"3\" height=\"176\" width=\"15%\">&nbsp;</td>
+          <td rowspan=\"3\" width=\"39%\"><table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">
+            <tbody><tr>
+              <td height=\"179\">
+
+";
 
 
 
@@ -369,7 +427,7 @@ if (($ENV{'QUERY_STRING'} ne "GRADE") && ($ENV{'QUERY_STRING'} ne "BREAK"))
 
 	print "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"40\" width=\"100%\">
 		<tbody><tr class=\"Exercise\">";
-	
+
 	if ($Previous ne "$Topic-$Problem")
 	{
 		print "	<td height=\"40\" width=\"13%\"><a id=\"btn_prev\" class=\"btn\" href=\"/cgi-bin/activate.cgi?$Previous\"></td>";
@@ -382,8 +440,8 @@ if (($ENV{'QUERY_STRING'} ne "GRADE") && ($ENV{'QUERY_STRING'} ne "BREAK"))
 	print"	<td class=\"Exercise\" width=\"73%\">$Topic $Problem</td>";
 
 
-        if ($Next ne "$Topic-$Problem")
-        {
+	if ($Next ne "$Topic-$Problem")
+	{
 		print "	<td width=\"14%\"><a id=\"btn_next\" class=\"btn\" href=\"/cgi-bin/activate.cgi?$Next\"></td>";
 	}
 	else 
@@ -428,17 +486,17 @@ if (($ENV{'QUERY_STRING'} ne "GRADE") && ($ENV{'QUERY_STRING'} ne "BREAK"))
 		</tr>
 		<tr>
 		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_details\" class=\"btn\" href=\"javascript:void(0)\" onclick=\"showDiv()\"></a></td>
-";
+		";
 
-if (-f "/ALTS/RESULTS/ACTUAL/AES/$Topic-$Problem.alts.aes") {
-print "		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"/results/$Topic-$Problem.alts.aes\"></a></td>";
-}
-else
-{
-print "         <td width=\"33%\" style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"#\"></a></td>";
-}
+	if (-f "/ALTS/RESULTS/ACTUAL/AES/$Topic-$Problem.alts.aes") {
+		print "		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"/results/$Topic-$Problem.alts.aes\"></a></td>";
+	}
+	else
+	{
+		print "         <td width=\"33%\" style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"#\"></a></td>";
+	}
 
-print "
+	print "
 		<td width=\"33%\" style=\"text-align: center\"><a id=\"btn_home\" class=\"btn\" href=\"/cgi-bin/home.cgi\"></a></td>
 		</tr>
 		</tbody></table></td>
@@ -483,15 +541,15 @@ print "
 		</tr>
 		<tr>
 		<td width=\"49%\"><a id=\"btn_break\" class=\"btn\" href=\"?BREAK\"></a></td>";
-if (-f "/var/www/cgi-bin/Grade") {
-	print "		<td width=\"51%\"><a id=\"btn_grade\" class=\"btn\" href=\"?GRADE\"></a></td>";
-}
-else
-{
-	print "         <td width=\"51%\"><a id=\"btn_grade\" class=\"btn\" href=\"#\"></a></td>";
-}
+	if (-f "/var/www/cgi-bin/Grade") {
+		print "		<td width=\"51%\"><a id=\"btn_grade\" class=\"btn\" href=\"?GRADE\"></a></td>";
+	}
+	else
+	{
+		print "         <td width=\"51%\"><a id=\"btn_grade\" class=\"btn\" href=\"#\"></a></td>";
+	}
 
-print "		</tr>
+	print "		</tr>
 		</tbody></table></td>
 		</tr>
 		</tbody></table>
@@ -504,7 +562,15 @@ print "		</tr>
 		</tr>
 		<tr>	
 		<td colspan=\"9\" scope=\"row\">
-		<div id=\"Description\">
+
+
+	<div id=\"Description\">
+
+	<a id=\"btn_hint\" class=\"btn\" title=\"Click here to show/hide hints.\" href=\"javascript:void(0)\" onclick=\"toggleHint()\"></a>
+	<div id=\"hint\">
+	$Hint
+	</div>
+
 		$Description
 		</div>
 		</td>
@@ -516,9 +582,7 @@ print "		</tr>
 		<td>
 		<div id=\"DetailedDescription\">  
 		<table border=\"0\" cellpadding=\"0\" cellspacing=\"2\" width=\"100%\">
-		<tbody><tr>
-		<td width=\"11%\">&nbsp;</td>
-		";
+		<tbody><tr>";
 
 ################################################################################
 
@@ -528,36 +592,41 @@ print "		</tr>
 		foreach my $Task (@T)
 		{
 			my @TT=$Task=~m/<TASKDESC>(.*)<\/TASKDESC><RESULT>(.*)<\/RESULT>/;
-			print "<tr><td>&nbsp;</td><td class=\"Result-table\"><span>$TT[0]</span></td>";
+#			print "<tr><td>&nbsp;</td><td class=\"Result-table\"><span>$TT[0]</span></td>";
+			print "<td width=\"11%\">&nbsp;</td>";
+			print "<td class=\"Result-table\" width=\"65%\">$TT[0]</td>";
 			if (($TT[1]) eq "[ PASS ]") {
-				print "<td><img src=\"/ALTSicons/PASSED.jpg\" alt=\"PASSED\" height=\"34\" width=\"34\"></td><td>&nbsp;</td>";
+#			   print "<td><img src=\"/ALTSicons/PASSED.jpg\" alt=\"PASSED\" height=\"34\" width=\"34\"></td><td>&nbsp;</td>";
+			   print "<td width=\"5%\"><img src=\"/ALTSicons/PASSED.jpg\" alt=\"PASSED\" height=\"34\" width=\"34\"></td>";
 			}
 			else
 			{
-				print "<td><img src=\"/ALTSicons/FAILED.jpg\" alt=\"FAILED\" height=\"34\" width=\"34\"></td><td>&nbsp;</td>";
+#			   print "<td><img src=\"/ALTSicons/FAILED.jpg\" alt=\"FAILED\" height=\"34\" width=\"34\"></td><td>&nbsp;</td>";
+                           print "<td width=\"5%\"><img src=\"/ALTSicons/FAILED.jpg\" alt=\"FAILED\" height=\"34\" width=\"34\"></td>";
 			}
+			print "<td width=\"19%\">&nbsp;</td>";
 			print "</tr>";
 		}
 
-		}
-		print " </tbody></table>
-			</div>
-			</td>
-			</tr>
-			</tbody>
-			<tfoot>
-			<tr>
-			<td> </td>
-			</tr>
-			<tr><td><hr align=\"left\" color=\"DFDFDF\" size=\"6\"></td></tr>
-			<tr>
-			<td>&nbsp;</td>
-			</tr>
-			</tfoot></table>
+	}
+	print " </tbody></table>
+		</div>
+		</td>
+		</tr>
+		</tbody>
+		<tfoot>
+		<tr>
+		<td> </td>
+		</tr>
+		<tr><td><hr align=\"left\" color=\"DFDFDF\" size=\"6\"></td></tr>
+		<tr>
+		<td>&nbsp;</td>
+		</tr>
+		</tfoot></table>
 
-			";
+		";
 
-		
+
 
 }
 
@@ -576,8 +645,8 @@ if ($ENV{'QUERY_STRING'} eq "GRADE")
 if ($ENV{'QUERY_STRING'} eq "BREAK")
 {
 
-        print "<p>Break is in progress, this may take a few minutes..</p><p>Please be patient...</p><br/><br/>";
-        system("/var/www/cgi-bin/Break 1>/dev/null 2>&1");
+	print "<p>Break is in progress, this may take a few minutes..</p><p>Please be patient...</p><br/><br/>";
+	system("/var/www/cgi-bin/Break 1>/dev/null 2>&1");
 	print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/index.cgi\">\n";
 }
 
