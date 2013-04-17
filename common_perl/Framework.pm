@@ -303,10 +303,11 @@ sub getALTSParameter($)
                        if (my @A = decryptText($line) =~ m/$Parameter=(.*)/) { return $A[0]; } 
                 }
                 close($fn);
+		return "-1";
         }	
 	else
 	{
-		return "";
+		return "-1";
 	}
 
 }

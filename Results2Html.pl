@@ -5,7 +5,7 @@
 ## associative %ENV array to access the environment variables.
 ##
 use lib '/scripts/common_perl/';
-use Framework qw(&cryptText2File &decryptFile $student_file);
+use Framework qw(&cryptText2File &decryptFile $student_file &getALTSParameter);
 
 use strict;
 use warnings;
@@ -16,6 +16,8 @@ use warnings;
 
 my $result_file=$ARGV[0] |= "";
 if ( $result_file !~ m/ALTS\/RESULTS\/ACTUAL\/\d+-(.*)-\d+/) { print "\n\nIncorrect Result file Path ($result_file)!"; die; }
+
+#my $GradeOnlyAfterBreak = getALTSParameter("GradeOnlyAfterBreak") |= 0;
 
 ################################################################################
 ######################## THE STUDENT IS LOGGED IN ##############################
@@ -142,6 +144,10 @@ print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http:/
 <html xmlns=\"http://www.w3.org/1999/xhtml\"><head>
 <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">
 <title>ALTS - $USER - $Topic $Problem</title>
+<!--
+Created by Richard Gruber
+Designed by Balazs Csontos and Richard Gruber
+ -->
 <style type=\"text/css\">
 <!--
 body {
@@ -533,7 +539,7 @@ print "		</tr>
 			print "</tr>";
 		}
 
-
+		}
 		print " </tbody></table>
 			</div>
 			</td>
@@ -551,14 +557,13 @@ print "		</tr>
 
 			";
 
+		
 
-
-	}
+}
 
 #system("/var/www/cgi-bin/Result 2>&1");
 #system("/var/www/cgi-bin/02-physical_disk-1-grade");
 
-}
 
 if ($ENV{'QUERY_STRING'} eq "GRADE")
 {

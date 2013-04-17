@@ -10,5 +10,5 @@ if(( $ARGV[0] ne "") && ( $ARGV[1] ne ""))
 }
 else
 {
-print "Usage: ./setALTSParameter.pl <Parameter_name> <Parameter_Value>\nE.g: ./setALTSParameter.pl TestModePossible 0\n\n";
+print "Usage: ./SetALTSParameter.pl <Parameter_name> <Parameter_Value>\nE.g: ./SetALTSParameter.pl TestModePossible 0\n\n";
 }
