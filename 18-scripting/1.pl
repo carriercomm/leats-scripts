@@ -37,7 +37,7 @@ our $description="Create a script named /tmp/testscript.
 	[root\@server tmp]# /tmp/testscript
 	*ppletree in the g*rden
 ";
-our $hint="";
+our $hint="I recommend to look after the following commands: cat, tr";
 #
 #
 #
