@@ -114,8 +114,11 @@ sub grade() {
 	printS("Checking Script is executable","$L");	
 	Framework::grade(UserGroup::checkUserFilePermission("root","/tmp/testscript","r*x"));
 
+	my $Commands="#!/bin/bash
+	cat /tmp/testinput.txt | tr 'aA' '**'";
+
 	printS("Checking Script output","$L");
-	Framework::grade(Scripting::CheckScriptOutput("root","/tmp/testscript"));
+	Framework::grade(Scripting::CheckScriptOutput("root","/tmp/testscript","$Commands","","/tmp/testinput.txt","My Apple tree in the garden"));
 
 
 	print "\n"."="x$L."=========\n";
