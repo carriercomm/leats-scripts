@@ -285,7 +285,7 @@ sub EncryptResultFile(;$)
 	if (!-d $AES_Directory) {
 		system("mkdir $AES_Directory; chown root:apache $AES_Directory; chmod 750 $AES_Directory");
 	}
-	system("ln -s /ALTS/RESULTS/ACTUAL/$topic-$problem.alts.aes $AES_Directory/$topic-$problem.alts.aes");
+	system("unlink $AES_Directory/$topic-$problem.alts.aes; ln -s /ALTS/RESULTS/ACTUAL/$topic-$problem.alts.aes $AES_Directory/$topic-$problem.alts.aes");
 
 }
 
@@ -476,7 +476,7 @@ sub hint() {
 	}
 	else
 	{
-		print "Sorry, but hints are not allowed for you!\n(ShowHints parameter is set on false)\n";
+		print "Sorry, but hints are not allowed for you!\n";
 	}
 	exit 0;
 };

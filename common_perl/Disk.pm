@@ -28,10 +28,10 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Disk::ISA         = qw(Exporter);
-    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk);
+    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk &Exist);
     	@Disk::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name);
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
-	close(STDERR);
+#	close(STDERR);
 }
 use vars qw ($verbose $topic $author $version $hint $problem $name);
 
@@ -361,6 +361,8 @@ sub getVGData($$)
 	my $VGName=$_[0];
 	my $Parameter=$_[1];
 
+	if (checkVGExist($VGName)!=0) { return ""; }
+
         my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture("vgdisplay -c $VGName");
 
@@ -411,6 +413,8 @@ sub getLVData($$$)
 	my $LVName=$_[1];
         my $Parameter=$_[2];
 
+	if (checkLVExist($VGName,$LVName)!=0) { return ""; }
+
         my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture("lvdisplay -c /dev/$VGName/$LVName");
 
@@ -454,7 +458,10 @@ sub checkVGData($$$;$)
 	my $VGName=$_[0];
 	my $Parameter=$_[1];
 	my $Value=$_[2];
-	my $Margin=$_[3]*0.01 || 0;
+	my $Margin=$_[3] || 0;
+	$Margin*=0.01;
+
+	if (checkVGExist($VGName)!=0) { return 1; }	
 
 	if ($Parameter eq "VGSize")
 	{
@@ -486,7 +493,11 @@ sub checkLVData($$$$;$)
 	my $LVName=$_[1];
         my $Parameter=$_[2];
         my $Value=$_[3];
-        my $Margin=$_[4]*0.01 || 0;
+        my $Margin=$_[4] || 0;
+        $Margin*=0.01;
+
+
+	if (checkLVExist($VGName,$LVName)!=0) { return 1; }
 
 	if ($Parameter eq "LVSize")
 	{
@@ -527,6 +538,7 @@ sub getFilerMountedFrom($)
 #
 sub extendWithSlash($)
 {
+	if (not defined ${_[0]}) { return ""; }
 	my $A = "${_[0]}/";    
 	$A =~ s/\/\//\//g;
 	return $A;
@@ -566,6 +578,8 @@ sub checkFilesystemType($$)
 	my $partition = $_[0];
 	my $type = $_[1];
 
+	if (not defined $partition) { return 1;}
+
 	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("df -T -P $partition | tail -1");
 	my @A = $output =~ m/\S+\s+(\S+).*/;
@@ -590,6 +604,8 @@ sub checkPartitionSize($$;$)
 	my $wanted_size = $_[1];
 	my $margin = $_[2]*0.01 || 0.1;
 
+	if (not defined $partition) { return 1;}
+
 	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("df -P -B M $partition | tail -1");
 	my @A = $output =~ m/\S+\s+(\d+)M\s+\d+M\s+\d+M\s+\S+\s+\S+/;
@@ -611,6 +627,8 @@ sub getFilesystemParameter($$)
 {
 	my $partition = $_[0];
 	my $parameter = uc($_[1]);
+
+	if (not defined $partition) { return 1;}
 
 	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("tune2fs -l $partition");
@@ -744,8 +762,8 @@ sub fileEqual($$)
 	my $output=$ssh->capture("md5sum $File1");
 	my @A = $output =~ m/(\S+).*/;
 
-	my $ssh=Framework::ssh_connect;
-	my $output=$ssh->capture("md5sum $File2");
+	$ssh=Framework::ssh_connect;
+	$output=$ssh->capture("md5sum $File2");
 	my @B = $output =~ m/(\S+).*/;
 
 	if ($A[0] eq $B[0]) { return 0; }

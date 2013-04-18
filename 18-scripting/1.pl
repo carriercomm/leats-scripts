@@ -21,14 +21,23 @@
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
-our $topic="19-crontab";
+our $topic="18-scripting";
 our $problem="1";
-our $description="- User william's crontab has to be denied
-- User tihamer has to run \"/bin/echo 'crontab exam test'\" every day at 5:25
-- User rudolf has to run \"whoami\" in every hours 16th minute";
-our $hint="Add william into /etc/cron.deny. 
-Add the given entry to the cron of tihamer. (crontab)
-Add the given entry to rudolfs cron. (crontab)";
+our $description="Create a script named /tmp/testscript.
+- The Script has to replace every 'a' and 'A' letters from File /tmp/testinput.txt to *.
+  Write it to the  standard output, but do not modify /tmp/testinput.txt.
+
+(/tmp/testinput.txt will be overwritten during the tests)
+(You can use Shell or Perl. It will run as root.)
+
+	E.g.:
+	[root\@server tmp]# cat /tmp/testinput.txt:
+	Appletree in the garden
+
+	[root\@server tmp]# /tmp/testscript
+	*ppletree in the g*rden
+";
+our $hint="";
 #
 #
 #
@@ -48,7 +57,9 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use UserGroup qw( &checkUserCrontabDenied &setupGroup &setupUser &delUser &delGroup &checkUserCrontab );
+use Disk qw(&Exist);
+use Scripting qw(&CheckScriptOutput $verbose);
+use UserGroup qw(&checkUserFilePermission);
 ######
 ###Options
 ###
@@ -57,7 +68,7 @@ GetOptions("help|?|h" => \$help,
 		"b|break" => \$break,
 		"g|grade" => \$grade,
 		"hint" => \$hint,
-		"d|description" => \$desc,
+		 "d|description" => \$desc,
 	  );
 
 #####
@@ -65,17 +76,7 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-	&pre(); #Reseting Server machine
-
-
-        $verbose and print "Running pre section\n";
-        $verbose and print "Create user william..\n";
-        setupUser("william","3446","","","","","/bin/bash","true");
-        $verbose and print "Create user tihamer..\n";
-        setupUser("tihamer","4999","tihamer","ftp","/home/tihamer","This is Tihamer","/bin/bash","true");
-        $verbose and print "Create user rudolf..\n";
-        setupUser("rudolf","7929","","","","","/bin/bash","true");
-
+	&pre(); #Reseting server machine...
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -85,15 +86,12 @@ sub break() {
 
 sub grade() {
 
-	system("clear");
-	print "Grade has been selected";
 	my $Student = Framework::getStudent();
 
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
 	$result_file="/ALTS/RESULTS/${Student}/${T}-${problem}"; #Empty the result file
-
-	my $fn; open($fn,">","$result_file"); close($fn);
+		my $fn; open($fn,">","$result_file"); close($fn);
 	my $now = strftime "%Y/%m/%d %H:%M:%S", localtime;
 	$exercise_number = 0;
 	$exercise_success = 0;
@@ -113,15 +111,11 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
+	printS("Checking Script is executable","$L");	
+	Framework::grade(UserGroup::checkUserFilePermission("root","/tmp/testscript","r*x"));
 
-	printS("william's crontab is denied","$L");
-	Framework::grade(UserGroup::checkUserCrontabDenied("william"));
-
-	printS("tihamer run \"/bin/echo 'crontab exam test'\" every day at 5:25","$L");
-	Framework::grade(checkUserCrontab("tihamer","25","5","*","*","*","/bin/echo 'crontab exam test'"));
-
-	printS("rudolf run \"whoami\" in every hours 16th minute","$L");
-	Framework::grade(checkUserCrontab("rudolf","16","*","*","*","*","whoami"));
+	printS("Checking Script output","$L");
+	Framework::grade(Scripting::CheckScriptOutput("root","/tmp/testscript"));
 
 
 	print "\n"."="x$L."=========\n";
@@ -148,10 +142,10 @@ sub grade() {
 
 sub pre() {
 ### Prepare the machine 
-
 	$verbose and print "Running pre section\n";
         $verbose and print "Reset server\n";
         system("/ALTS/RESET");
+
 }
 
 sub post() {
@@ -171,7 +165,6 @@ if ( $hint ) {
 if ( $desc ) {
         Framework::showdescription;
 }
-
 
 if ( $grade and $break ) {
 	print "Break and grade cannot be requested at one time.\n";

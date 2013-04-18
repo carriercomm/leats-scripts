@@ -276,7 +276,7 @@ my $output=$ssh->capture("cat /etc/cron.allow 2>/dev/null");
 my @USER_ALLOW=split("\n","$output");
 if ($User ~~ @USER_ALLOW) { return 1; }
 
-my $output=$ssh->capture("cat /etc/cron.deny 2>/dev/null");
+$output=$ssh->capture("cat /etc/cron.deny 2>/dev/null");
 my @USER_DENY=split("\n","$output");
 if ($User ~~ @USER_DENY) { return 0; }
 else { return 1; }
