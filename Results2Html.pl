@@ -408,7 +408,7 @@ function toggleHint() {
   <tr>
     <td height=\"229\">
 	  <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"33\" width=\"100%\">
-		<tr><td style=\"text-align: right; color: #888\">logged in as <b>$USER</b> [<a href=\"#\">logout</a>]</td></tr>
+		<tr><td style=\"text-align: right; color: #888\">logged in as <b>$USER</b> [<a href=\"/cgi-bin/ALTSLogout.cgi\">logout</a>]</td></tr>
 	  </table>
       <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"232\" width=\"100%\">
         <thead><tr>
