@@ -26,7 +26,7 @@ BEGIN {
 	use Exporter ();
 
     	@Framework::ISA         = qw(Exporter);
-    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connectTo &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile &getALTSParameter &setALTSParameter);
+    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connectTo &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile &getALTSParameter &setALTSParameter &compareValues);
     	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file $description &showdescription);
 
 }
@@ -395,6 +395,14 @@ sub getStudent()
 	}
 
 	return "$UserName";
+}
+
+
+sub compareValues($$)
+{
+   $verbose and print "Comparing '$_[0]' with '$_[1]'\n";
+   if ($_[0] eq $_[1]) { return 0; }
+   else { return 1; }
 }
 
 sub return($) {

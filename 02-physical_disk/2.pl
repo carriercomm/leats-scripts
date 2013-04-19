@@ -51,7 +51,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription &getALTSParameter setALTSParameter &compareValues);
 use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk &CreateFile &CreateDirectory &CreatePartition );
 ######
 ###Options
@@ -66,9 +66,11 @@ GetOptions("help|?|h" => \$help,
 #####
 # Subs
 #
+my $DFile="/mnt/mulder/doNotTouchIt.txt";
+
 sub break() {
 	print "Break has been selected.\n";
-	&pre();
+#	&pre();
 
 	RecreateVDisk("vdb","300","vdb");
 	
@@ -77,8 +79,16 @@ sub break() {
 	CreateDirectory("/mnt/mulder","","","");
 	my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture("mkfs.ext3 /dev/vdb1; mount /dev/vdb1 /mnt/mulder;");
-	my $DFile="/mnt/mulder/doNotTouchIt.txt";
 	CreateFile($DFile,"root","root","444","!!!!This file has been created for $topic-$problem and should not be modified!!!!");
+
+	my $p;
+	$ssh=Framework::ssh_connect;
+        $output=$ssh->capture("ls -li $DFile");	
+	chomp($output);	$p.=$output;
+	$output=$ssh->capture("md5sum $DFile");
+	chomp($output); $p.=$output;
+	$p=~s/\s/_/g;	
+	setALTSParameter("FILE","$p");
 		
 	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -130,6 +140,18 @@ sub grade() {
 	printS("Checking size:","$L");
 	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/mulder'),"180","10"));
 
+	my $File_original=getALTSParameter("FILE");
+
+        my $ssh=Framework::ssh_connect;
+	my $File_now;
+        my $output=$ssh->capture("ls -li $DFile");
+        chomp($output); $File_now.=$output;
+        $output=$ssh->capture("md5sum $DFile");
+        chomp($output); $File_now.=$output;
+        $File_now=~s/\s/_/g;
+
+	printS("Checking file hasn't been changed:","$L");
+        Framework::grade(compareValues("$File_original","$File_now"));
 
 
 	#rintS("Checking Label is test1-label: ","$L");
@@ -146,8 +168,6 @@ sub grade() {
 
 	#rintS("Checking swap size increased with 50M: ","$L");
 	#ramework::grade(checkSwapSize("561","5"));
-
-
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
@@ -179,6 +199,7 @@ sub pre() {
 sub post() {
 ### Cleanup after succeful grade
 	$verbose and print "Successful grade doing some cleanup.\n";
+	setALTSParameter("clear","");
 }
 
 #####

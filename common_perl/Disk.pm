@@ -326,7 +326,7 @@ sub CreateFile($$$$$)
         my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture("echo \"$Content\" > $FileName; chown $Owner $FileName; chgrp $Group $FileName; chmod $Permissions $FileName");
         chomp($output);
-	$verbose and print "Creating file: echo \"$Content\" > $FileName; chown $Owner $FileName; chgrp $Group $FileName; chmod $Permissions $FileName";
+	$verbose and print "Creating file: echo \"$Content\" > $FileName; chown $Owner $FileName; chgrp $Group $FileName; chmod $Permissions $FileName\n";
 	$verbose and print "output: $output \n";
 
 	if (Exist($FileName,"f")==0) {$verbose and print "$FileName has been created\n"; return 0;}
@@ -354,7 +354,7 @@ sub CreateDirectory($$$$)
         my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture("mkdir -p $DirectoryName; chown $Owner $DirectoryName; chgrp $Group $DirectoryName; chmod $Permissions $DirectoryName");
         chomp($output);
-        $verbose and print "Creating directory: mkdir DirectoryName; chown $Owner $DirectoryName; chgrp $Group $DirectoryName; chmod $Permissions $DirectoryName";
+        $verbose and print "Creating directory: mkdir DirectoryName; chown $Owner $DirectoryName; chgrp $Group $DirectoryName; chmod $Permissions $DirectoryName\n";
         $verbose and print "output: $output \n";
 
         if (Exist($DirectoryName,"d")==0) {$verbose and print "$DirectoryName has been created\n"; return 0;}
