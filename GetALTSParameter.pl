@@ -16,19 +16,13 @@ exit 2;
 
 if( $ARGV[0] ne "")
 {	
-	if ($ARGV[0] ~~ @P) {
 	my $Value=getALTSParameter($ARGV[0]);
 	if ($Value  eq -1) { print "UNDEF"; exit 1; }
 	print "$Value";
 	exit 0;
-	}
-	else
-{
-	print "Unknown ALTS Parameter (Valid Paramters are: @P\n\n";
-}
 }
 else
 {
-	print "Usage: GetALTSParameter.pl Parameter_name|ALL\nE.g: GetALTSParameter.pl TestModePossible\n\n";
+	print "Usage: GetALTSParameter.pl <Parameter_name>|ALL\nE.g: GetALTSParameter.pl TestModePossible\n\n";
 	exit 1;
 }

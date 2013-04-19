@@ -5,6 +5,13 @@ use Framework qw(&setALTSParameter &getALTSParameter);
 
 my @P=("TestModePossible","ShowHints","GradeOnlyAfterBreak");
 
+if(($ARGV[0] eq "clear"))
+{
+	print "Clear the unnecessary parameters..\n";
+	setALTSParameter("clear","");
+	exit 0;
+}
+
 if(( $ARGV[0] ne "") && ( $ARGV[1] ne ""))
 {
 	if ( $ARGV[0] ~~ @P)
@@ -14,10 +21,11 @@ if(( $ARGV[0] ne "") && ( $ARGV[1] ne ""))
 	}
 	else
 	{
-		print "Unknown ALTS Parameter (Valid Paramters are: @P\n\n";	
+		setALTSParameter($ARGV[0],$ARGV[1]);
+		print "$ARGV[0] Exercise specific Parameter modified To ".getALTSParameter($ARGV[0])."\n";
 	}
 }
 else
 {
-	print "Usage: ./SetALTSParameter.pl <Parameter_name> <Parameter_Value>\nE.g: ./SetALTSParameter.pl TestModePossible 0\n\n";
+	print "\nUsage: \n./SetALTSParameter.pl <Parameter_name> <Parameter_Value>\n./SetALTSParameter.pl clear  -> Clear all unnecessary parameters\nE.g: ./SetALTSParameter.pl TestModePossible 0\n\n";
 }

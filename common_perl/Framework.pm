@@ -320,6 +320,9 @@ sub setALTSParameter($$)
 	my $fn;
 	my $line;
 	my @S;
+
+	my @P=("TestModePossible","ShowHints","GradeOnlyAfterBreak");
+
 	if (-f $settings_file)
 	{
 		open($fn,"<","$settings_file") || ( print "\nUnable to open $settings_file !\n\n" and die);
@@ -336,11 +339,21 @@ sub setALTSParameter($$)
 		open($fn,">","$settings_file") || ( print "\nUnable to open $settings_file !\n\n" and die); print $fn ""; close($fn);
 		foreach $line (@S)
 		{
-#			print "+$line+\n";
-			if ($line =~ m/$Parameter=.*/) { cryptText2File("$Parameter=$Value",$settings_file); $found=0; }
-			else { cryptText2File("$line",$settings_file); }
+			if ($Parameter ne "clear")
+			{
+#				print "+$line+\n";
+				if ($line =~ m/$Parameter=.*/) { cryptText2File("$Parameter=$Value",$settings_file); $found=0; }
+				else { cryptText2File("$line",$settings_file); }
+			}
+			else
+			{	
+				if (($line =~ m/TestModePossible=.*/) || ($line =~ m/ShowHints=.*/) ||($line =~ m/GradeOnlyAfterBreak=.*/) ) 				    {
+#					print "++++$line++++\n";
+					cryptText2File("$line",$settings_file);
+				}	
+			}
 		}
-		if ($found == 1) { cryptText2File("$Parameter=$Value",$settings_file); };
+		if (($found == 1)&&(($Parameter ne "clear"))) { cryptText2File("$Parameter=$Value\n",$settings_file); };
 
 	}
 	else
@@ -348,8 +361,8 @@ sub setALTSParameter($$)
 		system("touch $settings_file; chmod 400 $settings_file");
 		cryptText2File("$Parameter=$Value",$settings_file);		
 	}
-	
-return 0;
+	close($fn);
+	return 0;
 }
 
 sub DecryptResultFile($$)

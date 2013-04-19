@@ -250,7 +250,7 @@ sub lv_create($$$;$) {
 	}
 	my %lv=get_logical_volume_information("$vgname");
         foreach my $lvs (sort keys %lv) {
-		if ( $lvname == $lvs ) {
+		if ( $lvname eq $lvs ) {
 			$verbose and print "Lv was created succesfully\n";
 			$verbose and print "Attaching to guest.\n";
 			my $ret=`/usr/bin/virsh attach-disk server /dev/mapper/$vgname-$lvname $target --persistent >/dev/null 2>\&1;echo \$?`;
@@ -329,8 +329,8 @@ sub CreateFile($$$$$)
 	$verbose and print "Creating file: echo \"$Content\" > $FileName; chown $Owner $FileName; chgrp $Group $FileName; chmod $Permissions $FileName";
 	$verbose and print "output: $output \n";
 
-	if (Exist($FileName,"f")) {$verbose and print "$FileName has been created"; return 0;}
-	else { $verbose and print "$FileName hasn't been created"; return 1; }
+	if (Exist($FileName,"f")==0) {$verbose and print "$FileName has been created\n"; return 0;}
+	else { $verbose and print "$FileName hasn't been created\n"; return 1; }
 }
 
 
@@ -350,16 +350,15 @@ sub CreateDirectory($$$$)
         my $Owner = $_[1] || "root";
         my $Group = $_[2] || "root";
         my $Permissions = $_[3] || "744";
-        my $Content =$_[4] || "";
 
         my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("mkdir $DirectoryName; chown $Owner $DirectoryName; chgrp $Group $DirectoryName; chmod $Permissions $DirectoryName");
+        my $output=$ssh->capture("mkdir -p $DirectoryName; chown $Owner $DirectoryName; chgrp $Group $DirectoryName; chmod $Permissions $DirectoryName");
         chomp($output);
         $verbose and print "Creating directory: mkdir DirectoryName; chown $Owner $DirectoryName; chgrp $Group $DirectoryName; chmod $Permissions $DirectoryName";
         $verbose and print "output: $output \n";
 
-        if (Exist($DirectoryName,"d")) {$verbose and print "$DirectoryName has been created"; return 0;}
-        else { $verbose and print "$DirectoryName hasn't been created"; return 1; }
+        if (Exist($DirectoryName,"d")==0) {$verbose and print "$DirectoryName has been created\n"; return 0;}
+        else { $verbose and print "$DirectoryName hasn't been created\n"; return 1; }
 
 }
 

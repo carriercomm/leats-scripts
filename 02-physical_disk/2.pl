@@ -18,13 +18,20 @@
 ##You should have received a copy of the GNU General Public License
 ##along with Leats.  If not, see <http://www.gnu.org/licenses/>.
 #############
-our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
+our $author='Krisztian Banhidy <krisztian@banhidy.hu>
+Richard Gruber <gruberrichard@gmail.com>';
 #our $author='Richard Gruber <richard.gruber@it-services.hu>';
-our $version="v0.1";
-our $topic="Physical disk management";
+our $version="v0.5";
+our $topic="02-physical_disk";
 our $problem="2";
-our $description="Extend the partion previously created to 180 Mb (+-10%). \nA test file was created, which should be left on the filesystem. \nDo not destroy the filesystem and just recreate it.\n";
-our $hint="With fdisk delete the partition and just recreate it from same \nstarting sector. No metadata will be deleted. Then just use resize2fs.\n";
+our $description="Extend the partion previously created and mounted under /mnt/mulder to 180 Mb (+-10%). 
+A test file was created, which should be left on the filesystem.
+Do not destroy the filesystem and just recreate it.
+It has to be reboot persistent.";
+
+our $hint="With fdisk delete the partition and just recreate it from same starting sector. 
+No metadata will be deleted. Then just use resize2fs.
+Don't forget to put it into /etc/fstab.";
 #
 #
 #
@@ -34,120 +41,144 @@ my $help=0;
 my $break=0;
 my $grade=0;
 my $hint=0;
+my $desc=0;
 use strict;
 use warnings;
 use Getopt::Long;
+use Term::ANSIColor;
 use File::Basename;
+use POSIX qw/strftime/;
 our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name);
-use Disk qw($verbose $topic $author $version $hint $problem $name);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription);
+use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk &CreateFile &CreateDirectory &CreatePartition );
 ######
 ###Options
 ###
 GetOptions("help|?|h" => \$help,
-           "verbose|v" => \$verbose,
-	   "b|break" => \$break,
-	   "g|grade" => \$grade,
-	   "hint" => \$hint,
-        );
+		"verbose|v" => \$verbose,
+		"b|break" => \$break,
+		"g|grade" => \$grade,
+		"hint" => \$hint,
+		"d|description" => \$desc,
+	  );
 #####
 # Subs
 #
 sub break() {
-	print "Running Dependency check. This may take some time.\n";
-	&pre();
 	print "Break has been selected.\n";
+	&pre();
+
+	RecreateVDisk("vdb","300","vdb");
+	
+	sleep(2);
+	CreatePartition("/dev/vdb","1","+100M","ext3");
+	CreateDirectory("/mnt/mulder","","","");
 	my $ssh=Framework::ssh_connect;
-	my $ret=$ssh->capture("rm /mnt/das/mulder >/dev/null 2>\&1 ;echo `date +%s` > /mnt/das/mulder 2>/dev/null; echo \$?");
-	if ( $ret == 0 ) {
-		print "Your task: $description\n";
-	} else {
-		print "Could no create data on server.\n";
-		exit 1;
-	}
+        my $output=$ssh->capture("mkfs.ext3 /dev/vdb1; mount /dev/vdb1 /mnt/mulder;");
+	my $DFile="/mnt/mulder/doNotTouchIt.txt";
+	CreateFile($DFile,"root","root","444","!!!!This file has been created for $topic-$problem and should not be modified!!!!");
+		
+	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
+
+	print "Your task: $description\n";
 }
 
 sub grade() {
+	system("clear");
+	my $Student = Framework::getStudent();
 	print "Grade has been selected.\n";
 	print "rebooting server:";
-	Framework::restart;
-	Framework::grade(Framework::timedconTo("60"));
-	## Checking if mounted
-        my $ssh=Framework::ssh_connect;
-	my $output=$ssh->capture("grep /mnt/das /proc/mounts | grep -q vdb; echo -n \$?");
-	print "Checking mount:";
-	Framework::grade($output);
-	## Checking size
-	$output=$ssh->capture("df -P -B M /mnt/das | tail -1");
-	my @output=split(/\s+/,$output);
-	$output[1] =~ s/(\d+)\w*/$1/;
-	$verbose and print "Size is: '$output[1]'\n";
-	print "Checking size:";
-	if ( ( $output[1] > 162 ) and ( $output[1] < 198 ) ) {
-		Framework::grade(0);
-	} else {
-		Framework::grade(1);
+
+#	Framework::restart;
+#	Framework::timedconTo("120");
+
+## Checking if mounted
+
+	system("clear");
+	my $T=$topic; $T =~ s/\s//g;
+	$result_file="/ALTS/RESULTS/${Student}/${T}-${problem}"; #Empty the result file
+	my $fn; open($fn,">","$result_file"); close($fn);
+	my $now = strftime "%Y/%m/%d %H:%M:%S", localtime;
+	$exercise_number = 0;
+	$exercise_success = 0;
+
+	my $L=80;
+
+
+	print "="x$L."=========\n";
+	print "Student:\t$Student\n\n";
+	print "Date:   \t$now\n";
+	print "-"x$L."---------\n\n";
+	print "$topic/$problem\n";
+	print "\n$description\n\n";
+	print "="x$L."=========\n\n";
+
+	my $USERDATA=decryptFile("$student_file");
+	
+	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");	
+
+	
+
+	printS("Checking mount:","$L");
+	Framework::grade(checkMount("vdb1","/mnt/mulder/"));
+
+	printS("Checking filesystem type:","$L");
+	Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/mulder'),"ext3"));
+
+	printS("Checking size:","$L");
+	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/mulder'),"180","10"));
+
+
+
+	#rintS("Checking Label is test1-label: ","$L");
+	#ramework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
+
+	#printS("Checking mounted with UUID: ","$L");
+	#Framework::grade(checkMountedWithUUID("/mnt/das"));
+
+	#rintS("Checking mounted with LABEL: ","$L");
+	#ramework::grade(checkMountedWithLABEL("/mnt/das"));
+
+	#rintS("Checking mounted with \"rw\" and \"acl\" options: ","$L");		
+	#ramework::grade(checkMountOptions("/mnt/das","rw,acl"));
+
+	#rintS("Checking swap size increased with 50M: ","$L");
+	#ramework::grade(checkSwapSize("561","5"));
+
+
+
+	print "\n"."="x$L."=========\n";
+	print "\n\tNumber of exercises: \t$exercise_number\n";
+	print "\n\tSuccessful: \t\t$exercise_success\n";
+	if ($exercise_number == $exercise_success) {
+		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","$result_file");
+		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset';
+		&EncryptResultFile();
+		exit 0;;
+		#Running post
+		&post();
+	}
+	else
+	{
+		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","$result_file");
+		&EncryptResultFile();
+		print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset';
 		exit 1;
 	}
-	## Check filesystem type
-        $output=$ssh->capture("grep /mnt/das /proc/mounts | grep -q ext3; echo -n \$?");
-	$verbose and print "Filesystem type output: $output\n";
-        print "Checking filesystem type:";
-        if ( $output ) {
-                Framework::grade(1);
-                exit 1;
-        } else {
-                Framework::grade(0);
-        }
-	## Creating test file on filesystem.
-	$output=$ssh->capture("rm -f /mnt/das/test >/dev/null 2>\&1;touch /mnt/das/test;echo -n \$?; rm -f /mnt/das/test >/dev/null 2>\&1");
-	$verbose and print "Test file output is: '$output'\n";
-	print "Creating test file:";
-	if ( $output ) {
-		Framework::grade(1);
-		exit 1;
-	} else {
-		Framework::grade(0);
-	}
-	Framework::mount("/mentes","vdb");
-	my @info=stat("/mentes/mulder");
-	$verbose and print "Ctime is: $info[10]\n";
-	open my $fh, "<", "/mentes/mulder" or (print "Missing file on disk." and exit 1);
-	my $time=do { local $/; <$fh> };
-	chomp $time;
-	$verbose and print "Time in file is: $time\n";
-	print "Data integrity:";
-	if ( $info[10] eq $time ) {
-		Framework::grade(0);
-	} else {
-		Framework::grade(1);
-		exit 1;
-	}
-	unlink("/mentes/mulder");
-	Framework::umount("/mentes"."vdb");;
-	## Running post
-	&post();
 }
 
 sub pre() {
-	### Prepare the machine 
-	$verbose and print "Running dependency check\n";
-	open my $command, "/scripts/02-physical_disk/1.pl -g|" or (print "Couldn't execute test.\n" and exit 1);
-	while (<$command>) {
-		print;
-	}
-	close $command;
-	if ( ${^CHILD_ERROR_NATIVE} != 0 ) {
-		print "Previous task not yet completed.\n";
-		exit 1;
-	}
+### Prepare the machine 
+        $verbose and print "Reseting server machine...\n";
+        system("/ALTS/RESET");
+
 }
 
 sub post() {
-	### Cleanup after succeful grade
-	$verbose and print "Succesful grade, doing some cleanup.\n";
+### Cleanup after succeful grade
+	$verbose and print "Successful grade doing some cleanup.\n";
 }
 
 #####
@@ -162,6 +193,10 @@ if ( $hint ) {
 if ( $grade and $break ) {
 	print "Break and grade cannot be requested at one time.\n";
 	Framework::useage;
+}
+
+if ( $desc ) {
+	Framework::showdescription;
 }
 
 if ( $break ) {
