@@ -285,7 +285,7 @@ sub EncryptResultFile(;$)
 	if (!-d $AES_Directory) {
 		system("mkdir $AES_Directory; chown root:apache $AES_Directory; chmod 750 $AES_Directory");
 	}
-	system("unlink $AES_Directory/$topic-$problem.alts.aes; ln -s /ALTS/RESULTS/ACTUAL/$topic-$problem.alts.aes $AES_Directory/$topic-$problem.alts.aes");
+	system("unlink $AES_Directory/$topic-$problem.alts.aes 1>/dev/null 2>&1; ln -s /ALTS/RESULTS/ACTUAL/$topic-$problem.alts.aes $AES_Directory/$topic-$problem.alts.aes");
 
 }
 

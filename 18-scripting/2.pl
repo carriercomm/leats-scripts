@@ -22,22 +22,17 @@
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="18-scripting";
-our $problem="1";
-our $description="Create a script named /tmp/testscript.
-- The Script has to replace every 'a' and 'A' letters from File /tmp/testinput.txt with '*'.
-  Write it to the  standard output, but do not modify /tmp/testinput.txt.
+our $problem="2";
+our $description="Print out the number of directories in /etc.
 
-(/tmp/testinput.txt will be repleaced the a test file during the tests)
 (You can use Shell or Perl. It will run as root.)
+(During the check the number of directories can be modified.)
 
 	E.g.:
-	[root\@server tmp]# cat /tmp/testinput.txt:
-	Appletree in the garden
-
 	[root\@server tmp]# /tmp/testscript
-	*ppletree in the g*rden
+	123
 ";
-our $hint="I recommend to look after the following commands: cat, tr";
+our $hint="I recommend to look after the following commands: find, wc";
 #
 #
 #
@@ -57,7 +52,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use Disk qw(&Exist &CreateFile &Move &Delete);
+use Disk qw(&Exist &CreateFile &Move &Delete &CreateDirectory);
 use Scripting qw(&CheckScriptOutput $verbose);
 use UserGroup qw(&checkUserFilePermission);
 #####
@@ -97,7 +92,7 @@ sub grade() {
 	$exercise_success = 0;
 
 	my $L=80;
-
+	
 
 	print "="x$L."=========\n";
 	print "Student:\t$Student\n\n";
@@ -110,23 +105,22 @@ sub grade() {
 	my $USERDATA=decryptFile("$student_file");
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
-	my $Inputfile="/tmp/testinput.txt";
+	my $Directory1="/etc/$topic-$problem-1";
+	my $Directory2="/etc/$topic-$problem-2";
 	
-	if (Exist("$Inputfile","f")==0) { Move("$Inputfile","${Inputfile}.bkp"); }
-	CreateFile("/tmp/testinput.txt","root","root","744","This is my little Apple tree aabbAA");
-
+	CreateDirectory("$Directory1","root","root","755");
+ 	CreateDirectory("$Directory2","root","root","755");
 
 	printS("Checking Script is executable","$L");	
 	Framework::grade(UserGroup::checkUserFilePermission("root","/tmp/testscript","r*x"));
 
-	my $Commands="#!/bin/bash
-	cat /tmp/testinput.txt | tr 'aA' '**'";
+	my $Commands="#!/bin/bash\nfind /etc -type d | wc -l";
 
 	printS("Checking Script output","$L");
 	Framework::grade(Scripting::CheckScriptOutput("root","/tmp/testscript","$Commands",""));
 
-	Delete("$Inputfile");
-	if (Exist("${Inputfile}.bkp","f")==0) { Move("${Inputfile}.bkp","$Inputfile"); }
+	Delete("$Directory1");
+	Delete("$Directory2");
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";

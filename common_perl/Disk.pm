@@ -28,7 +28,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Disk::ISA         = qw(Exporter);
-    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk &Exist &CreateFile);
+    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk &Exist &CreateFile &CreateDirectory);
     	@Disk::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name);
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 #	close(STDERR);
@@ -332,6 +332,38 @@ sub CreateFile($$$$$)
 	if (Exist($FileName,"f")) {$verbose and print "$FileName has been created"; return 0;}
 	else { $verbose and print "$FileName hasn't been created"; return 1; }
 }
+
+
+#
+# Creates a directory with the given attributes and content
+#
+# 1. Parameter: Directory name (with full path)
+# 2. Parameter: Owner (default root)
+# 3. Parameter: Owner group (default root)
+# 4. Parameter: Permissions
+#
+
+sub CreateDirectory($$$$)
+{
+
+        my $DirectoryName = $_[0];
+        my $Owner = $_[1] || "root";
+        my $Group = $_[2] || "root";
+        my $Permissions = $_[3] || "744";
+        my $Content =$_[4] || "";
+
+        my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("mkdir $DirectoryName; chown $Owner $DirectoryName; chgrp $Group $DirectoryName; chmod $Permissions $DirectoryName");
+        chomp($output);
+        $verbose and print "Creating directory: mkdir DirectoryName; chown $Owner $DirectoryName; chgrp $Group $DirectoryName; chmod $Permissions $DirectoryName";
+        $verbose and print "output: $output \n";
+
+        if (Exist($DirectoryName,"d")) {$verbose and print "$DirectoryName has been created"; return 0;}
+        else { $verbose and print "$DirectoryName hasn't been created"; return 1; }
+
+}
+
+
 
 #
 #
