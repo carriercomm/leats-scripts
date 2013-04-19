@@ -28,7 +28,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Disk::ISA         = qw(Exporter);
-    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk &Exist);
+    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk &Exist &CreateFile);
     	@Disk::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name);
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 #	close(STDERR);
@@ -294,15 +294,43 @@ sub xml_parse() {
 # E.g.: Exist(/tmp,"d");
 #
 #
-sub Exist($$)
+sub Exist($;$)
 {
 my $File = $_[0];
-my $Option =$_[1];
+my $Option =$_[1] || "e";
 
 	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("test -$Option $File; echo \$?");
 	chomp($output);
 	return $output;
+}
+
+#
+#
+# Creates a files with the given attributes and content
+#
+# 1. Parameter: Filename (with full path)
+# 2. Parameter: Owner (default root)
+# 3. Parameter: Owner group (default root)
+# 4. Parameter: Permissions
+# 5. Parameter: content
+#
+sub CreateFile($$$$$)
+{
+	my $FileName = $_[0];
+	my $Owner = $_[1] || "root";
+	my $Group = $_[2] || "root";
+	my $Permissions = $_[3] || "744";
+	my $Content =$_[4] || "";
+
+        my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("echo \"$Content\" > $FileName; chown $Owner $FileName; chgrp $Group $FileName; chmod $Permissions $FileName");
+        chomp($output);
+	$verbose and print "Creating file: echo \"$Content\" > $FileName; chown $Owner $FileName; chgrp $Group $FileName; chmod $Permissions $FileName";
+	$verbose and print "output: $output \n";
+
+	if (Exist($FileName,"f")) {$verbose and print "$FileName has been created"; return 0;}
+	else { $verbose and print "$FileName hasn't been created"; return 1; }
 }
 
 #
@@ -877,13 +905,19 @@ sub checkSymlink($$)
 #
 sub Delete($;$$$$$$$$)
 {
+	my $output;
 	my @T = @_; # move them into an array
 		foreach my $t (@T)
 		{
 			my $ssh=Framework::ssh_connect;
-			my $output=$ssh->capture("rm -rf $t");
+			my $output1=$ssh->capture("rm -rf $t 1>/dev/null 2>&1;echo \$?");
+			chomp($output1);
+			$output+=$output1;
 		}
-	return 0;
+	if ($output eq "0") {$verbose and print ("Remove was successful\n"); }
+	else {$verbose and print ("Remove wasn't successful\n"); }
+	
+	return $output;
 }
 
 #
@@ -898,9 +932,16 @@ sub Move($$)
 	my $FROM=$_[0];
 	my $TO=$_[1];
 
+	if (Exist($FROM)!=0) { $verbose and print ("Move: $FROM not exist\n"); return 1; }
+	
 	my $ssh=Framework::ssh_connect;
-	my $output=$ssh->capture("mv $FROM $TO");
+	my $output=$ssh->capture("mv $FROM $TO 1>/dev/null 2>&1; echo \$?");
+	chomp($output);
 
+        if ($output eq "0") {$verbose and print ("Move ($FROM->$TO) was successful\n"); }
+        else {$verbose and print ("Move ($FROM->$TO) wasn't successful\n"); }
+
+	return $output;
 }
 
 #
@@ -917,8 +958,13 @@ sub Copy($$)
 	my $TO=$_[1];
 
 	my $ssh=Framework::ssh_connect;
-	my $output=$ssh->capture("cp $FROM $TO");
+	my $output=$ssh->capture("cp -pr $FROM $TO 1>/dev/null 2>&1; echo \$?");
+	chomp($output);
 
+        if ($output eq "0") {$verbose and print ("Copy ($FROM->$TO) was successful\n"); }
+        else {$verbose and print ("Copy ($FROM->$TO) wasn't successful\n"); }
+
+	return $output;
 }
 
 
@@ -940,6 +986,7 @@ sub Copy($$)
 #        if ($A[0] >= (((1-$margin)*$wanted_size))&&($A[0] <= ((1+$margin)*$wanted_size))) { return 0; }
 #        else { return 1;}
 #
+
 sub checkSwapSize($;$)
 {
 	my $wanted_size = $_[0];

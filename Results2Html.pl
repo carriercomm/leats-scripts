@@ -103,6 +103,7 @@ if (-f $result_file) {
 
 	$Description=$DES[0];
 	$Description =~ s/\n/<\/p><p>/g;
+	$Description =~ s/\t/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/g;
 	$Description="<p>$Description</p>";
 
 	@T = $FN =~ m/<TASK>(.*)<\/TASK>/g;
@@ -145,6 +146,7 @@ if (-f "/var/www/cgi-bin/$Topic/$P-activator") { $Previous="$Topic-$P"; }
 
 if ($Description eq "") { $Description = `/var/www/cgi-bin/Description`;
 	$Description =~ s/\n/<\/p><p>/g;
+	$Description =~ s/\t/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/g;
 	$Description="<p>$Description</p>";
 }
 

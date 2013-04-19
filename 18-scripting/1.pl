@@ -57,10 +57,10 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use Disk qw(&Exist);
+use Disk qw(&Exist &CreateFile &Move &Delete);
 use Scripting qw(&CheckScriptOutput $verbose);
 use UserGroup qw(&checkUserFilePermission);
-######
+#####
 ###Options
 ###
 GetOptions("help|?|h" => \$help,
@@ -110,6 +110,11 @@ sub grade() {
 	my $USERDATA=decryptFile("$student_file");
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
+	my $Inputfile="/tmp/testinput.txt";
+	
+	if (Exist("$Inputfile","f")==0) { Move("$Inputfile","${Inputfile}.bkp"); }
+	CreateFile("/tmp/testinput.txt","root","root","744","This is my little Apple tree aabbAA");
+
 
 	printS("Checking Script is executable","$L");	
 	Framework::grade(UserGroup::checkUserFilePermission("root","/tmp/testscript","r*x"));
@@ -118,8 +123,10 @@ sub grade() {
 	cat /tmp/testinput.txt | tr 'aA' '**'";
 
 	printS("Checking Script output","$L");
-	Framework::grade(Scripting::CheckScriptOutput("root","/tmp/testscript","$Commands","","/tmp/testinput.txt","My Apple tree in the garden"));
+	Framework::grade(Scripting::CheckScriptOutput("root","/tmp/testscript","$Commands",""));
 
+	Delete("$Inputfile");
+	if (Exist("${Inputfile}.bkp","f")==0) { Move("${Inputfile}.bkp","$Inputfile"); }
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
