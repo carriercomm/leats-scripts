@@ -379,15 +379,15 @@ function showDiv() {
 } 
 
 function toggleHint() {
-	hint = document.getElementById(\"hint\")
+	hintBox = document.getElementById(\"hint\")
 	hintLink = document.getElementById(\"btn_hint\")
 
-	if (hint.style.visibility == \"visible\") {
-		hint.style.visibility = \"hidden\";
+	if (hintBox.style.visibility == \"visible\") {
+		hintBox.style.visibility = \"hidden\";
 		hintLink.className = \"btn\"
 	}
 	else {
-		hint.style.visibility = \"visible\";
+		hintBox.style.visibility = \"visible\";
 		hintLink.className = \"btn close\"
 	}
 }
@@ -563,14 +563,14 @@ if (($ENV{'QUERY_STRING'} ne "GRADE") && ($ENV{'QUERY_STRING'} ne "BREAK"))
 		<tr>	
 		<td colspan=\"9\" scope=\"row\">
 
+       <div id=\"hint\">
+        $Hint
+        </div>
+
 
 	<div id=\"Description\">
 
 	<a id=\"btn_hint\" class=\"btn\" title=\"Click here to show/hide hints.\" href=\"javascript:void(0)\" onclick=\"toggleHint()\"></a>
-	<div id=\"hint\">
-	$Hint
-	</div>
-
 		$Description
 		</div>
 		</td>
