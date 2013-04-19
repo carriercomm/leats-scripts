@@ -199,7 +199,7 @@ sub pre() {
 sub post() {
 ### Cleanup after succeful grade
 	$verbose and print "Successful grade doing some cleanup.\n";
-	setALTSParameter("clear","");
+#	setALTSParameter("clear","");
 }
 
 #####
