@@ -43,27 +43,47 @@ use UserGroup qw(&checkUserFilePermission);
 # 2. Parameter: Command
 # 3. Parameter: Check Commands
 # 4. Parameter: Arguments
+# 5. Parameter: OTHER Options
+# 		STDERR_ONLY: print only the Standard Error Output
 #
 #
-sub CheckScriptOutput($$$$) 
+sub CheckScriptOutput($$$$;$) 
 {
 	my $User = $_[0];
 	my $Script = $_[1];
 	my $CheckCommands = $_[2];
 	my $Arguments = $_[3] || "";
-	
+	my $OtherOption = $_[4] || "";
+
 	my $TestScript="/tmp/$topic-$problem-check.sh";
 
+	my $RedirectionPre="";
+	my $Redirection="";
+
+	my $Sudo="";
+	my $SudoPost="";
+
+	if ($User ne "root") 
+	{ 
+		$Sudo="su - $User -c '";
+		$SudoPost="'";
+	}
+
+	if ($OtherOption eq "STDERR_ONLY") 
+	{   
+		$RedirectionPre="mkfifo err 2>/dev/null;";
+		$Redirection="1>/dev/null 2>err | cat - err";
+	}
 
 	$CheckCommands=~s/'/\\'/g;
-	
+
 	if (checkUserFilePermission("$User","$Script","r*x") == 0) 
 	{
-		$verbose and print "Script is executable for $User.";
+		$verbose and print "Script is executable for $User.\n";
 	}
 	else
 	{
-		$verbose and print "Script is not executable for $User!";
+		$verbose and print "Script is not executable for $User!\n";
 		return 1;
 	}
 
@@ -72,11 +92,11 @@ sub CheckScriptOutput($$$$)
 	$verbose and print "CheckCommand: \n$CheckCommands\n\n";
 
 	my $ssh=Framework::ssh_connect;
-	my $CheckOutput=$ssh->capture("echo \"$CheckCommands\" > $TestScript; chmod +x $TestScript; $TestScript; rm -rf $TestScript");
+	my $CheckOutput=$ssh->capture("$Sudo echo \"$CheckCommands\" > $TestScript; chmod +x $TestScript; $RedirectionPre $TestScript $Arguments $Redirection; rm -rf $TestScript $SudoPost");
 	$verbose and print "CheckOutput: $CheckOutput\n";
-	
+
 	$ssh=Framework::ssh_connect;
-	my $ScriptOutput=$ssh->capture("$Script");
+	my $ScriptOutput=$ssh->capture("$Sudo $RedirectionPre $Script $Arguments $Redirection $SudoPost");
 	$verbose and print "ScriptOutput: $ScriptOutput\n";
 
 

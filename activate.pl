@@ -66,7 +66,7 @@ sub exposeTopic($)
 
 if ((scalar @ARGV) == 0) { 
 
-	while( ($E eq "")||($E eq "LIST ALL")||($E eq "LIST FAILED")||($E eq "LIST PASSED")||($E eq "LIST UNTRIED")  )
+	while( ($E eq "")||($E eq "LIST ALL")||($E eq "LIST FAILED")||($E eq "LIST PASSED")||($E eq "LIST UNTRIED")||($E eq "EXIT")  )
 	{
 		system("clear");
 		print "";
