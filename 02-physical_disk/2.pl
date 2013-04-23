@@ -70,7 +70,7 @@ my $DFile="/mnt/mulder/doNotTouchIt.txt";
 
 sub break() {
 	print "Break has been selected.\n";
-#	&pre();
+	&pre();
 
 	RecreateVDisk("vdb","300","vdb");
 	

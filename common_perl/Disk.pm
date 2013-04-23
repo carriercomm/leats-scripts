@@ -31,7 +31,7 @@ BEGIN {
     	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk &Exist &CreateFile &CreateDirectory);
     	@Disk::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name);
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
-#	close(STDERR);
+	close(STDERR);
 }
 use vars qw ($verbose $topic $author $version $hint $problem $name);
 
@@ -329,7 +329,7 @@ sub CreateFile($$$$$)
 	$verbose and print "Creating file: echo \"$Content\" > $FileName; chown $Owner $FileName; chgrp $Group $FileName; chmod $Permissions $FileName\n";
 	$verbose and print "output: $output \n";
 
-	if (Exist($FileName,"f")==0) {$verbose and print "$FileName has been created\n"; return 0;}
+	if (Exist($FileName,"f") == 0) {$verbose and print "$FileName has been created\n"; return 0;}
 	else { $verbose and print "$FileName hasn't been created\n"; return 1; }
 }
 
