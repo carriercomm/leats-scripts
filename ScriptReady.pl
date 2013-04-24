@@ -26,6 +26,8 @@ if ((scalar @ARGV) < 1)
 if ($ARGV[0] eq "ALL" )
 {
 	@files=("/leats-scripts/02-physical_disk/1.pl",
+		"/leats-scripts/02-physical_disk/2.pl",
+		"/leats-scripts/02-physical_disk/3.pl",
 		"/leats-scripts/03-lvm/1.pl",
 		"/leats-scripts/05-user-group/1.pl",
 		"/leats-scripts/05-user-group/2.pl",

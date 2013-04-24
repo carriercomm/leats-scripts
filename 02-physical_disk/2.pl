@@ -29,7 +29,7 @@ A test file was created, which should be left on the filesystem.
 Do not destroy the filesystem and just recreate it.
 It has to be reboot persistent.";
 
-our $hint="With fdisk delete the partition and just recreate it from same starting sector. 
+our $hint="With fdisk delete the partition and just recreate it from same starting sector. (fdisk)
 No metadata will be deleted. Then just use resize2fs.
 Don't forget to put it into /etc/fstab.";
 #
@@ -101,8 +101,8 @@ sub grade() {
 	print "Grade has been selected.\n";
 	print "rebooting server:";
 
-#	Framework::restart;
-#	Framework::timedconTo("120");
+	Framework::restart;
+	Framework::timedconTo("120");
 
 ## Checking if mounted
 
