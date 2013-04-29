@@ -179,7 +179,7 @@ color: #000;
 	text-align: center;
 }
 body p {
-	text-align: left;
+	text-align: center;
 	font-weight: bold;
 }
 .MainTABLE_nonbold {
@@ -432,7 +432,13 @@ function addHandlers() {
 </tr>
 <tr>
 <td height=\"229\">
-<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"33\" width=\"100%\">
+<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"33\" width=\"100%\">";
+
+if (($ENV{'QUERY_STRING'} ne "REINSTALL") && ($ENV{'QUERY_STRING'} ne "RESET"))
+{
+
+
+print "
 <tr><td style=\"text-align: right; color: #888\">
 <span style=\"float: left\">Choose a category from the list and then click on an excercise.</span>
 logged in as <b>$USER</b> [<a href=\"/cgi-bin/ALTSLogout.cgi\">logout</a>]</td></tr>
@@ -483,8 +489,8 @@ print "
 <tr align=\"center\">
 	<td style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"http://localhost:8080/results/rigruber_results.tgz\"></a></td>
 	<td>&nbsp</td>
-	<td style=\"text-align: center\"><a id=\"btn_break\" class=\"btn\" href=\"RESET_ACTION\"></a></td>
-	<td style=\"text-align: center\"><a id=\"btn_reinstall\" class=\"btn\" href=\"REINSTALL ACTION\"></a></td>
+	<td style=\"text-align: center\"><a id=\"btn_break\" class=\"btn\" href=\"?RESET\"></a></td>
+	<td style=\"text-align: center\"><a id=\"btn_reinstall\" class=\"btn\" href=\"?REINSTALL\"></a></td>
 </tr>
 </table>
 
@@ -501,6 +507,25 @@ print "
 <td>&nbsp;</td>
 </tr>
 </tbody></table>
+";
+
+}
+
+if ($ENV{'QUERY_STRING'} eq "RESET")
+{
+
+	print "<br/><br/><p>Reset is in progress, this may take a few minutes..</p><p>Please be patient...</p>";
+        system("/ALTS/RESET 1>/dev/null 2>&1");
+	print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/home.cgi\">\n";
+}
+
+if ($ENV{'QUERY_STRING'} eq "REINSTALL")
+{
+
+	print "<br/><br/><p>Reinstall is in progress, this may take 10-15 minutes..</p><p>Please be patient...</p>";
+        system("/ALTS/REINSTALL 1>/dev/null 2>&1");
+	print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/home.cgi\">\n";
+}
 
 
-</body></html>";
+print "</body></html>";
