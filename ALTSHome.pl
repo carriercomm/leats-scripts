@@ -19,11 +19,14 @@ sub exposeTopic($)
 
 	my $TriedExercises=0;
 	my $SuccessfulExercises=0;
+	my $FailedExercises=0;
+	my $NumberExercises=0;
 
 	my $HTML_EXERCISES="";
 
 	while (-x "/var/www/cgi-bin/$Topic/$N-activator")
 	{
+		$NumberExercises++;
 		#/ALTS/RESULTS/ACTUAL/02-physical_disk-1
 		my $Description="";
 		my $Result_file="/ALTS/RESULTS/ACTUAL/$Topic-$N";	
@@ -58,7 +61,7 @@ sub exposeTopic($)
 				$HTML_EXERCISES.=" <a class=\"excercise fail\" href=\"$excercise_url\"><!-- excercise number -->$N
 					<div><!-- excercise description --><b>$Topic/$N</b><br><br>$Description</div>
 					</a>";
-				$TriedExercises++;
+				$TriedExercises++; $FailedExercises++;
 			}
 			else
 			{
@@ -73,10 +76,15 @@ sub exposeTopic($)
 
 	if ($TriedExercises>0)
 	{	
-		if ($TriedExercises == $SuccessfulExercises)
+#		if ($TriedExercises == $SuccessfulExercises)
+		if ($NumberExercises == $SuccessfulExercises)
 		{
 			print"<li class=\"success\"><!-- category name-->$Topic";
 		}	
+		elsif ($FailedExercises == 0)
+		{	
+			print"<li class=\"inprogress\"><!-- category name-->$Topic";
+		}
 		else
 		{
 			print"<li class=\"fail\"><!-- category name-->$Topic";
@@ -233,6 +241,14 @@ color: #600;
 ul#catList li.fail:hover {
 	background-color: #fee;
 }
+ul#catList li.inprogress {
+color: #000;
+       border-color: #000;
+}
+ul#catList li.inprogress:hover {
+        background-color: #d9d9d9;
+}
+
 
 /* Excercises */
 
@@ -307,14 +323,32 @@ a.btn {
 
 
 #btn_dload {
-	width: 78px;
-	height: 78px;
+width: 78px;
+height: 78px;
 	background-image: url('/ALTSicons/Download-Button.jpg');
-	}
+}
 
 #btn_dload:hover {
 	background-position: -78px 0;
-	}
+}
+
+#btn_break {
+width: 78px;
+height: 78px;
+	background-image: url('/ALTSicons/break_button.png');
+}
+#btn_break:hover {
+	background-position: -78px 0;
+}
+
+#btn_reinstall {
+width: 78px;
+height: 78px;
+	background-image: url('/ALTSicons/Reinstall-Button.jpg');
+}
+#btn_reinstall:hover {
+	background-position: -78px 0;
+}	
 
 -->
 </style>
@@ -438,10 +472,21 @@ print "
 </td>
 </tr>
 <tr>
-   <td class=\"Button_Description\">DOWNLOAD ALL RESULTS</td>
-</tr>
+
+<table style=\"margin:auto\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"340\">
 <tr>
-<td style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"/results/${USER}_results.tgz\"></a></td>
+   <td class=\"Button_Description\">DOWNLOAD<br/>ALL RESULTS</td>
+   <td width=\"70\">&nbsp</td>
+   <td class=\"Button_Description\">RESET</td>
+   <td class=\"Button_Description\">REINSTALL</td>
+</tr>
+<tr align=\"center\">
+	<td style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"http://localhost:8080/results/rigruber_results.tgz\"></a></td>
+	<td>&nbsp</td>
+	<td style=\"text-align: center\"><a id=\"btn_break\" class=\"btn\" href=\"RESET_ACTION\"></a></td>
+	<td style=\"text-align: center\"><a id=\"btn_reinstall\" class=\"btn\" href=\"REINSTALL ACTION\"></a></td>
+</tr>
+</table>
 
 </tr>
 </table>
