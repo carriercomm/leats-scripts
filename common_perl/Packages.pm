@@ -27,7 +27,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Packages::ISA         = qw( Exporter );
-    	@Packages::EXPORT      = qw( &CreateRepo &CheckRepoExist &CheckRepoAttribute &GetRepoAttribute );
+    	@Packages::EXPORT      = qw( &CreateRepo &CheckRepoExist &CheckRepoAttribute &GetRepoAttribute &CheckPackageInstalled &RemovePackage);
     	@Packages::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name );
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 #	close(STDERR);
@@ -87,8 +87,8 @@ return 0;
 #
 # Checks if Repo Exist
 #
-# 1. Repository name 		E.g. local
-# 2. (optional) Enabled 	E.g. 1,0,disabled,enabled 
+# 1. Parameter: 	  Repository name 	E.g. local
+# 2. Parameter(optional): Enabled 		E.g. 1,0,disabled,enabled 
 #     If you don't declare it, then it can be disabled and enabled too
 #
 # CheckRepoExist("local","1") -> true if repo "local" exist and it's enabled
@@ -117,17 +117,23 @@ sub CheckRepoExist($;$)
 	$verbose and print "$Command output:\n $output\n\n";
 	my @Repos=split("\n",$output);
 
-#	foreach my $R (@Repos)
-#	{
-#		print "+++ $R +++\n";
-#	}
-
 	if ($output =~ m/$Repo_ID\s+\S+.*/g) {return 0; }
 	
 	return 1; 
 
 }
 
+
+#
+# GetRepoAttribute
+#
+# 1. Parameter: Repository name            E.g. local
+# 2. Parameter: Attribute		   E.g.gpgcheck
+#
+# Returns the value of the given repository attirbute
+#
+# GetRepoAttribute("local","gpgcheck");
+#
 sub GetRepoAttribute($$)
 {
 	my $Repo_ID = $_[0];
@@ -157,6 +163,18 @@ sub GetRepoAttribute($$)
 
 }
 
+#
+# CheckRepoAttribute
+#
+# 1. Parameter: Repository name            		E.g. local
+# 2. Parameter: Attribute                  		E.g. gpgcheck
+# 3. Parameter: Attribute Value you want to check  	E.g. 0
+#
+# Check the value of the given repository attirbute
+#
+# CheckRepoAttribute("local","gpgcheck","1");
+#
+#
 sub CheckRepoAttribute($$$)
 {
 	my $Repo_ID = $_[0];
@@ -168,6 +186,42 @@ sub CheckRepoAttribute($$$)
 
 }
 
+#
+# CheckPackageInstalled
+#
+# 1. Parameter: Package Name
+# 2. Parameter: $Version (optional)
+#
+sub CheckPackageInstalled($;$)
+{
+	my $Package=$_[0];
+	my $Version=$_[1] || ".*";
+
+	my $ssh=Framework::ssh_connect;
+	my $output=$ssh->capture("yum list installed");
+
+	$verbose and print "Check PACKAGE: $Package\n";
+
+	my @InstalledPackages=split("\n","$output");	
+	foreach my $P (@InstalledPackages) { 
+		if ($P =~ m/^$Package.*$Version.*/) { $verbose and print "++$P++\n"; return 0; }
+	}
+	
+	return 1;
+}
+#
+# Remove Package
+#
+# 1. Parameter: Package name (E.g. nano)
+#
+#
+sub RemovePackage($)
+{
+	my $Package=$_[0];
+
+        my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("yum -y remove $Package");
+}
 
 #### We need to end with success
 1

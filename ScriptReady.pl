@@ -33,6 +33,8 @@ if ($ARGV[0] eq "ALL" )
 		"/leats-scripts/05-user-group/2.pl",
 		"/leats-scripts/05-user-group/3.pl",
 		"/leats-scripts/06-rights/1.pl",
+		"/leats-scripts/17-package/1.pl",
+                "/leats-scripts/17-package/2.pl",
 		"/leats-scripts/18-scripting/1.pl",
 		"/leats-scripts/18-scripting/2.pl",
 		"/leats-scripts/18-scripting/3.pl",
