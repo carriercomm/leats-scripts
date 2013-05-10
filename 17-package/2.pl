@@ -25,6 +25,7 @@ our $topic="17-package";
 our $problem="2";
 our $description="Install the 'nano' package.
 Remove the package 'wget'.
+Update 'mc' (midnight commander) to version 4.7.0.2-3.
 
 The required package(s) can be found under http://desktop/Packages.
 (It is already configured as a yum repository.)";
@@ -48,7 +49,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use Packages qw(&CreateRepo &CheckPackageInstalled &RemovePackage);
+use Packages qw(&CreateRepo &CheckPackageInstalled &RemovePackage &InstallPackage);
 
 #####
 ###Options
@@ -68,7 +69,11 @@ sub break() {
 	print "Break has been selected.\n";
 	&pre(); #Reseting server machine...
 
+ 	Packages::CreateRepo("local.repo","local","Local Repo","http://desktop",0,"",1);
+
 	Packages::RemovePackage("nano");
+
+	Packages::InstallPackage("mc-4.6.1a-35.el5.x86_64.rpm","http://1.1.1.1/Packages/");
 
         my $RepoAvailable=`GET http://1.1.1.1/Packages >/dev/null 2>&1; echo \$?`;
         chomp($RepoAvailable);
@@ -86,14 +91,6 @@ sub grade() {
 
 	my $Student = Framework::getStudent();
 	
-        my $RepoAvailable=`GET http://1.1.1.1/Packages >/dev/null 2>&1; echo \$?`;
-        chomp($RepoAvailable);
-        if ($RepoAvailable ne "0" ) {
-                                        $verbose and print "httpd isn't running..It will be restarted now..\n";
-                                        my $output=`service httpd restart 2>&1`;
-                                        $verbose and print "$output\n";
-                                    }
-
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
 	$result_file="/ALTS/RESULTS/${Student}/${T}-${problem}"; #Empty the result file
@@ -116,12 +113,11 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-#	yum -y remove nano
-
-	Packages::CreateRepo("local.repo","local","Local Repo","http://desktop",0,"",1);
-
 	printS("Checking nano is installed","$L");
 	Framework::grade(Packages::CheckPackageInstalled("nano"));
+
+	printS("Checking mc has been updated","$L");
+	Framework::grade(Packages::CheckPackageInstalled("mc","4.7.0.2-3"));
 
         printS("Checking wget has been removed","$L");
         Framework::grade(!Packages::CheckPackageInstalled("wget"));	

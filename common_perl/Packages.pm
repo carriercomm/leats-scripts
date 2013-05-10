@@ -27,7 +27,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Packages::ISA         = qw( Exporter );
-    	@Packages::EXPORT      = qw( &CreateRepo &CheckRepoExist &CheckRepoAttribute &GetRepoAttribute &CheckPackageInstalled &RemovePackage);
+    	@Packages::EXPORT      = qw( &CreateRepo &CheckRepoExist &CheckRepoAttribute &GetRepoAttribute &CheckPackageInstalled &RemovePackage &InstallPackage);
     	@Packages::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name );
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 #	close(STDERR);
@@ -218,9 +218,33 @@ sub CheckPackageInstalled($;$)
 sub RemovePackage($)
 {
 	my $Package=$_[0];
+	
+	$verbose and print "Remove Package $Package..\n";
 
         my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture("yum -y remove $Package");
+
+	$verbose and print "$output\n";
+}
+
+#
+# Install Package
+#
+# 1. Parameter: Package full name
+# 2. Parameter: Path to the package
+#
+#
+sub InstallPackage($;$)
+{
+my $Package=$_[0];
+my $Path2Package=$_[1] || "http://1.1.1.1/Packages/";
+
+	$verbose and print "Install package $Path2Package/$Package\n";
+	
+        my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("yum -y install $Path2Package/$Package");
+
+	$verbose and print "$output\n";
 }
 
 #### We need to end with success

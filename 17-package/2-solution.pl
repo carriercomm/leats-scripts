@@ -8,7 +8,7 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="yum -y install nano; yum -y remove wget";
+my $Command="yum -y install nano; yum -y remove wget; yum -y update mc";
 
 
 sub ssh_connect() {

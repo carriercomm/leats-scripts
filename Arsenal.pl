@@ -41,9 +41,11 @@ use File::Basename;
 use POSIX qw/strftime/;
 our $name=basename($0);
 
-#our @ALTS_MODULES=("Disk");
-#our @ALTS_MODULES=("UserGroup");
-our @ALTS_MODULES=("UserGroup","Disk");
+our @ALTS_MODULES=();
+push(@ALTS_MODULES,"UserGroup");
+push(@ALTS_MODULES,"Disk");
+push(@ALTS_MODULES,"Packages");
+push(@ALTS_MODULES,"Scripting");
 
 
 #use Sys::Virt;
@@ -51,6 +53,8 @@ use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent);
 use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy &checkSwapSize &RecreateVDisk );
 use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &checkUserCrontab &setupGroup &setupUser &delUser &delGroup  &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes);
+use Packages qw( &CreateRepo &CheckRepoExist &CheckRepoAttribute &GetRepoAttribute &CheckPackageInstalled &RemovePackage &InstallPackage);
+use Scripting qw( &CheckScriptOutput );
 
 ######
 ###Options
@@ -144,7 +148,6 @@ sub grade() {
 	{	
 
 MODULE("Disk.pm Module");
-
 
 	MMODULE("LVM SPECIFIC (Disk.pm)");
 
@@ -339,7 +342,7 @@ MODULE("Disk.pm Module");
 
 		EXERCISE("Checking user password is locked",'checkUserLocked(tihamer)');			
 		printS("Tihamer is locked","$L");
-		Framework::grade("checkUserLocked(tihamer)");
+		Framework::grade(checkUserLocked("tihamer"));
 
 		#EXPIRE_DATE - Account expires (date format: YYYY-MM-DD)
 		#INACTIVE - Password inactive
@@ -454,29 +457,75 @@ MODULE("Disk.pm Module");
                 Framework::grade(checkNewlyCreatedFilesAttributes("/tmp/testdir","group1","","","","",""));
 		
 		EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'checkNewlyCreatedFilesAttributes("/tmp/test/testdir","john","r-*","","","","")');
-		printS("A newly created file in /tmp/test/testdir shuld be readable but not writable for user john","$L");
+		printS("A newly created file in /tmp/test/testdir should be readable but not writable for user john","$L");
 		Framework::grade(checkNewlyCreatedFilesAttributes("/tmp/test/testdir","","john","r**","","",""));
 
                 EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'checkNewlyCreatedFilesAttributes("/tmp/test/testdir","","","","group1","rw*","")');
-                printS("A newly created file in /tmp/test/testdir shuld be readable and writable for group group1","$L");
+                printS("A newly created file in /tmp/test/testdir should be readable and writable for group group1","$L");
                 Framework::grade(checkNewlyCreatedFilesAttributes("/tmp/test/testdir","","","","group1","rw*",""));
 		
                 EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'checkNewlyCreatedFilesAttributes("/tmp/test/testdir","","","","","","r**")');
-                printS("A newly created file in /tmp/test/testdir shuld be readable for others","$L");
+                printS("A newly created file in /tmp/test/testdir should be readable for others","$L");
                 Framework::grade(checkNewlyCreatedFilesAttributes("/tmp/test/testdir","","","","","","r**"));
+}
+ if ("Packages" ~~ @ALTS_MODULES)
+                {
+
+                MODULE("Packages.pm Module");
 		
+	 	MMODULE("Yum repositories (Packages.pm)");
 
-#		EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'');
-	
-#		EXERCISE("Checking newly created file attributes (other group, given users permissions, given groups permissions, others permissions",'');
-               
-#               EXERCISE("",'');
-#               printS("","$L");
-#               Framework::grade();
-#
+		EXERCISE("Creating yum repository",'CreateRepo("local.repo","local","Local Repo","http://desktop",0,"",1)');
+		printS("Creating yum repository","$L");
+		Framework::grade(Packages::CreateRepo("local.repo","local","Local Repo","http://desktop",0,"",1));
 
+		EXERCISE("Checking if yum repo exist and enabled/diabled",'CheckRepoExist("local","enabled")');
+	        printS("Checking Repo exist and activated","$L");
+	        Framework::grade(Packages::CheckRepoExist("local","enabled"));
+
+		EXERCISE("Checking repos attributes (enabled, name, gpgcheck...)",'CheckRepoExist("local","enabled")');
+		printS("Checking Repos gpgcheck is disabled","$L");
+	        Framework::grade(Packages::CheckRepoAttribute("local","gpgcheck","0"));
+
+		EXERCISE("Checking repos attributes (enabled, name, gpgcheck...)",'CheckRepoAttribute("local","name","Local Repo")');
+	        printS("Checking Repos name is 'Local Repo'","$L");
+	        Framework::grade(Packages::CheckRepoAttribute("local","name","Local Repo"));
+
+		EXERCISE("Checking repos attributes (enabled, name, gpgcheck...)",'CheckRepoAttribute("local","baseurl","http://desktop")');
+	        printS("Checking Repos baseurl is http://desktop/","$L");
+	        Framework::grade(Packages::CheckRepoAttribute("local","baseurl","http://desktop"));
+
+		MMODULE("Packages (install/remove/update) (Packages.pm)");
+
+		EXERCISE("Checking package is installed",'CheckPackageInstalled("nano")');
+                printS("Checking nano is installed","$L");
+        	Framework::grade(Packages::CheckPackageInstalled("nano"));
+
+		EXERCISE("Checking package has been updated/checking package with version",'CheckPackageInstalled("mc","4.7.0.2-3")');
+	        printS("Checking mc has been updated","$L");
+	        Framework::grade(Packages::CheckPackageInstalled("mc","4.7.0.2-3"));
+
+		EXERCISE("Checking package has been removed",'!CheckPackageInstalled("wget")');
+	        printS("Checking wget has been removed","$L");
+	        Framework::grade(!Packages::CheckPackageInstalled("wget"));	
 		}
+ if ("Scripting" ~~ @ALTS_MODULES)
+                {
+		MODULE("Scripting.pm Module");
+	
+		MMODULE("Script output (Scripting.pm)");
 
+	        my $Commands="#!/bin/bash
+        	cat /tmp/testinput.txt | tr 'aA' '**'";
+	
+		EXERCISE("Checking scripts output compared with our scripts output are the same",'CheckScriptOutput("root","/tmp/testscript","$Commands","")');
+	        printS("Checking Script output","$L");
+	        Framework::grade(Scripting::CheckScriptOutput("root","/tmp/testscript","$Commands",""));
+
+		EXERCISE("Checking scripts error output compared with our scripts output",'CheckScriptOutput("$TmpUser","/tmp/testscript","$Commands","","STDERR_ONLY")');
+	        printS("Checking Script output","$L");
+        	Framework::grade(Scripting::CheckScriptOutput("root","/tmp/testscript","$Commands","","STDERR_ONLY"));	
+		}		
 
 
 
