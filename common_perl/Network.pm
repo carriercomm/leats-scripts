@@ -39,15 +39,61 @@ use vars qw ($verbose $topic $author $version $hint $problem $name);
 #
 # Checking Interface
 # 
-sub CheckInterface($) 
+# 1. Parameter: Interface E.g. eth0
+# 2. Parameter: Attribute 
+# 		Possible values: 
+#	 		-state (e.g. "UP")
+# 			-ip (e.g. "1.1.1.1")
+# 			-ip_mask (e.g. "1.1.1.1/24")
+# 			-mac (e.g. "52:54:00:E9:E1:2C")
+# 			-bootproto (e.g. static)
+# 3. Parameter: Value
+#
+# E.g. CheckInterface("eth0","state","UP");
+#
+sub CheckInterface($$$) 
 {
+	my $IF=$_[0];
+	my $Attribute=lc($_[1]);
+	my $Value=$_[2];
 
         my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("ifconfig -a");
+        my $output=$ssh->capture("ip addr show $IF");
+	my $output2=$ssh->capture("cat /etc/sysconfig/network-scripts/ifcfg-$IF");
 
-	print "$output\n";
+	$output =~ s/\n/\t/g;
+	$output2 =~ s/\n/\t/g;
+#	print "\n\n$output\n";
+#	print "\n\n$output2\n";
+	
+	my @A;
+	switch ($Attribute)
+	{
+		case "state" { 
+			@A = $output =~ m/state\s+(\S+)\s.*/;  
+			if ((defined $A[0]) and ($Value eq $A[0])) { return 0; }
+		}
+		case "ip" {  
+			@A = $output =~ m/inet (.*?)\/\d+\s+/g;
+			if ($Value ~~ @A) { return 0; }
+		}
+		case "ip_mask" {
+			@A = $output =~ m/inet (\S+\/\d+)\s+/g;
+			if ($Value ~~ @A) { return 0; }
+		}
+		case "mac" {
+			@A = $output =~ m/link\/ether\s+(\S+)\s/;
+                        if (((defined $A[0]) and $Value eq $A[0])) { return 0; }
+		}
+		case "bootproto" {
+			@A = $output2 =~ m/BOOTPROTO=["]{0,1}([^\"\s]+)["]{0,1}\s*/;
+                        if ((defined $A[0]) and ($Value eq $A[0])) { return 0; }
+		}
+	}
 
+#	print "\nATTRIBUTE: $Attribute || Value1: $Value || Value2: @A\n";
 
+	return 1;
 }
 
 
@@ -99,7 +145,7 @@ sub CheckHostsIP($$)
 	my $IP=$_[1];
 
 	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("getent hosts $Host");
+	my $output=$ssh->capture("getent hosts $Host");
 
 #	print "HOST: $Host | IP: $IP\n";
 #	print "OUTPUT: $output\n";
@@ -110,9 +156,9 @@ sub CheckHostsIP($$)
 	my @A = $output =~ m/(\S+)\s+(\S+)/;
 #	print "OUTPUT2: @A\n";
 
-	if ($IP eq $A[0]) { return 0; }
+	if ((defined $A[0]) and ($IP eq $A[0])) { return 0; }
 
-return 1;
+	return 1;
 }
 
 

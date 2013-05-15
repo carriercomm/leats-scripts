@@ -29,9 +29,9 @@ our $description="- Setup 2.2.2.1 for nameserver.
 - Make sure that the name resolving first should check the files and only after the DNS.
 - Configure up the eth1 interface as follows:
 
-IP: 2.2.2.88
-NETMASK: Mask: 255.255.0.0
-GATEWAY: 2.2.2.1
+Static IP
+IP: 2.2.2.88/16
+ALIAS: 1.1.1.88/24
 
 (Mind that every modification has to be reboot-persistent.)";
 
@@ -74,7 +74,8 @@ sub break() {
 	print "Break has been selected.\n";
 #	&pre(); #Reset server
         my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture(" sed 's/^nameserver 1.1.1.1/#nameserver 1.1.1.1/g' /etc/resolv.conf > /tmp/test123233.txt; cat /tmp/test123233.txt > /etc/resolv.conf; rm -rf /tmp/test123233.txt");
+        my $output=$ssh->capture(" sed 's/^nameserver 1.1.1.1/#nameserver 1.1.1.1/g' /etc/resolv.conf > /tmp/test123233.txt; cat /tmp/test123233.txt > /etc/resolv.conf; sed 's/^hosts:      files dns/hosts:      dns files/g' /etc/nsswitch.conf > /tmp/test123233.txt;  cat /tmp/test123233.txt > /etc/nsswitch.conf; rm -rf /tmp/test123233.txt; cat /etc/sysconfig/network-scripts/ifcfg-eth0 | grep -v DNS1 > /tmp/1234; cat /tmp/1234 > /etc/sysconfig/network-scripts/ifcfg-eth0");
+	
 
 	print "Your task: $description\n";
 }
@@ -122,10 +123,21 @@ sub grade() {
         printS("In name resolving sequence files are before dns:","$L");
         Framework::grade(Network::CheckNsswitchConfig("hosts","false","files","dns"));
 
-#	printS("Checking interface:","$L");
-#	Framework::grade(Network::CheckInterface("eth0"));
+	printS("Checking interface is up:","$L");
+	Framework::grade(Network::CheckInterface("eth1","state","UP"));
 
-	
+	printS("Checking interface IP is static:","$L");
+        Framework::grade(Network::CheckInterface("eth1","bootproto","static"));
+
+	printS("Checking interface IP is 2.2.2.88/16","$L");
+        Framework::grade(Network::CheckInterface("eth1","ip_mask","2.2.2.88/16"));	
+
+	printS("Checking interface IP is 1.1.1.88/24","$L");
+        Framework::grade(Network::CheckInterface("eth1","ip_mask","1.1.1.88/24"));
+
+#	printS("Checking Mac address is 52:54:00:e9:e1:2c","$L");
+#        Framework::grade(Network::CheckInterface("eth1","mac","52:54:00:e9:e1:2c"));	
+
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
 	print "\n\tSuccessful: \t\t$exercise_success\n";
