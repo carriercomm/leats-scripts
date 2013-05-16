@@ -42,10 +42,11 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 
 our @ALTS_MODULES=();
-push(@ALTS_MODULES,"UserGroup");
-push(@ALTS_MODULES,"Disk");
-push(@ALTS_MODULES,"Packages");
-push(@ALTS_MODULES,"Scripting");
+#push(@ALTS_MODULES,"UserGroup");
+#push(@ALTS_MODULES,"Disk");
+#push(@ALTS_MODULES,"Packages");
+#push(@ALTS_MODULES,"Scripting");
+push(@ALTS_MODULES,"Network");
 
 
 #use Sys::Virt;
@@ -55,6 +56,7 @@ use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &c
 use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &checkUserCrontab &setupGroup &setupUser &delUser &delGroup  &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes);
 use Packages qw( &CreateRepo &CheckRepoExist &CheckRepoAttribute &GetRepoAttribute &CheckPackageInstalled &RemovePackage &InstallPackage);
 use Scripting qw( &CheckScriptOutput );
+use Network qw( &CheckInterface &CheckNameserver &CheckHostsIP &CheckDefaultGateway );
 
 ######
 ###Options
@@ -525,7 +527,61 @@ MODULE("Disk.pm Module");
 		EXERCISE("Checking scripts error output compared with our scripts output",'CheckScriptOutput("$TmpUser","/tmp/testscript","$Commands","","STDERR_ONLY")');
 	        printS("Checking Script output","$L");
         	Framework::grade(Scripting::CheckScriptOutput("root","/tmp/testscript","$Commands","","STDERR_ONLY"));	
-		}		
+		}	
+
+if ("Network" ~~ @ALTS_MODULES)
+                {
+                MODULE("Network.pm Module");
+
+                MMODULE("DNS (Network.pm)");
+
+		EXERCISE("Checking nameserver",'Network::CheckNameserver("2.2.2.1","server1")');
+	        printS("Checking nameserver is 2.2.2.1:","$L");
+        	Framework::grade(Network::CheckNameserver("2.2.2.1","server1"));
+
+		EXERCISE("Checking IP for host",'Network::CheckHostsIP("test1machine","1.1.1.1")');
+        	printS("Checking IP of test1machine is 1.1.1.1:","$L");
+	        Framework::grade(Network::CheckHostsIP("test1machine","1.1.1.1"));
+
+		EXERCISE("Checking name resolving sequence",'Network::CheckNsswitchConfig("hosts","false","files","dns")');
+        	printS("In name resolving sequence files are before dns:","$L");
+		printS("\n\t(stricted=false, other object can be in the sequence ","$L");
+		printS("\n\tE.g. hosts:  'files     nic dns is OK too'):","$L");
+	        Framework::grade(Network::CheckNsswitchConfig("hosts","false","files","dns"));
+
+                EXERCISE("Checking name resolving sequence",'Network::CheckNsswitchConfig("hosts","false","files","dns")');
+                printS("\n\tIn name resolving sequence files are before dns:","$L");
+		printS("\n\t(stricted=true, no other object can be in the sequence):","$L");
+                Framework::grade(Network::CheckNsswitchConfig("hosts","true","files","dns"));
+		
+		MMODULE("Routing (Network.pm)");
+
+		EXERCISE("Checking default gateway",'Network::CheckDefaultGateway("2.2.2.1","eth1")');
+	        printS("Checking default gateway is 2.2.2.1 through eth1","$L");
+       	 	Framework::grade(Network::CheckDefaultGateway("2.2.2.1","eth1"));
+
+		 MMODULE("Interface (Network.pm)");
+
+		EXERCISE("Checking interface status",'Network::CheckInterface("eth1","state","UP")');
+	        printS("Checking interface is up:","$L");
+        	Framework::grade(Network::CheckInterface("eth1","state","UP"));
+
+		EXERCISE("Checking interface bootproto (e.g. static)",'Network::CheckInterface("eth1","bootproto","static")');
+                printS("Checking interface IP is static:","$L");
+		Framework::grade(Network::CheckInterface("eth1","bootproto","static"));
+	
+		EXERCISE("Checking interface IP (or alias IP)",'Network::CheckInterface("eth1","ip","1.1.1.1")');
+	        printS("Checking interface IP is 1.1.1.1:","$L");
+        	Framework::grade(Network::CheckInterface("eth1","ip","1.1.1.1"));
+		
+		EXERCISE("Checking interface IP+MASK",'Network::CheckInterface("eth1","ip_mask","2.2.2.88/16")');
+        	printS("Checking interface IP is 2.2.2.88/16","$L");
+	        Framework::grade(Network::CheckInterface("eth1","ip_mask","2.2.2.88/16"));
+		
+		EXERCISE("Checking interface MAC",'Network::CheckInterface("eth1","mac","52:54:00:e9:e1:2c")');
+		printS("Checking Mac address is 52:54:00:e9:e1:2c","$L");	
+	        Framework::grade(Network::CheckInterface("eth1","mac","52:54:00:e9:e1:2c"));
+}	
 
 
 

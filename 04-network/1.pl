@@ -27,7 +27,7 @@ our $problem="1";
 our $description="- Setup 2.2.2.1 for nameserver.
 - Define test1machine into hosts file as 1.1.1.1.
 - Make sure that the name resolving first should check the files and only after the DNS.
-- Set 2.2.2.1 to default gateway.
+- Configure 2.2.2.1 to default gateway.
 - Configure up the eth1 interface as follows:
 
 Static IP
@@ -36,7 +36,13 @@ ALIAS: 	1.1.1.88/24
 
 (Mind that every modification has to be reboot-persistent.)";
 
-our $hint="Network hint";
+our $hint="Set nameserver in /etc/resolv.conf.
+Set test1machine in /etc/hosts.
+Set the name resolving sequence in /etc/nsswitch.conf.
+Delete the default gateway and add the new one. (route)
+Set up eth1 with /etc/sysconfig/network-scripts/ifcfg-eth1.
+Do not forget that the interface has to be up after reboot.
+Reboot or restart network service.";
 #
 #
 #
@@ -73,11 +79,10 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-#	&pre(); #Reset server
+	&pre(); #Reset server
         my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture(" sed 's/^nameserver 1.1.1.1/#nameserver 1.1.1.1/g' /etc/resolv.conf > /tmp/test123233.txt; cat /tmp/test123233.txt > /etc/resolv.conf; sed 's/^hosts:      files dns/hosts:      dns files/g' /etc/nsswitch.conf > /tmp/test123233.txt;  cat /tmp/test123233.txt > /etc/nsswitch.conf; rm -rf /tmp/test123233.txt; cat /etc/sysconfig/network-scripts/ifcfg-eth0 | grep -v DNS1 > /tmp/1234; cat /tmp/1234 > /etc/sysconfig/network-scripts/ifcfg-eth0");
 	
-
 	print "Your task: $description\n";
 }
 
@@ -87,8 +92,8 @@ sub grade() {
 	print "Grade has been selected.\n";
 	print "rebooting server:";
 
-#	Framework::restart;
-#	Framework::timedconTo("120");
+	Framework::restart;
+	Framework::timedconTo("120");
 
 ## Checking if mounted
 
