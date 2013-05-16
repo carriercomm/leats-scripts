@@ -19,6 +19,9 @@ echo 'NETMASK=255.255.255.0' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
 echo 'IPADDR1=2.2.2.88' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
 echo 'NETMASK1=255.255.0.0' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
 service network restart;
+route del default gw 1.1.1.1 eth0;
+route add default gw 2.2.2.1 eth1;
+route -n;
 ";
 
 

@@ -29,7 +29,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Packages::ISA         = qw( Exporter );
-    	@Packages::EXPORT      = qw( &CheckInterface &CheckNameserver &CheckHostsIP &CheckNsswitchConfig);
+    	@Packages::EXPORT      = qw( &CheckInterface &CheckNameserver &CheckHostsIP &CheckNsswitchConfig &CheckDefaultGateway);
     	@Packages::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name );
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 #	close(STDERR);
@@ -210,6 +210,27 @@ sub CheckNsswitchConfig($$@)
 	}
 
 	return 1;
+}
+
+sub CheckDefaultGateway($$)
+{
+	my $IP=$_[0];
+	my $IF=$_[1];
+
+
+	my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("route -n | grep UG");
+
+	my @A=$output=~m/^\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\S+)/;
+
+	$verbose and print "\nIP: $IP | IF: $IF | Check Default Gateway..\n";
+	$verbose and print "\nFOUND: @A";
+
+	if ((scalar @A)<2) { return 1; }
+
+	if (($IP eq $A[0]) and ($IF eq $A[1]) ) { return 0; }
+	return 1;
+
 }
 
 #### We need to end with success

@@ -27,11 +27,12 @@ our $problem="1";
 our $description="- Setup 2.2.2.1 for nameserver.
 - Define test1machine into hosts file as 1.1.1.1.
 - Make sure that the name resolving first should check the files and only after the DNS.
+- Set 2.2.2.1 to default gateway.
 - Configure up the eth1 interface as follows:
 
 Static IP
-IP: 2.2.2.88/16
-ALIAS: 1.1.1.88/24
+IP: 	2.2.2.88/16
+ALIAS: 	1.1.1.88/24
 
 (Mind that every modification has to be reboot-persistent.)";
 
@@ -56,7 +57,7 @@ our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription);
-use Network qw( &CheckInterface &CheckNameserver &CheckHostsIP );
+use Network qw( &CheckInterface &CheckNameserver &CheckHostsIP &CheckDefaultGateway );
 ######
 ###Options
 ###
@@ -123,6 +124,9 @@ sub grade() {
         printS("In name resolving sequence files are before dns:","$L");
         Framework::grade(Network::CheckNsswitchConfig("hosts","false","files","dns"));
 
+        printS("Checking default gateway is 2.2.2.1 through eth1","$L");
+        Framework::grade(Network::CheckDefaultGateway("2.2.2.1","eth1"));
+
 	printS("Checking interface is up:","$L");
 	Framework::grade(Network::CheckInterface("eth1","state","UP"));
 
@@ -136,7 +140,7 @@ sub grade() {
         Framework::grade(Network::CheckInterface("eth1","ip_mask","1.1.1.88/24"));
 
 #	printS("Checking Mac address is 52:54:00:e9:e1:2c","$L");
-#        Framework::grade(Network::CheckInterface("eth1","mac","52:54:00:e9:e1:2c"));	
+#       Framework::grade(Network::CheckInterface("eth1","mac","52:54:00:e9:e1:2c"));	
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
