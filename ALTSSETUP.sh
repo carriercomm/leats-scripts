@@ -35,6 +35,8 @@ echo -en "[###                ] 15%    \r";
 
 pp -o /ALTS/lib/activate.pl /leats-scripts/activate.pl
 chmod 6755 /ALTS/lib/activate.pl
+/ALTS/lib/Perl2SetUIDExecutable "/ALTS/lib/activate.pl" /ALTS/activate
+chmod 6755 /ALTS/activate
 echo -en "[####               ] 20%    \r";
 
 
@@ -60,9 +62,9 @@ chmod 0700 /ALTS/lib/SetALTSParameter.pl
 
 echo -en "[#######            ] 40%    \r";
 
-/ALTS/lib/Perl2SetUIDExecutable "/leats-scripts/activate.pl" /ALTS/activate
-chmod 6755 /ALTS/activate
-echo -en "[########           ] 45%    \r";
+#/ALTS/lib/Perl2SetUIDExecutable "/leats-scripts/activate.pl" /ALTS/activate
+#chmod 6755 /ALTS/activate
+#echo -en "[########           ] 45%    \r";
 
 
 /ALTS/lib/Perl2SetUIDExecutable /ALTS/lib/ALTSLogin.pl /ALTS/ALTSLogin

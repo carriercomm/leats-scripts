@@ -4,9 +4,6 @@
 ## It's just one big print statement, but note the use of the
 ## associative %ENV array to access the environment variables.
 ##
-use lib '/scripts/common_perl/';
-use Framework qw(&cryptText2File &decryptFile $student_file);
-
 use strict;
 use warnings;
 

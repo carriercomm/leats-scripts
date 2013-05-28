@@ -4,8 +4,8 @@
 ## It's just one big print statement, but note the use of the
 ## associative %ENV array to access the environment variables.
 ##
-use lib '/scripts/common_perl/';
-use Framework qw(&cryptText2File &decryptFile $student_file);
+
+my $student_file="/ALTS/User.alts";
 
 use strict;
 use warnings;
@@ -19,13 +19,6 @@ print "Content-type: text/html\n\n";
 
 ###############################################################################
 ####################### THE STUDENT LOGGED IN #################################
-
-	my $F=decryptFile("$student_file");
-#print "F= $F\n\n";
-
-	my @A = $F =~ m/<STUDENT>(.*)<\/STUDENT><ALTSPASSWORD>(.*)<\/ALTSPASSWORD>/;
-	my $USER = $A[0];
-	my $PW = $A[1];
 
 	print "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">
 		<html xmlns=\"http://www.w3.org/1999/xhtml\"><head>
