@@ -112,6 +112,13 @@ if ( $install ) {
         $verbose and print "Creating snapshot\n";
 	system("lvcreate -pr --snapshot -L 2G --name server_snapshot /dev/vg_desktop/server");	
 	print "Performing post test.\n";
+
+        $verbose and print "Restart libvirtd service...";
+        $output=`service libvirtd restart`;
+        $verbose and print "$output";
+
+        sleep 4;
+
 	Framework::start;
 ## Ping test if host is alive.
 	my $p = Net::Ping->new();
@@ -160,12 +167,18 @@ if ( $install ) {
         $output=`lvcreate -pr --snapshot -L 2G --name server_snapshot /dev/vg_desktop/server`;
         $verbose and print "$output";
 
-	$verbose and print "Recreate /etc/libvirt/qemu/server.xml..\n";
-	system("cp -p /ALTS/SECURITY/server.xml /etc/libvirt/qemu/server.xml");
+#	system("kill `ps -ef | grep '/usr/bin/python /usr/share/virt-manager/virt-manager.py' | grep -v grep | awk '{print \$2}'`");
 
-	$verbose and print "Restart libvirtd service...";	
-	$output=`service libvirtd restart`;
+	$verbose and print "Recreate /etc/libvirt/qemu/server.xml..\n";
+#	system("cp -p /ALTS/SECURITY/server.xml /etc/libvirt/qemu/server.xml");
+	$output=`virsh define /ALTS/SECURITY/server.xml`;
 	$verbose and print "$output";
+
+#	$verbose and print "Restart libvirtd service...";	
+#	$output=`service libvirtd restart`;
+#	$verbose and print "$output";
+
+#	sleep 4;
 
 	Framework::start;
 # Ping test if host is alive.

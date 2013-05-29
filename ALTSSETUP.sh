@@ -105,7 +105,7 @@ unlink /ALTS/Description 1>/dev/null 2>&1; ln -s /var/www/cgi-bin/Description /A
 
 echo -en "[###############    ] 80%   \r";
 
-#/leats-scripts/ScriptReady.pl ALL 1>/dev/null
+/leats-scripts/ScriptReady.pl ALL 1>/dev/null
 
 echo -en "[################## ] 90%     \r";
 
