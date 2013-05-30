@@ -23,7 +23,9 @@ Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.7";
 our $topic="03-lvm";
 our $problem="1";
-our $description="Additional disk has been added to your server.
+our $description="Level:        Advanced
+
+Additional disk has been added to your server.
 Create a volume group named testVG with 4M physical extent size and 120M maximal size
 Create a Logical Volume for Volume Group testVG named testLV1 with 10 PE size\n";
 our $hint="Find the added disk. Create a partion for LVM. Mind the type of the partition. (fdisk)

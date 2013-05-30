@@ -434,7 +434,8 @@ function addHandlers() {
 <td height=\"229\">
 <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" height=\"33\" width=\"100%\">";
 
-if (($ENV{'QUERY_STRING'} ne "REINSTALL") && ($ENV{'QUERY_STRING'} ne "RESET"))
+#RESETWASSUCCESSFUL
+if (($ENV{'QUERY_STRING'} ne "REINSTALL") && ($ENV{'QUERY_STRING'} ne "RESET") && ($ENV{'QUERY_STRING'} ne "RESETWASSUCCESSFUL") && ($ENV{'QUERY_STRING'} ne "RESETNOTSUCCESSFUL") )
 {
 
 
@@ -516,7 +517,14 @@ if ($ENV{'QUERY_STRING'} eq "RESET")
 
 	print "<br/><br/><p>Reset is in progress, this may take a few minutes..</p><p>Please be patient...</p>";
         system("/ALTS/RESET 1>/dev/null 2>&1");
-	print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/home.cgi\">\n";
+	if ( $? == 0 ) 
+	{
+		print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/home.cgi?RESETWASSUCCESSFUL\">\n";
+	}
+	else
+	{
+		print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/home.cgi?RESETNOTSUCCESSFUL\">\n";
+	}
 }
 
 if ($ENV{'QUERY_STRING'} eq "REINSTALL")
@@ -525,6 +533,19 @@ if ($ENV{'QUERY_STRING'} eq "REINSTALL")
 	print "<br/><br/><p>Reinstall is in progress, this may take 10-15 minutes..</p><p>Please be patient...</p>";
         system("/ALTS/REINSTALL 1>/dev/null 2>&1");
 	print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/home.cgi\">\n";
+}
+
+if ($ENV{'QUERY_STRING'} eq "RESETNOTSUCCESSFUL")
+{
+
+        print "<br/><br/><p>Unfortunatelly the Reset was unsuccessful.</p><p>Please Reinstall the server machine!</p>";
+}
+if ($ENV{'QUERY_STRING'} eq "RESETWASSUCCESSFUL")
+{
+
+        print "<br/><br/><p>The server machine has been reseted.</p><p>You will return to home page in a few seconds..</p>";
+	system("sleep 10");
+	print "<META HTTP-EQUIV=refresh CONTENT=\"0;URL=/cgi-bin/home.cgi\">\n";	
 }
 
 

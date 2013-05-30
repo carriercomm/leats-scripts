@@ -23,7 +23,9 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="17-package";
 our $problem="1";
-our $description="Create a repository named 'Local Repo' with ID [local]
+our $description="Level:        Advanced
+
+Create a repository named 'Local Repo' with ID [local]
 The baseurl has to be 'http://desktop', gpgcheck has to be disabled.";
 our $hint="Create the .repo file under /etc/yum.repos.d/. Don't forget to activate it!";
 #

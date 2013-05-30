@@ -206,8 +206,10 @@ if ( $install ) {
 
         if ( $succes ) {
                 print "Server isn't up and running. There has happened something. Please try the Reinstallation.\n";
+		exit 1;
         } else {
                 print "Server is up and running.\n";
+		exit 0;
         }
 
 }

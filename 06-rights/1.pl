@@ -23,7 +23,9 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.2";
 our $topic="06-rights";
 our $problem="1";
-our $description="Make sure that the following settings are set up
+our $description="Level:        Advanced
+
+Make sure that the following settings are set up
 - Copy /etc/issue to /tmp as test
 - Copy /etc/crontab to /tmp as test2
 - User tihamer can write /tmp/test

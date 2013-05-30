@@ -24,7 +24,9 @@ Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.5";
 our $topic="02-physical_disk";
 our $problem="1";
-our $description="Additional disk has been added to your server.
+our $description="Level:	Advanced
+
+Additional disk has been added to your server.
 - Create a 100 MB (+-10%) ext3 partition on it
 - Set the label of the filesystem to test1-label.
 - Mount it with Label on /mnt/das

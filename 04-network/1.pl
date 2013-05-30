@@ -24,7 +24,9 @@ Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.8";
 our $topic="04-network";
 our $problem="1";
-our $description="- Setup 2.2.2.1 for nameserver.
+our $description="Level:        Advanced
+
+- Setup 2.2.2.1 for nameserver.
 - Define test1machine into hosts file as 1.1.1.1.
 - Make sure that the name resolving first should check the files and only after the DNS.
 - Configure 2.2.2.1 to default gateway.

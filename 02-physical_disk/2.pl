@@ -24,7 +24,9 @@ Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.5";
 our $topic="02-physical_disk";
 our $problem="2";
-our $description="Extend the partion previously created and mounted under /mnt/mulder to 180 Mb (+-10%). 
+our $description="Level:        Advanced
+
+Extend the partion previously created and mounted under /mnt/mulder to 180 Mb (+-10%). 
 A test file was created, which should be left on the filesystem.
 Do not destroy the filesystem and just recreate it.
 It has to be reboot persistent.";

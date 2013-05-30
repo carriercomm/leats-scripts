@@ -24,7 +24,9 @@ Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.8";
 our $topic="02-physical_disk";
 our $problem="3";
-our $description="Shrink the filesystem mounted under /mnt/testdir to 40 MB (+-10%) and convert it to ext4.
+our $description="Level:        Advanced
+
+Shrink the filesystem mounted under /mnt/testdir to 40 MB (+-10%) and convert it to ext4.
 Mind that it has to be reboot persistent,";
 
 our $hint="To shrink a filesystem umount it first. (umount)

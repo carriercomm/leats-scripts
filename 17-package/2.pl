@@ -23,7 +23,9 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="17-package";
 our $problem="2";
-our $description="Install the 'nano' package.
+our $description="Level:        Beginner
+
+Install the 'nano' package.
 Remove the package 'wget'.
 Update 'mc' (midnight commander) to version 4.7.0.2-3.
 

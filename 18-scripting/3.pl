@@ -23,7 +23,9 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="18-scripting";
 our $problem="3";
-our $description="Print out the name of the actual user to STDERR
+our $description="Level:        Advanced
+
+Print out the name of the actual user to STDERR
 
 (You can use Shell or Perl. It will run with a 'random' user.)
 (During the check the number of directories can be modified.)
