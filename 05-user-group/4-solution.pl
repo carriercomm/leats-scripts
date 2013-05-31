@@ -8,8 +8,9 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="groupadd homegroup;
-useradd ronald";
+my $Command="groupadd -g 8881 team1; 
+useradd -u 766 daniel; 
+(echo 'secretpassword123'; echo 'secretpassword123') | passwd daniel;";
 
 
 sub ssh_connect() {

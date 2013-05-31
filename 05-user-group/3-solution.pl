@@ -8,8 +8,7 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="groupadd homegroup;
-useradd ronald";
+my $Command="groupadd group1; useradd -g group1 sam; useradd -d /home/sarah_home sarah";
 
 
 sub ssh_connect() {

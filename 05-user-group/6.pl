@@ -22,15 +22,14 @@
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="05-user-group";
-our $problem="3";
-our $description="LEVEL:	Beginner
-
-- Create a user named sam.
-- Create a user named sarah.
-- Create a group named group1.
-- Sam is member of group1.
-- The home directory of sarah is /home/sarah_home.";
-our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)";
+our $problem="6";
+our $description='- Create a user named nicole with /home/nicole home directory.
+- Create a user named robin.
+- Set the password of Nicole to "pass1234".
+- Robin shall not have access to any shell.';
+our $hint="Create the users with the given parameters. (useradd, usermod)
+Change the passwords of the user (passwd)
+If you want to deny the shell access for a user, set the default shell to /sbin/nologin";
 #
 #
 #
@@ -104,21 +103,20 @@ sub grade() {
 
 
 
-	printS("User sam exist","$L");
-	Framework::grade(UserGroup::userExist("sam"));
+	printS("User nicole exist","$L");
+	Framework::grade(UserGroup::userExist("nicole"));
 
-	printS("User sarah exist","$L");
-	Framework::grade(UserGroup::userExist("sarah"));
+	printS("User robin exist","$L");
+	Framework::grade(UserGroup::userExist("robin"));
 
-	printS("Group group1 exist","$L");
-	Framework::grade(UserGroup::groupExist("group1"));
+	printS("Nicole's home directory is /home/nicole:","$L");
+	Framework::grade(UserGroup::checkUserAttribute("nicole","HOME","/home/nicole"));
 
-	printS("Sarah's home directory is /home/sarah_home:","$L");
-	Framework::grade(UserGroup::checkUserAttribute("sarah","HOME","/home/sarah_home"));
+	printS("Robin has no access to any shell:","$L");
+	Framework::grade(UserGroup::checkUserHasNoShellAccess("robin"));
 
-	printS("Sam is in Group group1:","$L");
-	Framework::grade(checkUserGroupMembership("sam","group1"));	
-
+	printS("Nicole's password is pass1234","$L");
+	Framework::grade(checkUserPassword("nicole","pass1234"));
 
 
 	print "\n"."="x$L."=========\n";

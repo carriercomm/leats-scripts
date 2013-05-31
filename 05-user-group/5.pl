@@ -22,15 +22,14 @@
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="05-user-group";
-our $problem="3";
-our $description="LEVEL:	Beginner
+our $problem="5";
+our $description='LEVEL:	Beginner
 
-- Create a user named sam.
-- Create a user named sarah.
-- Create a group named group1.
-- Sam is member of group1.
-- The home directory of sarah is /home/sarah_home.";
-our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)";
+- Create a user named "chuck" with "tadmins" primary group.
+- Create a user named "clare" with /bin/sh default bash.
+- Set the password of chuck to "startABC"';
+our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)
+Change the passwords of the users (passwd)";
 #
 #
 #
@@ -104,21 +103,23 @@ sub grade() {
 
 
 
-	printS("User sam exist","$L");
-	Framework::grade(UserGroup::userExist("sam"));
+        printS("Group tadmins exist","$L");
+        Framework::grade(UserGroup::groupExist("tadmins"));
 
-	printS("User sarah exist","$L");
-	Framework::grade(UserGroup::userExist("sarah"));
+	printS("User chuck exist","$L");
+	Framework::grade(UserGroup::userExist("chuck"));
 
-	printS("Group group1 exist","$L");
-	Framework::grade(UserGroup::groupExist("group1"));
+	printS("User clare exist","$L");
+	Framework::grade(UserGroup::userExist("clare"));
 
-	printS("Sarah's home directory is /home/sarah_home:","$L");
-	Framework::grade(UserGroup::checkUserAttribute("sarah","HOME","/home/sarah_home"));
+ 	printS("Clare's default shell is /bin/sh:","$L");
+        Framework::grade(UserGroup::checkUserAttribute("clare","SHELL","/bin/sh"));
 
-	printS("Sam is in Group group1:","$L");
-	Framework::grade(checkUserGroupMembership("sam","group1"));	
+	printS("Chuck's primary group is tadmins","$L");
+	Framework::grade(UserGroup::checkUserPrimaryGroup("chuck","tadmins"));
 
+	printS("Chuck's password is startABC","$L");
+	Framework::grade(checkUserPassword("chuck","startABC"));
 
 
 	print "\n"."="x$L."=========\n";

@@ -23,20 +23,12 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="05-user-group";
 our $problem="1";
-our $description="Level:        Advanced
+our $description="LEVEL:	Beginner
 
-- create the following users: john, mary and thomas
-- create a group named tadmins with GID 885
-- john's UID is 2342, his home directory is /home/john.
-- mary's UID is 5556 and her default shell is /bin/bash.
-- thomas should not have access to any shell
-- the users john and mary are members of the group tadmins.
-- thomas should not be in the group tadmins.
-- change all users password to kuka002
-- john's account will expire on 2025-12-12";
-our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)
-Change the passwords of the users (passwd)
-Modify the account expiration of the user (chage)";
+- Create a user named ronald.
+- Create a group homegroup.";
+
+our $hint="Create the user and the group. (useradd, groupadd)";
 #
 #
 #
@@ -110,56 +102,11 @@ sub grade() {
 
 
 
-	printS("User mary exist","$L");
-	Framework::grade(UserGroup::userExist("mary"));
+	printS("User ronald exist","$L");
+	Framework::grade(UserGroup::userExist("ronald"));
 
-	printS("User john exist","$L");
-	Framework::grade(UserGroup::userExist("john"));
-
-	printS("User thomas exist","$L");
-	Framework::grade(UserGroup::userExist("thomas"));
-
-	printS("Group tadmins exist","$L");
-	Framework::grade(UserGroup::groupExist("tadmins"));
-
-	printS("Group tadmins with GID 885","$L");
-	Framework::grade(checkGroupNameAndID("tadmins","885"));
-
-	printS("John's UID is 2342:","$L");
-	Framework::grade(UserGroup::checkUserAttribute("john","UID","2342"));
-
-	printS("john's home directory is /home/john:","$L");
-	Framework::grade(UserGroup::checkUserAttribute("john","HOME","/home/john"));
-
-	printS("Mary's UID is 5556","$L");
-	Framework::grade(UserGroup::checkUserAttribute("mary","UID","5556"));
-
-	printS("Mary's default shell is /bin/bash:","$L");
-	Framework::grade(UserGroup::checkUserAttribute("mary","SHELL","/bin/bash"));
-
-	printS("Thomas should not have access to any shell:","$L");
-	Framework::grade(UserGroup::checkUserHasNoShellAccess("thomas"));
-
-	printS("User john is in Group tadmins:","$L");
-	Framework::grade(checkUserGroupMembership("john","tadmins"));	
-
-	printS("User mary is in Group tadmins:","$L");
-	Framework::grade(checkUserGroupMembership("mary","tadmins"));
-
-	printS("User thomas isn't in Group tadmins:","$L");
-	Framework::grade(userExist("thomas"),(!checkUserGroupMembership("thomas","tadmins")));
-
-	printS("John's password is kuka002","$L");
-	Framework::grade(checkUserPassword("john","kuka002"));
-
-	printS("Mary's password is kuka002","$L");
-	Framework::grade(checkUserPassword("mary","kuka002"));
-
-	printS("Thomas's password is kuka002","$L");
-	Framework::grade(checkUserPassword("thomas","kuka002"));
-
-	printS("john's account will expire on 2025-12-12","$L");
-	Framework::grade(checkUserChageAttribute("john","EXPIRE_DATE","2025-12-12"));
+	printS("Group homegroup exist","$L");
+	Framework::grade(UserGroup::groupExist("homegroup"));
 
 
 	print "\n"."="x$L."=========\n";

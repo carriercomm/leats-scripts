@@ -22,15 +22,14 @@
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="05-user-group";
-our $problem="3";
+our $problem="4";
 our $description="LEVEL:	Beginner
 
-- Create a user named sam.
-- Create a user named sarah.
-- Create a group named group1.
-- Sam is member of group1.
-- The home directory of sarah is /home/sarah_home.";
-our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)";
+- Create a user named daniel with UID 766.
+- Create a group team1 with Group ID 8881
+- Set the password of daniel to secretpassword123";
+our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)
+Change the passwords of the users (passwd)";
 #
 #
 #
@@ -104,21 +103,20 @@ sub grade() {
 
 
 
-	printS("User sam exist","$L");
-	Framework::grade(UserGroup::userExist("sam"));
+	printS("User daniel exist","$L");
+	Framework::grade(UserGroup::userExist("daniel"));	
 
-	printS("User sarah exist","$L");
-	Framework::grade(UserGroup::userExist("sarah"));
+	printS("Group team1 exist","$L");
+	Framework::grade(UserGroup::groupExist("team1"));
 
-	printS("Group group1 exist","$L");
-	Framework::grade(UserGroup::groupExist("group1"));
+	printS("Group team1 with GID 8881","$L");
+	Framework::grade(checkGroupNameAndID("team1","8881"));
 
-	printS("Sarah's home directory is /home/sarah_home:","$L");
-	Framework::grade(UserGroup::checkUserAttribute("sarah","HOME","/home/sarah_home"));
+	printS("Daniel's UID is 766:","$L");
+	Framework::grade(UserGroup::checkUserAttribute("daniel","UID","766"));
 
-	printS("Sam is in Group group1:","$L");
-	Framework::grade(checkUserGroupMembership("sam","group1"));	
-
+	printS("Daniel's password is secretpassword123","$L");
+	Framework::grade(checkUserPassword("daniel","secretpassword123"));
 
 
 	print "\n"."="x$L."=========\n";

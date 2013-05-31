@@ -8,8 +8,9 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="groupadd homegroup;
-useradd ronald";
+my $Command="groupdel group2delete;
+userdel megan;
+usermod -aG TTeam thomas";
 
 
 sub ssh_connect() {
