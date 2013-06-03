@@ -26,7 +26,7 @@ BEGIN {
 	use Exporter;
 
 	@UserGroup::ISA         = qw(Exporter);
-	@UserGroup::EXPORT      = qw( &userExist &groupExist &getUserAttribute &checkUserAttribute &checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &setupUser &setupGroup &delGroup &delUser &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes &checkUserCrontabDenied &checkUserCrontab );
+	@UserGroup::EXPORT      = qw( &userExist &groupExist &getUserAttribute &checkUserAttribute &checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &setupUser &setupGroup &delGroup &delUser &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes &checkUserCrontabDenied &checkUserCrontab &checkUserUnlocked );
 	@UserGroup::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success);
 	
 	use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo);
@@ -258,6 +258,24 @@ my $output=$ssh->capture("passwd -S $User");
 if ($output =~ m/Password locked/) { return 0; }
 
 return 1;
+}
+
+#Check if User's account is locked
+##
+##1.Parameter: Username (not ID!)
+##
+##Returns 0 if user's account isn't locked
+#
+sub checkUserUnlocked($)
+{
+my $User = $_[0];
+if (userExist($User) != 0 ) { return 1;  }
+
+my $ssh=Framework::ssh_connect;
+my $output=$ssh->capture("passwd -S $User");
+if ($output =~ m/Password locked/) { return 1; }
+
+return 0;
 }
 
 #Check if User's crontab is denied

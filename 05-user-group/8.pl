@@ -22,8 +22,8 @@
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="05-user-group";
-our $problem="100";
-our $description="Level:        Advanced
+our $problem="8";
+our $description="LEVEL:        Experienced
 
 - create the following users: john, mary and thomas
 - create a group named tadmins with GID 885
@@ -35,6 +35,7 @@ our $description="Level:        Advanced
 - change all users password to kuka002
 - john's account will expire on 2025-12-12";
 our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)
+If you want to deny the shell access for a user, set the default shell to /sbin/nologin
 Change the passwords of the users (passwd)
 Modify the account expiration of the user (chage)";
 #
