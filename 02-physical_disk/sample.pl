@@ -23,15 +23,18 @@ Richard Gruber <gruberrichard@gmail.com>';
 #our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.5";
 our $topic="02-physical_disk";
-our $problem="1";
+our $problem="4";
 our $description="LEVEL:	Beginner
 
-A disk has been attached (/dev/vdb). 
-There are two ext3 partitions on it (/dev/vdb1 and /dev/vdb2).
-- Mount /dev/vdb1 partition as 'rw' under /mnt/mountpoint1.
-- Umount /mnt/mountpoint2";
 
-our $hint="Mount the partition with 'rw' option. (mount)";
+
+\n";
+
+our $hint="Find the device and create a partition. (fdisk)
+Create a filesystem. Modify the label and create an entry with label into fstab. (mkfs,e2label)
+Mind the mount options. Create a new partition for swap.
+Don't forget to set the type of partition. Create a swap on it and activate. (fdisk,mkswap,swapon)
+It has to be set in fstab too.";
 #
 #
 #
@@ -52,7 +55,7 @@ our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription);
-use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk &CreatePartition &CreateDirectory &checkMountOptions );
+use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk );
 ######
 ###Options
 ###
@@ -71,15 +74,6 @@ sub break() {
 	&pre();
 
 	RecreateVDisk("vdb","300","vdb");
-        sleep(2);
-        CreatePartition("/dev/vdb","1","+100M","ext3");
- 	CreatePartition("/dev/vdb","2","+50M","ext3");
-        CreateDirectory("/mnt/mountpoint1","","","");
-	CreateDirectory("/mnt/mountpoint2","","","");
-
-        my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("mkfs.ext3 /dev/vdb1; mkfs.ext3 /dev/vdb2; mount /dev/vdb2 /mnt/mountpoint2");
-
 	
 	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -123,13 +117,11 @@ sub grade() {
 	
 
 	printS("Checking mount:","$L");
-	Framework::grade(checkMount("vdb1","/mnt/mountpoint1/"));
+	Framework::grade(checkMount("vdb","/mnt/mountpoint1/"));
 
-	printS("Checking mount mounted as 'rw':","$L");
-	Framework::grade(checkMountOptions("/mnt/mountpoint1","rw"));
+	
 
-        printS("Checking vdb2 isn't mounted under /mnt/mountpoint2:","$L");
-        Framework::grade(!checkMount("vdb2","/mnt/mountpoint2/"));	
+
 
 
 	print "\n"."="x$L."=========\n";

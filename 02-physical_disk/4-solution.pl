@@ -8,8 +8,7 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="mount /dev/vdb1  /mnt/mountpoint1; umount /mnt/mountpoint2";
-
+my $Command="umount  /dev/vdb1; (echo 'd'; echo 'n'; echo 'p'; echo '1'; echo ''; echo '+180M'; echo 'w') | fdisk /dev/vdb;partx -va /dev/vdb;e2fsck -f -y /dev/vdb1; resize2fs /dev/vdb1;echo '/dev/vdb1       /mnt/mulder                ext3    defaults,rw,acl 0 0' >> /etc/fstab; mount -av";
 
 sub ssh_connect() {
         open my $stderr_fh, '>', '/dev/null';
