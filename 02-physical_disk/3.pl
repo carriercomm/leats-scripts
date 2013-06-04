@@ -24,22 +24,16 @@ Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.5";
 our $topic="02-physical_disk";
 our $problem="3";
-our $description="LEVEL:	Experienced
+our $description="LEVEL:	Beginner
 
-Additional disk has been added to your server.
-- Create a 100 MB (+-10%) ext3 partition on it
-- Set the label of the filesystem to test1-label.
-- Mount it with Label on /mnt/das
-- There must be \"rw\" and \"acl\" among the mount options
-- Increase Swap size with 50M (+-5%)
-Every modification has to be reboot persistently!\n";
+A disk has been attached to your server (/dev/vdb).
+- Create a 120M large ext4 filesystem on it.
+- Mount this filesystem under /mnt/test1";
 
-our $hint="Find the device and create a partition. (fdisk)
-Create a filesystem. Modify the label and create an entry with label into fstab. (mkfs,e2label)
-Mind the mount options. Create a new partition for swap.
-Don't forget to set the type of partition. Create a swap on it and activate. (fdisk,mkswap,swapon)
-It has to be set in fstab too.";
-#
+our $hint="Create a partition on the disk. (fdisk)
+Create a filesystem on it. (mkfs)
+Mount it. (mount)";
+
 #
 #
 #############
@@ -59,7 +53,7 @@ our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription);
-use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk );
+use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk &CreatePartition &CreateDirectory &checkMountOptions &fileEqual );
 ######
 ###Options
 ###
@@ -78,6 +72,11 @@ sub break() {
 	&pre();
 
 	RecreateVDisk("vdb","300","vdb");
+        sleep(2);
+
+        my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("mkfs.ext3 /dev/vdb1; mount -o 'ro' /dev/vdb1 /mnt/mountpoint1");
+
 	
 	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -90,8 +89,8 @@ sub grade() {
 	print "Grade has been selected.\n";
 	print "rebooting server:";
 
-	Framework::restart;
-	Framework::timedconTo("120");
+#	Framework::restart;
+#	Framework::timedconTo("120");
 
 ## Checking if mounted
 
@@ -103,7 +102,7 @@ sub grade() {
 	$exercise_number = 0;
 	$exercise_success = 0;
 
-	my $L=80;
+	my $L=65;
 
 
 	print "="x$L."=========\n";
@@ -121,32 +120,13 @@ sub grade() {
 	
 
 	printS("Checking mount:","$L");
-	Framework::grade(checkMount("vdb","/mnt/das/"));
+	Framework::grade(checkMount("vdb1","/mnt/test1"));
 
-	printS("Checking filesystem type:","$L");
-	Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/das'),"ext3"));
-
-	printS("Checking size:","$L");
-	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/das'),"100","10"));
-
-	printS("Checking Label is test1-label: ","$L");
-	Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
-
-	#printS("Checking mounted with UUID: ","$L");
-	#Framework::grade(checkMountedWithUUID("/mnt/das"));
-
-	printS("Checking mounted with LABEL: ","$L");
-	Framework::grade(checkMountedWithLABEL("/mnt/das"));
-
-	printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");		
-	Framework::grade(checkMountOptions("/mnt/das","rw,acl"));
-
-	printS("Checking swap size increased with 50M: ","$L");
-	Framework::grade(checkSwapSize("561","5"));
-
-
-
-
+	printS("Checking size of filesystem is 120M:","$L");
+	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/test1'),"120","10"));
+	
+ 	printS("Checking type filesystem is ext4:","$L");
+	Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/test1'),"ext4"));
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";

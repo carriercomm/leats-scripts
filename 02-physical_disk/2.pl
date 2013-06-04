@@ -26,10 +26,10 @@ our $topic="02-physical_disk";
 our $problem="2";
 our $description="LEVEL:	Beginner
 
-A disk has been attached (/dev/vdb). 
+A disk has been attached to your server (/dev/vdb). 
 There is an ext3 partitions on it (/dev/vdb1).
 /dev/vdb1 is mounted under /mnt/mountpoint1.
-- Copy the /etc/issue file on this partition (don't change the name)";
+- Copy the /etc/issue file to this partition (don't change the name)";
 
 our $hint="Remount the partition with 'rw' option. (mount).
 Copy the file (cp)";

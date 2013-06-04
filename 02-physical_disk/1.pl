@@ -26,7 +26,7 @@ our $topic="02-physical_disk";
 our $problem="1";
 our $description="LEVEL:	Beginner
 
-A disk has been attached (/dev/vdb). 
+A disk has been attached to your server. (/dev/vdb). 
 There are two ext3 partitions on it (/dev/vdb1 and /dev/vdb2).
 - Mount /dev/vdb1 partition as 'rw' under /mnt/mountpoint1.
 - Umount /mnt/mountpoint2";
