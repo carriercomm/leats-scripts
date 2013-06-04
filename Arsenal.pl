@@ -53,7 +53,7 @@ push(@ALTS_MODULES,"Network");
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent);
 use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy &checkSwapSize &RecreateVDisk );
-use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &checkUserCrontab &setupGroup &setupUser &delUser &delGroup  &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes);
+use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &checkUserCrontab &setupGroup &setupUser &delUser &delGroup  &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes &checkUserUnlocked);
 use Packages qw( &CreateRepo &CheckRepoExist &CheckRepoAttribute &GetRepoAttribute &CheckPackageInstalled &RemovePackage &InstallPackage);
 use Scripting qw( &CheckScriptOutput );
 use Network qw( &CheckInterface &CheckNameserver &CheckHostsIP &CheckDefaultGateway );
@@ -346,6 +346,10 @@ MODULE("Disk.pm Module");
 		printS("Tihamer is locked","$L");
 		Framework::grade(checkUserLocked("tihamer"));
 
+                EXERCISE("Checking user password is unlocked",'checkUserUnlocked(tihamer)');
+                printS("Tihamer is locked","$L");
+                Framework::grade(checkUserUnlocked("tihamer"));		
+
 		#EXPIRE_DATE - Account expires (date format: YYYY-MM-DD)
 		#INACTIVE - Password inactive
 		#MIN_DAYS - Minimum number of days between password change
@@ -381,7 +385,7 @@ MODULE("Disk.pm Module");
 		
 		EXERCISE("Create User",'setupUser("test1","1233","testgroup1","ftp,users","/home/test1","This is the Test user","/bin/bash","true")');
 		printS("Create user test1","$L");
-		Framework::grade(setupUser("test1","1233","testgroup1","ftp,users","/home/test1","This is the Test user","/bin/bash","true"));
+		Framework::grade(setupUser("test1","1233","testgroup1","ftp,users","/home/test1","This is the Test user","/bin/bash","true","pw123"));
 
 		EXERCISE("Delete user (second parameter true if you want to delete the home directory too)",'delUser("test1","true")');
 		printS("Delete test1 user","$L");

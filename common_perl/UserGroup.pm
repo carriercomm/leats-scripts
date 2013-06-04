@@ -455,8 +455,9 @@ sub checkUserChageAttribute($$$)
 #6. Parameter: User comment
 #7. Parameter: Users default shell
 #8. Parameter: Generate SSH key for key authentication (true/false)
+#9. Parameter: Password
 #
-sub setupUser($$$$$$$$)
+sub setupUser($$$$$$$$;$)
 {
 	my $User = $_[0];
 	my $User_UID = $_[1];
@@ -466,6 +467,7 @@ sub setupUser($$$$$$$$)
 	my $User_Comment = $_[5];
 	my $User_Shell = $_[6];
 	my $User_Generate_SSH_Key = lc($_[7]);
+	my $User_Password = $_[8] || "";
 
 	if ($User eq "") { return 1; }
 
@@ -526,6 +528,18 @@ sub setupUser($$$$$$$$)
 		my $output=$ssh->capture("su - $User -c \"mkdir ./.ssh; rm -f ./.ssh/*; ssh-keygen -q -t rsa -f ./.ssh/id_rsa -N ''\"");
 #$verbose and print "Generate ssh key for $User: $output \n";
 	}		
+
+	if ($User_Password ne "") {
+		if ($User_Password eq "LOCK") {
+			my $ssh=Framework::ssh_connect;
+			my $output=$ssh->capture("passwd -l $User");
+		}
+		else
+		{
+			my $ssh=Framework::ssh_connect;
+			my $output=$ssh->capture("(echo '$User_Password'; echo '$User_Password') | passwd $User");
+		}
+	}
 
 #	my $ssh=Framework::ssh_connect;
 #	my $output=$ssh->capture("cat /etc/shadow");

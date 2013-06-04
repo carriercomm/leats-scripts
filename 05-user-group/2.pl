@@ -72,8 +72,8 @@ sub break() {
 	print "Exercise specific modifications...";
 	setupGroup("group2delete","","");
 	setupGroup("TTeam","","");
-	setupUser("thomas","1233","","","","This is Thomas","/bin/bash","");
-	setupUser("megan","","","","","This is Megan","/bin/sh","");
+	setupUser("thomas","1233","","","","This is Thomas","/bin/bash","","pw123");
+	setupUser("megan","","","","","This is Megan","/bin/sh","","pw123");
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 

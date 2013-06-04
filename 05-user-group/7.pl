@@ -23,15 +23,15 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="05-user-group";
 our $problem="7";
-our $description="LEVEL:	Experienced
+our $description='LEVEL:	Experienced
 
-- Add group ftp to User sean's secondary groups
-- Change the home directory of sean to /home/sean_home
-- Unlock the user sally
-- Sean's account has to be expired in 2015-03-15";
-our $hint="Change the users home directory and secondary groups. (usermod)
-Unlock the user (passwd)
-Modify the account expiration of the user (chage)";
+- Create a user named nicole with /home/nicole home directory.
+- Create a user named robin.
+- Set the password of Nicole to "pass1234".
+- Robin shall not have access to any shell.';
+our $hint="Create the users with the given parameters. (useradd, usermod)
+Change the passwords of the user (passwd)
+If you want to deny the shell access for a user, set the default shell to /sbin/nologin";
 #
 #
 #
@@ -51,7 +51,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &checkUserUnlocked &setupUser );
+use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess );
 ######
 ###Options
 ###
@@ -69,14 +69,6 @@ GetOptions("help|?|h" => \$help,
 sub break() {
 	print "Break has been selected.\n";
 	&pre(); #Reseting server machine...
-
-	setupUser("sean","","","","","","","");
-
-	setupUser("sally","","","","","","","");
-
-	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("(echo 'secretpassword123'; echo 'secretpassword123') | passwd sally; passwd -l sally");
-
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -113,17 +105,20 @@ sub grade() {
 
 
 
-	printS("Group ftp is one of the secondary groups of Sean:","$L");
-	Framework::grade(checkUserSecondaryGroupMembership("sean","ftp"));
+	printS("User nicole exist","$L");
+	Framework::grade(UserGroup::userExist("nicole"));
 
-	printS("Sean's home directory is /home/sean_home:","$L");
-	Framework::grade(UserGroup::checkUserAttribute("sean","HOME","/home/sean_home"));
+	printS("User robin exist","$L");
+	Framework::grade(UserGroup::userExist("robin"));
 
-	printS("Sally's account is unlocked","$L");
-	Framework::grade(UserGroup::checkUserUnlocked("sally"));
+	printS("Nicole's home directory is /home/nicole:","$L");
+	Framework::grade(UserGroup::checkUserAttribute("nicole","HOME","/home/nicole"));
 
-        printS("Sean's account will expire on 2015-03-15","$L");
-        Framework::grade(checkUserChageAttribute("sean","EXPIRE_DATE","2015-03-15"));
+	printS("Robin has no access to any shell:","$L");
+	Framework::grade(UserGroup::checkUserHasNoShellAccess("robin"));
+
+	printS("Nicole's password is pass1234","$L");
+	Framework::grade(checkUserPassword("nicole","pass1234"));
 
 
 	print "\n"."="x$L."=========\n";

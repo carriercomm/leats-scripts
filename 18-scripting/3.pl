@@ -109,7 +109,7 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 	my $TmpUser="$topic-$problem-User123";
-	setupUser("$TmpUser","","","","","","","");
+	setupUser("$TmpUser","","","","","","","","pw123");
 
 	printS("Checking Script is executable","$L");	
 	Framework::grade(UserGroup::checkUserFilePermission("root","/tmp/testscript","r*x"));

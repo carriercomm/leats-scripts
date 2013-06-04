@@ -21,16 +21,23 @@
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
-our $topic="19-crontab";
-our $problem="1";
-our $description="Level:        Advanced
+our $topic="05-user-group";
+our $problem="9";
+our $description="LEVEL:        Experienced
 
-- User william's crontab has to be denied
-- User tihamer has to run \"/bin/echo 'crontab exam test'\" every day at 5:25
-- User rudolf has to run \"whoami\" in every hours 16th minute";
-our $hint="Add william into /etc/cron.deny. 
-Add the given entry to the cron of tihamer. (crontab)
-Add the given entry to rudolfs cron. (crontab)";
+- create the following users: john, mary and thomas
+- create a group named tadmins with GID 885
+- john's UID is 2342, his home directory is /home/john.
+- mary's UID is 5556 and her default shell is /bin/bash.
+- thomas should not have access to any shell
+- the users john and mary are members of the group tadmins.
+- thomas should not be in the group tadmins.
+- change all users password to kuka002
+- john's account will expire on 2025-12-12";
+our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)
+If you want to deny the shell access for a user, set the default shell to /sbin/nologin
+Change the passwords of the users (passwd)
+Modify the account expiration of the user (chage)";
 #
 #
 #
@@ -50,7 +57,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use UserGroup qw( &checkUserCrontabDenied &setupGroup &setupUser &delUser &delGroup &checkUserCrontab );
+use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess );
 ######
 ###Options
 ###
@@ -59,7 +66,7 @@ GetOptions("help|?|h" => \$help,
 		"b|break" => \$break,
 		"g|grade" => \$grade,
 		"hint" => \$hint,
-		"d|description" => \$desc,
+		 "d|description" => \$desc,
 	  );
 
 #####
@@ -67,17 +74,7 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-	&pre(); #Reseting Server machine
-
-
-        $verbose and print "Running pre section\n";
-        $verbose and print "Create user william..\n";
-        setupUser("william","3446","","","","","/bin/bash","true","pw123");
-        $verbose and print "Create user tihamer..\n";
-        setupUser("tihamer","4999","tihamer","ftp","/home/tihamer","This is Tihamer","/bin/bash","true","pw123");
-        $verbose and print "Create user rudolf..\n";
-        setupUser("rudolf","7929","","","","","/bin/bash","true","pw123");
-
+	&pre(); #Reseting server machine...
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -88,14 +85,12 @@ sub break() {
 sub grade() {
 
 	system("clear");
-	print "Grade has been selected";
 	my $Student = Framework::getStudent();
 
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
 	$result_file="/ALTS/RESULTS/${Student}/${T}-${problem}"; #Empty the result file
-
-	my $fn; open($fn,">","$result_file"); close($fn);
+		my $fn; open($fn,">","$result_file"); close($fn);
 	my $now = strftime "%Y/%m/%d %H:%M:%S", localtime;
 	$exercise_number = 0;
 	$exercise_success = 0;
@@ -116,14 +111,56 @@ sub grade() {
 
 
 
-	printS("william's crontab is denied","$L");
-	Framework::grade(UserGroup::checkUserCrontabDenied("william"));
+	printS("User mary exist","$L");
+	Framework::grade(UserGroup::userExist("mary"));
 
-	printS("tihamer run \"/bin/echo 'crontab exam test'\" every day at 5:25","$L");
-	Framework::grade(checkUserCrontab("tihamer","25","5","*","*","*","/bin/echo 'crontab exam test'"));
+	printS("User john exist","$L");
+	Framework::grade(UserGroup::userExist("john"));
 
-	printS("rudolf run \"whoami\" in every hours 16th minute","$L");
-	Framework::grade(checkUserCrontab("rudolf","16","*","*","*","*","whoami"));
+	printS("User thomas exist","$L");
+	Framework::grade(UserGroup::userExist("thomas"));
+
+	printS("Group tadmins exist","$L");
+	Framework::grade(UserGroup::groupExist("tadmins"));
+
+	printS("Group tadmins with GID 885","$L");
+	Framework::grade(checkGroupNameAndID("tadmins","885"));
+
+	printS("John's UID is 2342:","$L");
+	Framework::grade(UserGroup::checkUserAttribute("john","UID","2342"));
+
+	printS("john's home directory is /home/john:","$L");
+	Framework::grade(UserGroup::checkUserAttribute("john","HOME","/home/john"));
+
+	printS("Mary's UID is 5556","$L");
+	Framework::grade(UserGroup::checkUserAttribute("mary","UID","5556"));
+
+	printS("Mary's default shell is /bin/bash:","$L");
+	Framework::grade(UserGroup::checkUserAttribute("mary","SHELL","/bin/bash"));
+
+	printS("Thomas should not have access to any shell:","$L");
+	Framework::grade(UserGroup::checkUserHasNoShellAccess("thomas"));
+
+	printS("User john is in Group tadmins:","$L");
+	Framework::grade(checkUserGroupMembership("john","tadmins"));	
+
+	printS("User mary is in Group tadmins:","$L");
+	Framework::grade(checkUserGroupMembership("mary","tadmins"));
+
+	printS("User thomas isn't in Group tadmins:","$L");
+	Framework::grade(userExist("thomas"),(!checkUserGroupMembership("thomas","tadmins")));
+
+	printS("John's password is kuka002","$L");
+	Framework::grade(checkUserPassword("john","kuka002"));
+
+	printS("Mary's password is kuka002","$L");
+	Framework::grade(checkUserPassword("mary","kuka002"));
+
+	printS("Thomas's password is kuka002","$L");
+	Framework::grade(checkUserPassword("thomas","kuka002"));
+
+	printS("john's account will expire on 2025-12-12","$L");
+	Framework::grade(checkUserChageAttribute("john","EXPIRE_DATE","2025-12-12"));
 
 
 	print "\n"."="x$L."=========\n";
@@ -150,10 +187,10 @@ sub grade() {
 
 sub pre() {
 ### Prepare the machine 
-
 	$verbose and print "Running pre section\n";
         $verbose and print "Reset server\n";
         system("/ALTS/RESET");
+
 }
 
 sub post() {
@@ -173,7 +210,6 @@ if ( $hint ) {
 if ( $desc ) {
         Framework::showdescription;
 }
-
 
 if ( $grade and $break ) {
 	print "Break and grade cannot be requested at one time.\n";

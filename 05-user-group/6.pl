@@ -22,16 +22,19 @@
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="05-user-group";
-our $problem="6";
-our $description='LEVEL:	Experienced
+our $problem="3";
+our $description='LEVEL: Beginner
 
-- Create a user named nicole with /home/nicole home directory.
-- Create a user named robin.
-- Set the password of Nicole to "pass1234".
-- Robin shall not have access to any shell.';
-our $hint="Create the users with the given parameters. (useradd, usermod)
-Change the passwords of the user (passwd)
-If you want to deny the shell access for a user, set the default shell to /sbin/nologin";
+- Create a user named "jennifer"
+- Create a user named "michael"
+- Set "root" to primary group of jennifer
+- Add  group "group002" to secondary groups of michael
+- Change the password of jennifer to "pw2013"
+- Delete group "group001"';
+
+our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)
+Change the passwords of the users (passwd)
+Modify the account expiration of the user (chage)";
 #
 #
 #
@@ -51,7 +54,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess );
+use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &setupUser &setupGroup );
 ######
 ###Options
 ###
@@ -71,6 +74,9 @@ sub break() {
 	&pre(); #Reseting server machine...
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
+
+	setupGroup("group001","","");
+	setupGroup("group002","","");
 
 	$verbose and print "Pre complete breaking\n";	
 	print "Your task: $description\n";
@@ -105,20 +111,23 @@ sub grade() {
 
 
 
-	printS("User nicole exist","$L");
-	Framework::grade(UserGroup::userExist("nicole"));
+	printS("User jennifer exist","$L");
+	Framework::grade(UserGroup::userExist("jennifer"));
 
-	printS("User robin exist","$L");
-	Framework::grade(UserGroup::userExist("robin"));
+	printS("User michael exist","$L");
+	Framework::grade(UserGroup::userExist("michael"));
 
-	printS("Nicole's home directory is /home/nicole:","$L");
-	Framework::grade(UserGroup::checkUserAttribute("nicole","HOME","/home/nicole"));
+	printS("User jennifer's primary Group is root:","$L");
+	Framework::grade(checkUserPrimaryGroup("jennifer","root"));	
 
-	printS("Robin has no access to any shell:","$L");
-	Framework::grade(UserGroup::checkUserHasNoShellAccess("robin"));
+	printS("Group group002 is in Michael's secondary groups:","$L");
+	Framework::grade(checkUserSecondaryGroupMembership("michael","group002"));
 
-	printS("Nicole's password is pass1234","$L");
-	Framework::grade(checkUserPassword("nicole","pass1234"));
+	printS("User jennifer's password is pw2013","$L");
+	Framework::grade(checkUserPassword("jennifer","pw2013"));
+
+        printS("Group group001 not exist","$L");
+        Framework::grade(!UserGroup::groupExist("group001"));
 
 
 	print "\n"."="x$L."=========\n";

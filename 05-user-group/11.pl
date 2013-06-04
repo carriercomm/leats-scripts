@@ -21,16 +21,18 @@
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
-our $topic="19-crontab";
-our $problem="1";
-our $description="Level:        Advanced
+our $topic="05-user-group";
+our $problem="11";
+our $description="- There is a user 'kevin' set up on the server machine.
+His primary group is group001, and his secondary groups are group002 and ftp.
+You have to change his primary group to group002, and his secondary groups to group001 and ftp.
+- Delete the group group003";
 
-- User william's crontab has to be denied
-- User tihamer has to run \"/bin/echo 'crontab exam test'\" every day at 5:25
-- User rudolf has to run \"whoami\" in every hours 16th minute";
-our $hint="Add william into /etc/cron.deny. 
-Add the given entry to the cron of tihamer. (crontab)
-Add the given entry to rudolfs cron. (crontab)";
+our $hint="First you have to change the primary group to something else /E.g. root/.
+Change the secondary groups. Mind that all secondary groups /which is not the named group/ have to remain.
+Modify the primary group. (usermod)
+Delete the group. Mind that there are some user who has this group as primary group.
+First you have to modify these users, and after these you will be able to delete the group. (groupdel,usermod)";
 #
 #
 #
@@ -50,7 +52,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use UserGroup qw( &checkUserCrontabDenied &setupGroup &setupUser &delUser &delGroup &checkUserCrontab );
+use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &setupUser &setupGroup );
 ######
 ###Options
 ###
@@ -59,7 +61,7 @@ GetOptions("help|?|h" => \$help,
 		"b|break" => \$break,
 		"g|grade" => \$grade,
 		"hint" => \$hint,
-		"d|description" => \$desc,
+		 "d|description" => \$desc,
 	  );
 
 #####
@@ -67,19 +69,17 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-	&pre(); #Reseting Server machine
-
-
-        $verbose and print "Running pre section\n";
-        $verbose and print "Create user william..\n";
-        setupUser("william","3446","","","","","/bin/bash","true","pw123");
-        $verbose and print "Create user tihamer..\n";
-        setupUser("tihamer","4999","tihamer","ftp","/home/tihamer","This is Tihamer","/bin/bash","true","pw123");
-        $verbose and print "Create user rudolf..\n";
-        setupUser("rudolf","7929","","","","","/bin/bash","true","pw123");
-
+#	&pre(); #Reseting server machine...
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
+
+	setupGroup("group001","","");
+	setupGroup("group002","","");
+	setupGroup("group003","","");
+	setupUser("kevin","1233","group001","ftp,group002","","","/bin/bash","true","pwd123");
+	setupUser("jane","","group003","","","","","","pwd123");
+	setupUser("brian","","group003","","","","","","pwd123");
+	
 
 	$verbose and print "Pre complete breaking\n";	
 	print "Your task: $description\n";
@@ -88,14 +88,12 @@ sub break() {
 sub grade() {
 
 	system("clear");
-	print "Grade has been selected";
 	my $Student = Framework::getStudent();
 
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
 	$result_file="/ALTS/RESULTS/${Student}/${T}-${problem}"; #Empty the result file
-
-	my $fn; open($fn,">","$result_file"); close($fn);
+		my $fn; open($fn,">","$result_file"); close($fn);
 	my $now = strftime "%Y/%m/%d %H:%M:%S", localtime;
 	$exercise_number = 0;
 	$exercise_success = 0;
@@ -115,16 +113,17 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
+	printS("User kevin's primary group is group002:","$L");
+	Framework::grade(checkUserPrimaryGroup("kevin","group002"));	
 
-	printS("william's crontab is denied","$L");
-	Framework::grade(UserGroup::checkUserCrontabDenied("william"));
+	printS("Group group001 is in user kevin's secondary groups:","$L");
+	Framework::grade(checkUserSecondaryGroupMembership("kevin","group001"));
 
-	printS("tihamer run \"/bin/echo 'crontab exam test'\" every day at 5:25","$L");
-	Framework::grade(checkUserCrontab("tihamer","25","5","*","*","*","/bin/echo 'crontab exam test'"));
-
-	printS("rudolf run \"whoami\" in every hours 16th minute","$L");
-	Framework::grade(checkUserCrontab("rudolf","16","*","*","*","*","whoami"));
-
+        printS("Group ftp remained in user kevin's secondary groups:","$L");
+        Framework::grade(checkUserSecondaryGroupMembership("kevin","ftp"));
+	
+	printS("Group group003 not exist:","$L");
+	Framework::grade(!groupExist("group003"));
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
@@ -150,10 +149,10 @@ sub grade() {
 
 sub pre() {
 ### Prepare the machine 
-
 	$verbose and print "Running pre section\n";
         $verbose and print "Reset server\n";
         system("/ALTS/RESET");
+
 }
 
 sub post() {
@@ -173,7 +172,6 @@ if ( $hint ) {
 if ( $desc ) {
         Framework::showdescription;
 }
-
 
 if ( $grade and $break ) {
 	print "Break and grade cannot be requested at one time.\n";

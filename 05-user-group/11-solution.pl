@@ -8,7 +8,7 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command='usermod -d /home/sean_home -G ftp -e "2015-03-15" sean; passwd -u sally';
+my $Command="usermod -g group002 -G 'group001,ftp' kevin; usermod -g group001 brian; usermod -g group001 jane; groupdel group003";
 
 
 sub ssh_connect() {
