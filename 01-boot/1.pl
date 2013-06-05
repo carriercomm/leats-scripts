@@ -18,13 +18,19 @@
 ##You should have received a copy of the GNU General Public License
 ##along with Leats.  If not, see <http://www.gnu.org/licenses/>.
 #############
-our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
-#my $author="Richard Gruber <richard.gruber@it-services.hu>";
-our $version="v0.1";
-our $topic="boot";
+our $author='Richard Gruber <gruberrichard@gmail.com>
+Krisztian Banhidy <krisztian@banhidy.hu>';
+#our $author='Richard Gruber <richard.gruber@it-services.hu>';
+our $version="v0.5";
+our $topic="01-boot";
 our $problem="1";
-our $description="Server isn't booting. Persistently solve the problem.\n";
-our $hint="Server has problems booting. We should inspect\nthe boot parameters. is the kernel parameter list correct?\n";
+our $description="LEVEL:	Experienced
+
+Use single user mode and set the root password to 'ALTSroot123'";
+
+our $hint="In Grub you have to delete all unnecessary kernel parameters and add single to them. 
+/After it will boot in single mode./
+Change root password. (passwd)";
 #
 #
 #
@@ -34,76 +40,113 @@ my $help=0;
 my $break=0;
 my $grade=0;
 my $hint=0;
+my $desc=0;
 use strict;
 use warnings;
 use Getopt::Long;
-use File::Copy;
-use Sys::Virt;
+use Term::ANSIColor;
 use File::Basename;
+use POSIX qw/strftime/;
 our $name=basename($0);
+#use Sys::Virt;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name);
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription);
+use UserGroup qw( &checkUserPassword );
 ######
 ###Options
 ###
 GetOptions("help|?|h" => \$help,
-           "verbose|v" => \$verbose,
-	   "b|break" => \$break,
-	   "g|grade" => \$grade,
-	   "hint" => \$hint,
-        );
+		"verbose|v" => \$verbose,
+		"b|break" => \$break,
+		"g|grade" => \$grade,
+		"hint" => \$hint,
+		"d|description" => \$desc,
+	  );
 #####
 # Subs
 #
 sub break() {
 	print "Break has been selected.\n";
 	&pre();
-	$verbose and print "Pre complete breaking\n";
-	Framework::mount;
-	### Here comes the break
-	open my $grub, "/mentes/boot/grub/grub.conf";
-	open my $tgrub, ">/mentes/boot/grub/grub.bkup";
-	while ( my $line=<$grub> ) {
-		chomp $line;
-		$line=~s/^(\s*\w*\s*\/boot\/)vmlinuz(.*)$/$1vmlinux-broken$2/;
-		print $tgrub "$line\n";
-	}
-	close $tgrub;
-	close $grub;
-	if ( unlink("/mentes/boot/grub/grub.conf") == 0 ) {
-    		$verbose and print "File deleted successfully.\n";
-	} else {
-		$verbose and print "File was not deleted.\n";
-	}
-	move("/mentes/boot/grub/grub.bkup", "/mentes/boot/grub/grub.conf");
-	Framework::umount;
-	Framework::start;
+
+        my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("(echo aerh3443; echo aerh3443) | passwd root");
+
+	
+	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
+
 	print "Your task: $description\n";
 }
 
 sub grade() {
+	system("clear");
+	my $Student = Framework::getStudent();
 	print "Grade has been selected.\n";
-	Framework::restart;
-	print "Test can take up to 1 minutes.\n";
-	print "Server booted succesfully:";
-	Framework::grade(Framework::timedconTo("60"));
-	## Running post
-	&post();
+	print "rebooting server:";
+
+#	Framework::restart;
+#	Framework::timedconTo("120");
+
+## Checking if mounted
+
+	system("clear");
+	my $T=$topic; $T =~ s/\s//g;
+	$result_file="/ALTS/RESULTS/${Student}/${T}-${problem}"; #Empty the result file
+	my $fn; open($fn,">","$result_file"); close($fn);
+	my $now = strftime "%Y/%m/%d %H:%M:%S", localtime;
+	$exercise_number = 0;
+	$exercise_success = 0;
+
+	my $L=65;
+
+
+	print "="x$L."=========\n";
+	print "Student:\t$Student\n\n";
+	print "Date:   \t$now\n";
+	print "-"x$L."---------\n\n";
+	print "$topic/$problem\n";
+	print "\n$description\n\n";
+	print "="x$L."=========\n\n";
+
+	my $USERDATA=decryptFile("$student_file");
+	
+	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");	
+
+
+	printS("Checking root password is ALTSroot123:","$L");
+	Framework::grade(checkUserPassword("root","ALTSroot123"));
+
+
+	print "\n"."="x$L."=========\n";
+	print "\n\tNumber of exercises: \t$exercise_number\n";
+	print "\n\tSuccessful: \t\t$exercise_success\n";
+	if ($exercise_number == $exercise_success) {
+		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","$result_file");
+		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset';
+		&EncryptResultFile();
+		exit 0;;
+		#Running post
+		&post();
+	}
+	else
+	{
+		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","$result_file");
+		&EncryptResultFile();
+		print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset';
+		exit 1;
+	}
 }
 
 sub pre() {
-	### Prepare the machine 
-	$verbose and print "Running pre section\n";
-	### Shut down guest
-	$verbose and print "Shutting down guest to break\n";
-	Framework::shutdown;
-	### Check if mount point is already a mount point.
-	Framework::umount;
+### Prepare the machine 
+        $verbose and print "Reseting server machine...\n";
+        system("/ALTS/RESET");
+
 }
 
 sub post() {
-	### Cleanup after succeful grade
-	$verbose and print "Succesful grade, doing some cleanup.\n";
+### Cleanup after succeful grade
+	$verbose and print "Successful grade doing some cleanup.\n";
 }
 
 #####
@@ -118,6 +161,10 @@ if ( $hint ) {
 if ( $grade and $break ) {
 	print "Break and grade cannot be requested at one time.\n";
 	Framework::useage;
+}
+
+if ( $desc ) {
+	Framework::showdescription;
 }
 
 if ( $break ) {

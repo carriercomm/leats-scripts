@@ -20,17 +20,30 @@
 #############
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 
-our $version="v0.9";
+our $version="v0.8";
 our $topic="04-network";
-our $problem="4";
-our $description="Level:        Beginner
+our $problem="5";
+our $description="Level:        Advanced
 
-- Configure up an alias IP for eth1 with 1.1.5.5/16.
-- The interface has to be in 'up' status after a reboot.
-";
+- Setup 2.2.2.1 for nameserver.
+- Define test1machine into hosts file as 1.1.1.1.
+- Make sure that the name resolving first should check the files and only after the DNS.
+- Configure 2.2.2.1 to default gateway.
+- Configure up the eth1 interface as follows:
 
-our $hint="Set up eth1 with /etc/sysconfig/network-scripts/ifcfg-eth1.
-Switch it on. (ifup)";
+Static IP
+IP: 	2.2.2.88/16
+ALIAS: 	1.1.1.88/24
+
+(Mind that every modification has to be reboot-persistent.)";
+
+our $hint="Set nameserver in /etc/resolv.conf.
+Set test1machine in /etc/hosts.
+Set the name resolving sequence in /etc/nsswitch.conf.
+Delete the default gateway and add the new one. (route)
+Set up eth1 with /etc/sysconfig/network-scripts/ifcfg-eth1.
+Do not forget that the interface has to be up after reboot.
+Reboot or restart network service.";
 #
 #
 #
@@ -68,17 +81,9 @@ GetOptions("help|?|h" => \$help,
 sub break() {
 	print "Break has been selected.\n";
 	&pre(); #Reset server
-
-
-       my $ssh=Framework::ssh_connect;
-       my $output=$ssh->capture("cat /etc/sysconfig/network-scripts/ifcfg-eth1 | grep -v BOOTPROTO | grep -v ONBOOT > /tmp/245441.txt; cat /tmp/245441.txt > /etc/sysconfig/network-scripts/ifcfg-eth1
-echo 'BOOTPROTO=static' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
-echo 'ONBOOT=no' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
-echo 'IPADDR=1.1.1.55' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
-echo 'NETMASK=255.255.255.0' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
-service network restart;
-");
-
+        my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture(" sed 's/^nameserver 1.1.1.1/#nameserver 1.1.1.1/g' /etc/resolv.conf > /tmp/test123233.txt; cat /tmp/test123233.txt > /etc/resolv.conf; sed 's/^hosts:      files dns/hosts:      dns files/g' /etc/nsswitch.conf > /tmp/test123233.txt;  cat /tmp/test123233.txt > /etc/nsswitch.conf; rm -rf /tmp/test123233.txt; cat /etc/sysconfig/network-scripts/ifcfg-eth0 | grep -v DNS1 > /tmp/1234; cat /tmp/1234 > /etc/sysconfig/network-scripts/ifcfg-eth0");
+	
 	print "Your task: $description\n";
 }
 
@@ -86,10 +91,12 @@ sub grade() {
 	system("clear");
 	my $Student = Framework::getStudent();
 	print "Grade has been selected.\n";
+	print "rebooting server:";
 
-#	print "rebooting server:";
 #	Framework::restart;
 #	Framework::timedconTo("120");
+
+## Checking if mounted
 
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
@@ -114,15 +121,32 @@ sub grade() {
 	
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");	
 	
+        printS("Checking nameserver is 2.2.2.1:","$L");
+        Framework::grade(Network::CheckNameserver("2.2.2.1","server1"));	
+
+	printS("Checking IP of test1machine is 1.1.1.1:","$L");
+	Framework::grade(Network::CheckHostsIP("test1machine","1.1.1.1"));
+
+        printS("In name resolving sequence files are before dns:","$L");
+        Framework::grade(Network::CheckNsswitchConfig("hosts","false","files","dns"));
+
+        printS("Checking default gateway is 2.2.2.1 through eth1","$L");
+        Framework::grade(Network::CheckDefaultGateway("2.2.2.1","eth1"));
 
 	printS("Checking interface is up:","$L");
 	Framework::grade(Network::CheckInterface("eth1","state","UP"));
 
-	printS("Checking original IP hasn't been changed:","$L");
-        Framework::grade(Network::CheckInterface("eth1","ip_mask","1.1.1.55/24"));
+	printS("Checking interface IP is static:","$L");
+        Framework::grade(Network::CheckInterface("eth1","bootproto","static"));
 
-	printS("Checking Alias (1.1.5.5/16) is up:","$L");
-	Framework::grade(Network::CheckInterface("eth1","ip_mask","1.1.5.5/16"));
+	printS("Checking interface IP is 2.2.2.88/16","$L");
+        Framework::grade(Network::CheckInterface("eth1","ip_mask","2.2.2.88/16"));	
+
+	printS("Checking interface IP is 1.1.1.88/24","$L");
+        Framework::grade(Network::CheckInterface("eth1","ip_mask","1.1.1.88/24"));
+
+#	printS("Checking Mac address is 52:54:00:e9:e1:2c","$L");
+#       Framework::grade(Network::CheckInterface("eth1","mac","52:54:00:e9:e1:2c"));	
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
