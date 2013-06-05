@@ -20,10 +20,10 @@
 #############
 our $author='Krisztian Banhidy <krisztian@banhidy.hu>
 Richard Gruber <gruberrichard@gmail.com>';
-our $version="v0.7";
+our $version="v0.9";
 our $topic="03-lvm";
 our $problem="1";
-our $description="Level:        Advanced
+our $description="LEVEL:        Experienced
 
 Additional disk has been added to your server.
 Create a volume group named testVG with 4M physical extent size and 120M maximal size

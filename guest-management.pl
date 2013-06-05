@@ -86,11 +86,13 @@ sub clean($) {
 if ( $install ) {
 	&clean();
 	system('http_proxy=""; https_proxy="";');
+
  	$verbose and print "Return to LV Snapshot of server if possible..\n";
-        $output=`lvchange -an /dev/vg_desktop/server;lvchange -ay /dev/vg_desktop/server;lvconvert --merge /dev/vg_desktop/server_snapshot`;
+
+	$output=`lvchange -an /dev/vg_desktop/server; lvchange -ay /dev/vg_desktop/server; lvchange -an /dev/vg_desktop/server;lvchange -ay /dev/vg_desktop/server;lvconvert --merge /dev/vg_desktop/server_snapshot`;
         $verbose and print "$output";
 
-	print "Running install, May take up to 15 minutes.\n";
+	print "Running install, May take up to 15-20 minutes.\n";
 	my $time=0;
 	&install;
 	my $con= Sys::Virt-> new (address=> "qemu:///system" ) ;
@@ -98,8 +100,8 @@ if ( $install ) {
 	while ( $server->is_active() ) {
 		sleep 15;
 		$time +=15;
-		print "Install still running..$time\\900 seconds\n";
-		if ( $time > 901 ) {
+		print "Install still running..$time\\1200 seconds\n";
+		if ( $time > 1201 ) {
 			last;
 		}
 	};
@@ -111,6 +113,7 @@ if ( $install ) {
 	system("cp -p /etc/libvirt/qemu/server.xml /ALTS/SECURITY/server.xml");
         $verbose and print "Creating snapshot\n";
 	system("lvcreate -pr --snapshot -L 2G --name server_snapshot /dev/vg_desktop/server");	
+
 	print "Performing post test.\n";
 
 	system("kill `ps -ef | grep \"/usr/bin/python /usr/share/virt-manager/virt-manager.py\" | grep -v grep | awk '{print \$2}'`");
