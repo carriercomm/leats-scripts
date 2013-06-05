@@ -10,9 +10,10 @@ use MIME::Base64;
 
 my $Command="
 
-echo '1.1.1.33 mycomputer' >> /etc/hosts;
-ifup eth1
-";
+cat /etc/sysconfig/network-scripts/ifcfg-eth1 | grep -v BOOTPROTO | grep -v ONBOOT > /tmp/245441.txt; cat /tmp/245441.txt > /etc/sysconfig/network-scripts/ifcfg-eth1
+echo 'BOOTPROTO=dhcp' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
+echo 'ONBOOT=yes' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
+service network restart;";
 
 
 sub ssh_connect() {

@@ -19,16 +19,31 @@
 ##along with Leats.  If not, see <http://www.gnu.org/licenses/>.
 #############
 our $author='Richard Gruber <gruberrichard@gmail.com>';
-our $version="v0.9";
+
+our $version="v0.8";
 our $topic="04-network";
-our $problem="1";
-our $description="Level:        Beginner
+our $problem="4";
+our $description="Level:        Advanced
 
-- Define 'mycomputer' into hosts file as 1.1.1.33
-- Switch on the eth1 interface.";
+- Setup 2.2.2.1 for nameserver.
+- Define test1machine into hosts file as 1.1.1.1.
+- Make sure that the name resolving first should check the files and only after the DNS.
+- Configure 2.2.2.1 to default gateway.
+- Configure up the eth1 interface as follows:
 
-our $hint="Set 'mycomputer' in /etc/hosts.
-Switch on the interface. (ifup)";
+Static IP
+IP: 	2.2.2.88/16
+ALIAS: 	1.1.1.88/24
+
+(Mind that every modification has to be reboot-persistent.)";
+
+our $hint="Set nameserver in /etc/resolv.conf.
+Set test1machine in /etc/hosts.
+Set the name resolving sequence in /etc/nsswitch.conf.
+Delete the default gateway and add the new one. (route)
+Set up eth1 with /etc/sysconfig/network-scripts/ifcfg-eth1.
+Do not forget that the interface has to be up after reboot.
+Reboot or restart network service.";
 #
 #
 #
@@ -66,6 +81,8 @@ GetOptions("help|?|h" => \$help,
 sub break() {
 	print "Break has been selected.\n";
 	&pre(); #Reset server
+        my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture(" sed 's/^nameserver 1.1.1.1/#nameserver 1.1.1.1/g' /etc/resolv.conf > /tmp/test123233.txt; cat /tmp/test123233.txt > /etc/resolv.conf; sed 's/^hosts:      files dns/hosts:      dns files/g' /etc/nsswitch.conf > /tmp/test123233.txt;  cat /tmp/test123233.txt > /etc/nsswitch.conf; rm -rf /tmp/test123233.txt; cat /etc/sysconfig/network-scripts/ifcfg-eth0 | grep -v DNS1 > /tmp/1234; cat /tmp/1234 > /etc/sysconfig/network-scripts/ifcfg-eth0");
 	
 	print "Your task: $description\n";
 }
@@ -104,15 +121,32 @@ sub grade() {
 	
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");	
 	
+        printS("Checking nameserver is 2.2.2.1:","$L");
+        Framework::grade(Network::CheckNameserver("2.2.2.1","server1"));	
 
+	printS("Checking IP of test1machine is 1.1.1.1:","$L");
+	Framework::grade(Network::CheckHostsIP("test1machine","1.1.1.1"));
 
-	printS("Checking IP of mycomputer is 1.1.1.33:","$L");
-	Framework::grade(Network::CheckHostsIP("mycomputer","1.1.1.33"));
+        printS("In name resolving sequence files are before dns:","$L");
+        Framework::grade(Network::CheckNsswitchConfig("hosts","false","files","dns"));
 
-	printS("Checking eth1 interface is up:","$L");
+        printS("Checking default gateway is 2.2.2.1 through eth1","$L");
+        Framework::grade(Network::CheckDefaultGateway("2.2.2.1","eth1"));
+
+	printS("Checking interface is up:","$L");
 	Framework::grade(Network::CheckInterface("eth1","state","UP"));
 
+	printS("Checking interface IP is static:","$L");
+        Framework::grade(Network::CheckInterface("eth1","bootproto","static"));
 
+	printS("Checking interface IP is 2.2.2.88/16","$L");
+        Framework::grade(Network::CheckInterface("eth1","ip_mask","2.2.2.88/16"));	
+
+	printS("Checking interface IP is 1.1.1.88/24","$L");
+        Framework::grade(Network::CheckInterface("eth1","ip_mask","1.1.1.88/24"));
+
+#	printS("Checking Mac address is 52:54:00:e9:e1:2c","$L");
+#       Framework::grade(Network::CheckInterface("eth1","mac","52:54:00:e9:e1:2c"));	
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";

@@ -31,8 +31,9 @@ sub exposeTopic($)
 			open($F,"<","/ALTS/EXERCISES/$Topic/$N-description.txt");
 			my @D = <$F>;
 			close($F);
-			$Description=join("\n",@D);
-			if ( ($E eq "LIST ALL") || ($E eq "LIST UNTRIED") ) { print "\t\t$Topic-$N\n";}
+			$Description=join("\t\t\t\t",@D);
+			$Description="\t\t\t\t".$Description;
+			if ( ($E eq "LIST ALL") || ($E eq "LIST UNTRIED") ) { print "\n\t\t$Topic-$N\n\n$Description\n";}
 		}
 		else
 		{
@@ -40,21 +41,28 @@ sub exposeTopic($)
 	my $Finalresult="";
 	if ((-f $Result_file)) {
 		my @RES = $FN =~ m/<DESCRIPTION>(.*)<\/DESCRIPTION>.*<FINALRESULT>(.*)<\/FINALRESULT>/s;
-		$Description=$RES[0];
-		$Description =~ s/\n/<br>/g;
+		$Description="\t\t\t\t".$RES[0];
+#		$Description =~ s/\n/<br>/g;
+		$Description=~s/\n/\n\t\t\t\t/g;
 		$Finalresult=$RES[1];
 	}
 	if ($Finalresult eq "PASSED")
 	{	
-		if ( ($E eq "LIST ALL") || ($E eq "LIST PASSED") ) { print color 'green'; print colored "\t\t$Topic-$N\n";}
+		if ( ($E eq "LIST ALL") || ($E eq "LIST PASSED") ) { 
+									print color 'green'; print colored "\n\t\t$Topic-$N\n\n$Description\n";
+									}
 	}
 	elsif ($Finalresult eq "FAILED")
 	{
-		if ( ($E eq "LIST ALL") || ($E eq "LIST FAILED") ) { print color 'red'; print colored "\t\t$Topic-$N\n";}
+		if ( ($E eq "LIST ALL") || ($E eq "LIST FAILED") ) { 
+									print color 'red'; print colored "\n\t\t$Topic-$N\n\n$Description\n";
+									}
 	}
 	else
 	{
-		if ( ($E eq "LIST ALL") || ($E eq "LIST UNTRIED") ) { print "\t\t$Topic-$N\n";}
+		if ( ($E eq "LIST ALL") || ($E eq "LIST UNTRIED") ) { 
+									print "\n\t\t$Topic-$N\n\n$Description\n";
+								}
 	}
 
 		}

@@ -8,10 +8,13 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="
+my $Command="cat /etc/sysconfig/network-scripts/ifcfg-eth1 | grep -v BOOTPROTO | grep -v ONBOOT > /tmp/245441.txt; cat /tmp/245441.txt > /etc/sysconfig/network-scripts/ifcfg-eth1
 
-echo '1.1.1.33 mycomputer' >> /etc/hosts;
-ifup eth1
+echo 'BOOTPROTO=static' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
+echo 'ONBOOT=yes' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
+echo 'IPADDR=2.2.2.38' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
+echo 'NETMASK=255.255.255.0' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
+service network restart;
 ";
 
 

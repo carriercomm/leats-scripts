@@ -18,23 +18,24 @@
 ##You should have received a copy of the GNU General Public License
 ##along with Leats.  If not, see <http://www.gnu.org/licenses/>.
 #############
-#our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
-our $author='Richard Gruber <richard.gruber@it-services.hu>';
-our $version="v0.95";
-our $topic="05-user-group";
-our $problem="11";
-our $description="LEVEL:	Experienced
+our $author='Richard Gruber <gruberrichard@gmail.com>';
 
-- There is a user 'kevin' set up on the server machine.
-His primary group is group001, and his secondary groups are group002 and ftp.
-You have to change his primary group to group002, and his secondary groups to group001 and ftp.
-- Delete the group group003";
+our $version="v0.9";
+our $topic="04-network";
+our $problem="2";
+our $description="Level:        Beginner
 
-our $hint="First you have to change the primary group to something else /E.g. root/.
-Change the secondary groups. Mind that all secondary groups /which is not the named group/ have to remain.
-Modify the primary group. (usermod)
-Delete the group. Mind that there are some user who has this group as primary group.
-First you have to modify these users, and after these you will be able to delete the group. (groupdel,usermod)";
+- Configure up the eth1 interface as follows:
+
+Static IP
+IP: 		2.2.2.38
+NETMASK:	255.255.255.0
+
+- Switch it on.
+";
+
+our $hint="Set up eth1 with /etc/sysconfig/network-scripts/ifcfg-eth1.
+Switch it on. (ifup)";
 #
 #
 #
@@ -52,9 +53,10 @@ use Term::ANSIColor;
 use File::Basename;
 use POSIX qw/strftime/;
 our $name=basename($0);
+#use Sys::Virt;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use UserGroup qw(userExist groupExist getUserAttribute checkUserAttribute checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &delUser &delGroup &checkUserHasNoShellAccess &setupUser &setupGroup );
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription);
+use Network qw( &CheckInterface &CheckNameserver &CheckHostsIP &CheckDefaultGateway );
 ######
 ###Options
 ###
@@ -63,39 +65,33 @@ GetOptions("help|?|h" => \$help,
 		"b|break" => \$break,
 		"g|grade" => \$grade,
 		"hint" => \$hint,
-		 "d|description" => \$desc,
+		"d|description" => \$desc,
 	  );
-
 #####
 # Subs
 #
 sub break() {
 	print "Break has been selected.\n";
-#	&pre(); #Reseting server machine...
-
-        system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
-
-	setupGroup("group001","","");
-	setupGroup("group002","","");
-	setupGroup("group003","","");
-	setupUser("kevin","1233","group001","ftp,group002","","","/bin/bash","true","pwd123");
-	setupUser("jane","","group003","","","","","","pwd123");
-	setupUser("brian","","group003","","","","","","pwd123");
+	&pre(); #Reset server
 	
-
-	$verbose and print "Pre complete breaking\n";	
 	print "Your task: $description\n";
 }
 
 sub grade() {
-
 	system("clear");
 	my $Student = Framework::getStudent();
+	print "Grade has been selected.\n";
+
+#	print "rebooting server:";
+#	Framework::restart;
+#	Framework::timedconTo("120");
+
+## Checking if mounted
 
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
 	$result_file="/ALTS/RESULTS/${Student}/${T}-${problem}"; #Empty the result file
-		my $fn; open($fn,">","$result_file"); close($fn);
+	my $fn; open($fn,">","$result_file"); close($fn);
 	my $now = strftime "%Y/%m/%d %H:%M:%S", localtime;
 	$exercise_number = 0;
 	$exercise_success = 0;
@@ -112,20 +108,19 @@ sub grade() {
 	print "="x$L."=========\n\n";
 
 	my $USERDATA=decryptFile("$student_file");
-	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
-
-
-	printS("User kevin's primary group is group002:","$L");
-	Framework::grade(checkUserPrimaryGroup("kevin","group002"));	
-
-	printS("Group group001 is in user kevin's secondary groups:","$L");
-	Framework::grade(checkUserSecondaryGroupMembership("kevin","group001"));
-
-        printS("Group ftp remained in user kevin's secondary groups:","$L");
-        Framework::grade(checkUserSecondaryGroupMembership("kevin","ftp"));
 	
-	printS("Group group003 not exist:","$L");
-	Framework::grade(!groupExist("group003"));
+	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");	
+	
+
+	printS("Checking interface is up:","$L");
+	Framework::grade(Network::CheckInterface("eth1","state","UP"));
+
+	printS("Checking interface IP is static:","$L");
+        Framework::grade(Network::CheckInterface("eth1","bootproto","static"));
+
+	printS("Checking interface IP and mask are 2.2.2.38 and 255.255.255.0","$L");
+        Framework::grade(Network::CheckInterface("eth1","ip_mask","2.2.2.38/24"));
+
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
@@ -134,31 +129,29 @@ sub grade() {
 		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>PASSED</FINALRESULT></ROOT>","$result_file");
 		print color 'bold green' and print "\n\n\tSuccessful grade.\n\n"  and print color 'reset';
 		&EncryptResultFile();
+		exit 0;;
+		#Running post
 		&post();
-		exit 0;
 	}
 	else
 	{
 		cryptText2File("<TASKNUMBER>$exercise_number</TASKNUMBER><TASKSUCCESSFUL>$exercise_success</TASKSUCCESSFUL><FINALRESULT>FAILED</FINALRESULT></ROOT>","$result_file");
-		print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset';
 		&EncryptResultFile();
+		print color 'bold red' and print "\n\n\tUnsuccessful grade. Please try it again!\n\n"  and print color 'reset';
 		exit 1;
 	}
-
-
-
 }
 
 sub pre() {
 ### Prepare the machine 
-	$verbose and print "Running pre section\n";
-        $verbose and print "Reset server\n";
+        $verbose and print "Reseting server machine...\n";
         system("/ALTS/RESET");
 
 }
 
 sub post() {
 ### Cleanup after succeful grade
+	$verbose and print "Successful grade doing some cleanup.\n";
 }
 
 #####
@@ -170,14 +163,13 @@ if ( $help ) {
 if ( $hint ) {
 	Framework::hint;
 }
-
-if ( $desc ) {
-        Framework::showdescription;
-}
-
 if ( $grade and $break ) {
 	print "Break and grade cannot be requested at one time.\n";
 	Framework::useage;
+}
+
+if ( $desc ) {
+	Framework::showdescription;
 }
 
 if ( $break ) {
