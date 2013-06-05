@@ -21,18 +21,19 @@
 our $author='Krisztian Banhidy <krisztian@banhidy.hu>
 Richard Gruber <gruberrichard@gmail.com>';
 #our $author='Richard Gruber <richard.gruber@it-services.hu>';
-our $version="v0.8";
+our $version="v0.5";
 our $topic="02-physical_disk";
 our $problem="7";
 our $description="LEVEL:        Experienced
 
-Shrink the filesystem mounted under /mnt/testdir to 40 MB (+-10%) and convert it to ext4.
-Mind that it has to be reboot persistent,";
+Extend the partion previously created and mounted under /mnt/mulder to 180 Mb (+-10%). 
+A test file was created, which should be left on the filesystem.
+Do not destroy the filesystem and just recreate it.
+It has to be reboot persistent.";
 
-our $hint="To shrink a filesystem umount it first. (umount)
-Then resize it to the required size. (resize2fs)
-Convert it into ext4. (tune2fs)
-Add it to fstab and mount it.";
+our $hint="With fdisk delete the partition and just recreate it from same starting sector. (fdisk)
+No metadata will be deleted. Then just use resize2fs.
+Don't forget to put it into /etc/fstab.";
 #
 #
 #
@@ -67,7 +68,7 @@ GetOptions("help|?|h" => \$help,
 #####
 # Subs
 #
-my $DFile="/mnt/testdir/doNotTouchIt.txt";
+my $DFile="/mnt/mulder/doNotTouchIt.txt";
 
 sub break() {
 	print "Break has been selected.\n";
@@ -77,9 +78,9 @@ sub break() {
 	
 	sleep(2);
 	CreatePartition("/dev/vdb","1","+100M","ext3");
-	CreateDirectory("/mnt/testdir","","","");
+	CreateDirectory("/mnt/mulder","","","");
 	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("mkfs.ext3 /dev/vdb1; mount /dev/vdb1 /mnt/testdir;");
+        my $output=$ssh->capture("mkfs.ext3 /dev/vdb1; mount /dev/vdb1 /mnt/mulder;");
 	CreateFile($DFile,"root","root","444","!!!!This file has been created for $topic-$problem and should not be modified!!!!");
 
 	my $p;
@@ -133,13 +134,13 @@ sub grade() {
 	
 
 	printS("Checking mount:","$L");
-	Framework::grade(checkMount("vdb1","/mnt/testdir/"));
+	Framework::grade(checkMount("vdb1","/mnt/mulder/"));
 
 	printS("Checking filesystem type:","$L");
-	Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/testdir'),"ext4"));
+	Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/mulder'),"ext3"));
 
 	printS("Checking size:","$L");
-	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/testdir'),"40","10"));
+	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/mulder'),"180","10"));
 
 	my $File_original=getALTSParameter("FILE");
 

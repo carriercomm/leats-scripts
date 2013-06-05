@@ -18,19 +18,21 @@
 ##You should have received a copy of the GNU General Public License
 ##along with Leats.  If not, see <http://www.gnu.org/licenses/>.
 #############
-our $author='Richard Gruber <gruberrichard@gmail.com>';
-our $version="v0.5";
+our $author='Krisztian Banhidy <krisztian@banhidy.hu>
+Richard Gruber <gruberrichard@gmail.com>';
+#our $author='Richard Gruber <richard.gruber@it-services.hu>';
+our $version="v0.8";
 our $topic="02-physical_disk";
-our $problem="2";
-our $description="LEVEL:	Beginner
+our $problem="8";
+our $description="LEVEL:        Experienced
 
-A disk has been attached to your server (/dev/vdb). 
-There is an ext3 partitions on it (/dev/vdb1).
-/dev/vdb1 is mounted under /mnt/mountpoint1.
-- Copy the /etc/issue file to this partition (don't change the name)";
+Shrink the filesystem mounted under /mnt/testdir to 40 MB (+-10%) and convert it to ext4.
+Mind that it has to be reboot persistent,";
 
-our $hint="Remount the partition with 'rw' option. (mount).
-Copy the file (cp)";
+our $hint="To shrink a filesystem umount it first. (umount)
+Then resize it to the required size. (resize2fs)
+Convert it into ext4. (tune2fs)
+Add it to fstab and mount it.";
 #
 #
 #
@@ -50,8 +52,8 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription);
-use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk &CreatePartition &CreateDirectory &checkMountOptions &fileEqual );
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription &getALTSParameter setALTSParameter &compareValues);
+use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk &CreateFile &CreateDirectory &CreatePartition );
 ######
 ###Options
 ###
@@ -65,19 +67,30 @@ GetOptions("help|?|h" => \$help,
 #####
 # Subs
 #
+my $DFile="/mnt/testdir/doNotTouchIt.txt";
+
 sub break() {
 	print "Break has been selected.\n";
 	&pre();
 
 	RecreateVDisk("vdb","300","vdb");
-        sleep(2);
-        CreatePartition("/dev/vdb","1","+100M","ext3");
-        CreateDirectory("/mnt/mountpoint1","","","");
-
-        my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("mkfs.ext3 /dev/vdb1; mount -o 'ro' /dev/vdb1 /mnt/mountpoint1");
-
 	
+	sleep(2);
+	CreatePartition("/dev/vdb","1","+100M","ext3");
+	CreateDirectory("/mnt/testdir","","","");
+	my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("mkfs.ext3 /dev/vdb1; mount /dev/vdb1 /mnt/testdir;");
+	CreateFile($DFile,"root","root","444","!!!!This file has been created for $topic-$problem and should not be modified!!!!");
+
+	my $p;
+	$ssh=Framework::ssh_connect;
+        $output=$ssh->capture("ls -li $DFile");	
+	chomp($output);	$p.=$output;
+	$output=$ssh->capture("md5sum $DFile");
+	chomp($output); $p.=$output;
+	$p=~s/\s/_/g;	
+	setALTSParameter("FILE","$p");
+		
 	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
 	print "Your task: $description\n";
@@ -89,8 +102,8 @@ sub grade() {
 	print "Grade has been selected.\n";
 	print "rebooting server:";
 
-#	Framework::restart;
-#	Framework::timedconTo("120");
+	Framework::restart;
+	Framework::timedconTo("120");
 
 ## Checking if mounted
 
@@ -102,7 +115,7 @@ sub grade() {
 	$exercise_number = 0;
 	$exercise_success = 0;
 
-	my $L=65;
+	my $L=80;
 
 
 	print "="x$L."=========\n";
@@ -120,15 +133,42 @@ sub grade() {
 	
 
 	printS("Checking mount:","$L");
-	Framework::grade(checkMount("vdb1","/mnt/mountpoint1/"));
+	Framework::grade(checkMount("vdb1","/mnt/testdir/"));
 
-	printS("Checking mount options:","$L");
-	Framework::grade(checkMountOptions("/mnt/mountpoint1","rw"));
+	printS("Checking filesystem type:","$L");
+	Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/testdir'),"ext4"));
 
-	printS("Checking /etc/issue = /mnt/mountpoint1/issue","$L");
-	Framework::grade(fileEqual("/etc/issue","/mnt/mountpoint1/issue"));
+	printS("Checking size:","$L");
+	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/testdir'),"40","10"));
 
-	
+	my $File_original=getALTSParameter("FILE");
+
+        my $ssh=Framework::ssh_connect;
+	my $File_now;
+        my $output=$ssh->capture("ls -li $DFile");
+        chomp($output); $File_now.=$output;
+        $output=$ssh->capture("md5sum $DFile");
+        chomp($output); $File_now.=$output;
+        $File_now=~s/\s/_/g;
+
+	printS("Checking file hasn't been changed:","$L");
+        Framework::grade(compareValues("$File_original","$File_now"));
+
+
+	#rintS("Checking Label is test1-label: ","$L");
+	#ramework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
+
+	#printS("Checking mounted with UUID: ","$L");
+	#Framework::grade(checkMountedWithUUID("/mnt/das"));
+
+	#rintS("Checking mounted with LABEL: ","$L");
+	#ramework::grade(checkMountedWithLABEL("/mnt/das"));
+
+	#rintS("Checking mounted with \"rw\" and \"acl\" options: ","$L");		
+	#ramework::grade(checkMountOptions("/mnt/das","rw,acl"));
+
+	#rintS("Checking swap size increased with 50M: ","$L");
+	#ramework::grade(checkSwapSize("561","5"));
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
@@ -160,6 +200,7 @@ sub pre() {
 sub post() {
 ### Cleanup after succeful grade
 	$verbose and print "Successful grade doing some cleanup.\n";
+#	setALTSParameter("clear","");
 }
 
 #####

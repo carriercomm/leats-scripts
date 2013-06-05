@@ -18,8 +18,8 @@
 ##You should have received a copy of the GNU General Public License
 ##along with Leats.  If not, see <http://www.gnu.org/licenses/>.
 #############
-our $author='Krisztian Banhidy <krisztian@banhidy.hu>
-Richard Gruber <gruberrichard@gmail.com>';
+our $author='Richard Gruber <gruberrichard@gmail.com>
+Krisztian Banhidy <krisztian@banhidy.hu>';
 #our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.5";
 our $topic="02-physical_disk";

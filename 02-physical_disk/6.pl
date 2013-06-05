@@ -24,16 +24,21 @@ Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.5";
 our $topic="02-physical_disk";
 our $problem="6";
-our $description="LEVEL:        Experienced
+our $description="LEVEL:	Experienced
 
-Extend the partion previously created and mounted under /mnt/mulder to 180 Mb (+-10%). 
-A test file was created, which should be left on the filesystem.
-Do not destroy the filesystem and just recreate it.
-It has to be reboot persistent.";
+Additional disk has been added to your server.
+- Create a 100 MB (+-10%) ext3 partition on it
+- Set the label of the filesystem to test1-label.
+- Mount it with Label on /mnt/das
+- There must be \"rw\" and \"acl\" among the mount options
+- Increase Swap size with 50M (+-5%)
+Every modification has to be reboot persistently!\n";
 
-our $hint="With fdisk delete the partition and just recreate it from same starting sector. (fdisk)
-No metadata will be deleted. Then just use resize2fs.
-Don't forget to put it into /etc/fstab.";
+our $hint="Find the device and create a partition. (fdisk)
+Create a filesystem. Modify the label and create an entry with label into fstab. (mkfs,e2label)
+Mind the mount options. Create a new partition for swap.
+Don't forget to set the type of partition. Create a swap on it and activate. (fdisk,mkswap,swapon)
+It has to be set in fstab too.";
 #
 #
 #
@@ -53,8 +58,8 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 #use Sys::Virt;
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription &getALTSParameter setALTSParameter &compareValues);
-use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk &CreateFile &CreateDirectory &CreatePartition );
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile $description &showdescription);
+use Disk qw($verbose $topic $author $version $hint $problem $name &checkMount &checkFilesystemType &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &checkMountOptions &checkSwapSize &RecreateVDisk );
 ######
 ###Options
 ###
@@ -68,30 +73,12 @@ GetOptions("help|?|h" => \$help,
 #####
 # Subs
 #
-my $DFile="/mnt/mulder/doNotTouchIt.txt";
-
 sub break() {
 	print "Break has been selected.\n";
 	&pre();
 
 	RecreateVDisk("vdb","300","vdb");
 	
-	sleep(2);
-	CreatePartition("/dev/vdb","1","+100M","ext3");
-	CreateDirectory("/mnt/mulder","","","");
-	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("mkfs.ext3 /dev/vdb1; mount /dev/vdb1 /mnt/mulder;");
-	CreateFile($DFile,"root","root","444","!!!!This file has been created for $topic-$problem and should not be modified!!!!");
-
-	my $p;
-	$ssh=Framework::ssh_connect;
-        $output=$ssh->capture("ls -li $DFile");	
-	chomp($output);	$p.=$output;
-	$output=$ssh->capture("md5sum $DFile");
-	chomp($output); $p.=$output;
-	$p=~s/\s/_/g;	
-	setALTSParameter("FILE","$p");
-		
 	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
 	print "Your task: $description\n";
@@ -134,42 +121,32 @@ sub grade() {
 	
 
 	printS("Checking mount:","$L");
-	Framework::grade(checkMount("vdb1","/mnt/mulder/"));
+	Framework::grade(checkMount("vdb","/mnt/das/"));
 
 	printS("Checking filesystem type:","$L");
-	Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/mulder'),"ext3"));
+	Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/das'),"ext3"));
 
 	printS("Checking size:","$L");
-	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/mulder'),"180","10"));
+	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/das'),"100","10"));
 
-	my $File_original=getALTSParameter("FILE");
-
-        my $ssh=Framework::ssh_connect;
-	my $File_now;
-        my $output=$ssh->capture("ls -li $DFile");
-        chomp($output); $File_now.=$output;
-        $output=$ssh->capture("md5sum $DFile");
-        chomp($output); $File_now.=$output;
-        $File_now=~s/\s/_/g;
-
-	printS("Checking file hasn't been changed:","$L");
-        Framework::grade(compareValues("$File_original","$File_now"));
-
-
-	#rintS("Checking Label is test1-label: ","$L");
-	#ramework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
+	printS("Checking Label is test1-label: ","$L");
+	Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
 
 	#printS("Checking mounted with UUID: ","$L");
 	#Framework::grade(checkMountedWithUUID("/mnt/das"));
 
-	#rintS("Checking mounted with LABEL: ","$L");
-	#ramework::grade(checkMountedWithLABEL("/mnt/das"));
+	printS("Checking mounted with LABEL: ","$L");
+	Framework::grade(checkMountedWithLABEL("/mnt/das"));
 
-	#rintS("Checking mounted with \"rw\" and \"acl\" options: ","$L");		
-	#ramework::grade(checkMountOptions("/mnt/das","rw,acl"));
+	printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");		
+	Framework::grade(checkMountOptions("/mnt/das","rw,acl"));
 
-	#rintS("Checking swap size increased with 50M: ","$L");
-	#ramework::grade(checkSwapSize("561","5"));
+	printS("Checking swap size increased with 50M: ","$L");
+	Framework::grade(checkSwapSize("561","5"));
+
+
+
+
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
@@ -201,7 +178,6 @@ sub pre() {
 sub post() {
 ### Cleanup after succeful grade
 	$verbose and print "Successful grade doing some cleanup.\n";
-#	setALTSParameter("clear","");
 }
 
 #####

@@ -18,27 +18,18 @@
 ##You should have received a copy of the GNU General Public License
 ##along with Leats.  If not, see <http://www.gnu.org/licenses/>.
 #############
-our $author='Krisztian Banhidy <krisztian@banhidy.hu>
-Richard Gruber <gruberrichard@gmail.com>';
-#our $author='Richard Gruber <richard.gruber@it-services.hu>';
+our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.5";
 our $topic="02-physical_disk";
 our $problem="5";
-our $description="LEVEL:	Experienced
+our $description="LEVEL:	Beginner
 
-Additional disk has been added to your server.
-- Create a 100 MB (+-10%) ext3 partition on it
-- Set the label of the filesystem to test1-label.
-- Mount it with Label on /mnt/das
-- There must be \"rw\" and \"acl\" among the mount options
-- Increase Swap size with 50M (+-5%)
-Every modification has to be reboot persistently!\n";
+A disk has been attached (/dev/vdb).
+- Create a 150M Large Swap partition on this disk and activate it.";
 
-our $hint="Find the device and create a partition. (fdisk)
-Create a filesystem. Modify the label and create an entry with label into fstab. (mkfs,e2label)
-Mind the mount options. Create a new partition for swap.
-Don't forget to set the type of partition. Create a swap on it and activate. (fdisk,mkswap,swapon)
-It has to be set in fstab too.";
+our $hint="Create a  150M large Swap partition on /dev/vdb. (fdisk)
+Create a swap on it. (mkswap)
+Activate the swap partition. (swapon)";
 #
 #
 #
@@ -90,8 +81,8 @@ sub grade() {
 	print "Grade has been selected.\n";
 	print "rebooting server:";
 
-	Framework::restart;
-	Framework::timedconTo("120");
+#	Framework::restart;
+#	Framework::timedconTo("120");
 
 ## Checking if mounted
 
@@ -119,32 +110,8 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");	
 
 	
-
-	printS("Checking mount:","$L");
-	Framework::grade(checkMount("vdb","/mnt/das/"));
-
-	printS("Checking filesystem type:","$L");
-	Framework::grade(checkFilesystemType(&getFilerMountedFrom('/mnt/das'),"ext3"));
-
-	printS("Checking size:","$L");
-	Framework::grade(checkPartitionSize(&getFilerMountedFrom('/mnt/das'),"100","10"));
-
-	printS("Checking Label is test1-label: ","$L");
-	Framework::grade(checkFilesystemParameter(&getFilerMountedFrom('/mnt/das'),"LABEL","test1-label"));
-
-	#printS("Checking mounted with UUID: ","$L");
-	#Framework::grade(checkMountedWithUUID("/mnt/das"));
-
-	printS("Checking mounted with LABEL: ","$L");
-	Framework::grade(checkMountedWithLABEL("/mnt/das"));
-
-	printS("Checking mounted with \"rw\" and \"acl\" options: ","$L");		
-	Framework::grade(checkMountOptions("/mnt/das","rw,acl"));
-
-	printS("Checking swap size increased with 50M: ","$L");
-	Framework::grade(checkSwapSize("561","5"));
-
-
+        printS("Checking swap size increased with 150M: ","$L");
+        Framework::grade(checkSwapSize("661","5"));
 
 
 
