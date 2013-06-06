@@ -23,7 +23,7 @@ Krisztian Banhidy <krisztian@banhidy.hu>';
 #our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.9";
 our $topic="01-boot";
-our $problem="2";
+our $problem="3";
 our $description="LEVEL:  Experienced
 
 Server isn't booting. Solve the problem persistently.";
@@ -31,7 +31,7 @@ Server isn't booting. Solve the problem persistently.";
 
 our $hint="Server has problems with booting. 
 We should inspect the boot parameters. 
-Is the kernel parameter list correct?
+Is the root parameter list correct?
 If you have found the error, correct it and boot the system.
 After the system is loaded correctly fix the /etc/grub.conf.";
 #
@@ -73,7 +73,7 @@ sub break() {
 	&pre();
 
         my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("cat /etc/grub.conf | sed 's/vmlinuz/vmlinuz-FIXME/g' > /tmp/grubtmp123.txt; cat /tmp/grubtmp123.txt > /etc/grub.conf; rm -f /tmp/grubtmp123.txt; reboot");
+        my $output=$ssh->capture("cat /etc/grub.conf | sed 's/hd0,0/hd1,1/g' > /tmp/grubtmp123.txt; cat /tmp/grubtmp123.txt > /etc/grub.conf; rm -f /tmp/grubtmp123.txt; reboot");
 
 	
 	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");

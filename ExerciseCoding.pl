@@ -24,12 +24,13 @@ $DMax{4}=900;
 $DMin{5}=901;
 $DMax{5}=1000;
 
+# Difficulty 0 = TEST Mode
 
-if (((scalar @ARGV) < 2) && (($ARGV[1] ne "1") || ($ARGV[1] ne "2") || ($ARGV[1] ne "3") || ($ARGV[1] ne "4") || ($ARGV[1] ne "5")) )
+if (((scalar @ARGV) < 2) && (($ARGV[1] ne "1") || ($ARGV[1] ne "1") || ($ARGV[1] ne "2") || ($ARGV[1] ne "3") || ($ARGV[1] ne "4") || ($ARGV[1] ne "5")) )
 {
 	print "\n\nUsing of the script:\n";
 	print "1. argument: Path of your file, that contains the username (1 in each line)\n";
-	print "2. argument: Exercise difficulty, must be between 1 and 5";
+	print "2. argument: Exercise difficulty, must be between 0 and 5 (0=TEST MODE)";
 	print "\t E.g ./ExerciseCoding '/tmp/usersfile.txt' '1'\n\n";
 	die;
 }
@@ -46,11 +47,20 @@ while (my $U = <$fn>)
 	chomp($U);
 	my $pass = new String::Random;
 	my $password = $pass->randpattern("CnCcnC");
+
 	my $e=-1;
-	while (!(($e>=$DMin{$Difficulty})&&($e<=$DMax{$Difficulty})))
-	{
-	$e = int(rand($DMax{$Difficulty}));
+	if ($Difficulty == 0)
+	{#if TEST MDOE
+		$e = "TEST";
 	}
+	else 
+	{# If EXAM
+		while (!(($e>=$DMin{$Difficulty})&&($e<=$DMax{$Difficulty})))
+		{
+			$e = int(rand($DMax{$Difficulty}));
+		}
+	}
+
 	my $exercise=cryptText("$e","${U}${pass}");
 
 #	print "EXERCISE=$e\n";

@@ -65,29 +65,39 @@ else {
 
 	print "\n\nExercise code: ";
 
-	if (($PASS1 eq "test")&&($TestModePossible==0)) { 
-		$EXERCISE="TEST"; 
-		print color "yellow"; 
-		print "TEST\n\nTEST Mode activated\n\n"; 
-		print color 'reset'; }
-	else{
-		my $EXERCISE_CODE;
-		if ($ARGV[2] eq "") {
-			$EXERCISE_CODE=<STDIN>;
-			chomp($EXERCISE_CODE);
-		}
-		else {
-			$EXERCISE_CODE=$ARGV[2];
-			print "$EXERCISE_CODE\n";
-		}
-		$EXERCISE=decryptText("$EXERCISE_CODE","${$UserName}${$PASS1}");
-#		print "\n\nEXERCISE= $EXERCISE_CODE || $EXERCISE\n\n";
-		if ($EXERCISE!~m/\d+/) {
+	my $EXERCISE_CODE;
+                if ($ARGV[2] eq "") {
+                        $EXERCISE_CODE=<STDIN>;
+                        chomp($EXERCISE_CODE);
+                }
+                else {
+                        $EXERCISE_CODE=$ARGV[2];
+#                        print "$EXERCISE_CODE\n";
+                }
+
+
+	my $EXERCISE=decryptText("$EXERCISE_CODE","${$UserName}${$PASS1}");
+#	print "\n\nEXERCISE= $EXERCISE_CODE || $EXERCISE\n\n";
+
+
+		if (($EXERCISE eq "TEST") && ($TestModePossible!=0))
+		{
+			print color 'bold red' and print "\n\n\n\t\tPractice mode is not allowed!\n\n\n\t\t\tLogin Failed!\n\n\n";
+                        print color 'reset';
+                        exit 1;
+		}		
+		elsif (($EXERCISE!~m/\d+/) && ($EXERCISE ne "TEST")) {
 			print color 'bold red' and print "\n\n\n\tThe password or the exercise code isn't correct.\n\n\n\t\t\tLogin Failed!\n\n\n";
 			print color 'reset'; 
 			exit 1;	
 		}
-	}
+		elsif (($EXERCISE eq "TEST") && ($TestModePossible==0))
+		{
+			print color 'yellow';
+	                print "\n\n\t\tPractice mode has been activated!\n";
+        	        print color 'reset';
+
+		}
 
 	cryptText2File("<STUDENT>$UserName</STUDENT><ALTSPASSWORD>$PASS1</ALTSPASSWORD><EXERCISE>$EXERCISE</EXERCISE>","$student_file");
 	my $F=decryptFile("$student_file");

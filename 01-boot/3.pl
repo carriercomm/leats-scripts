@@ -23,7 +23,7 @@ Krisztian Banhidy <krisztian@banhidy.hu>';
 #our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.9";
 our $topic="01-boot";
-our $problem="2";
+our $problem="3";
 our $description="LEVEL:  Experienced
 
 Server isn't booting. Solve the problem persistently.";
@@ -73,7 +73,7 @@ sub break() {
 	&pre();
 
         my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("cat /etc/grub.conf | sed 's/vmlinuz/vmlinuz-FIXME/g' > /tmp/grubtmp123.txt; cat /tmp/grubtmp123.txt > /etc/grub.conf; rm -f /tmp/grubtmp123.txt; reboot");
+        my $output=$ssh->capture("cat /etc/grub.conf | sed 's/vmlinuz/vmlinux/g' > /tmp/grubtmp123.txt; cat /tmp/grubtmp123.txt > /etc/grub.conf; rm -f /tmp/grubtmp123.txt; reboot");
 
 	
 	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
