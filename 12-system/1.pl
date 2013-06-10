@@ -21,13 +21,15 @@
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
-our $topic="19-crontab";
-our $problem="4";
+our $topic="12-system";
+our $problem="1";
 our $description="Level:        Beginner
 
-- User george has to run '/bin/ls /tmp' on every 10th and 17th february at 16:02.";
+There is a script running named 'MyScript.pl'.
+Find it and kill it.";
 
-our $hint="Add the given entry to the users cron. (crontab)";
+our $hint="Find the process. (ps, grep)
+Check the Process ID and kill it. (kill)";
 #
 #
 #
@@ -46,8 +48,8 @@ use File::Basename;
 use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription &gradeOR);
-use UserGroup qw( &checkUserCrontabDenied &setupGroup &setupUser &delUser &delGroup &checkUserCrontab );
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
+use System qw( &checkProcessRun &CopyFromDesktop );
 ######
 ###Options
 ###
@@ -64,12 +66,14 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-	&pre(); #Reseting Server machine
-
+#	&pre(); #Reseting Server machine
 
         $verbose and print "Running pre section\n";
-        $verbose and print "Create user william..\n";
-        setupUser("george","","","","","","/bin/bash","true","pw123");
+
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/12-system-1.pl","/usr/bin/MyScript.pl","755","root","root");
+	my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("/usr/bin/MyScript.pl >/dev/null");
+
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -107,8 +111,8 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-	printS("George run '/bin/ls /tmp' on every 10th and 17th february at 16:02","$L");
-	Framework::grade((checkUserCrontab("george","2","16","10,17","2","*","/bin/ls /tmp")));
+	printS("Check 'MyScript.pl' isn't running anymore","$L");
+	Framework::grade(System::checkProcessRun("MyScript.pl"));
 
 
 	print "\n"."="x$L."=========\n";

@@ -23,6 +23,9 @@ chmod 700 /ALTS/EXERCISES
 mkdir -p /ALTS/lib/
 chmod 700 /ALTS/lib
 
+mkdir -p /ALTS/ExerciseScripts/
+chmod 700 /ALTS/ExerciseScripts
+
 
 pp -o /ALTS/lib/ALTSLogin.pl /leats-scripts/ALTSLogin.pl
 chmod 6755 /ALTS/lib/ALTSLogin.pl

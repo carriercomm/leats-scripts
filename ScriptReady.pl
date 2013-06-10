@@ -67,7 +67,10 @@ if ($ARGV[0] eq "ALL" )
 		"/leats-scripts/18-scripting/2.pl",
 		"/leats-scripts/18-scripting/3.pl",
 		"/leats-scripts/19-crontab/1.pl",
-		"/leats-scripts/19-crontab/100.pl");
+		"/leats-scripts/19-crontab/2.pl",
+		"/leats-scripts/19-crontab/3.pl",
+		"/leats-scripts/19-crontab/4.pl",
+		"/leats-scripts/19-crontab/5.pl",);
 }
 else
 {
