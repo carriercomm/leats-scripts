@@ -8,7 +8,9 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="rpm -ev nano";
+my $Command="echo \"5 1 * * 1   /bin/date\" > /tmp/crontabtenpfile.txt; 
+crontab -u victoria /tmp/crontabtenpfile.txt;
+rm -rf /tmp/crontabtenpfile.txt;";
 
 
 sub ssh_connect() {

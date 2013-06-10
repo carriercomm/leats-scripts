@@ -23,7 +23,7 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="18-scripting";
 our $problem="1";
-our $description="Level:        Advanced
+our $description="Level:        Experienced
 
 Create a script named /tmp/testscript.
 - The Script has to replace every 'a' and 'A' letters from File /tmp/testinput.txt with '*'.

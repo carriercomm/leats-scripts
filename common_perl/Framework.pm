@@ -26,7 +26,7 @@ BEGIN {
 	use Exporter ();
 
     	@Framework::ISA         = qw(Exporter);
-    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connectTo &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile &getALTSParameter &setALTSParameter &compareValues);
+    	@Framework::EXPORT      = qw( &restart &shutdown &start &mount &umount &verbose &connectTo &return &grade &timedconTo &useage &hint &ssh_connect &printS &cryptText &decryptText &cryptText2File &decryptFile &getStudent &EncryptResultFile &DecryptResultFile &getALTSParameter &setALTSParameter &compareValues &gradeOR );
     	@Framework::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $line_length $result_file $student_file $description &showdescription);
 
 }
@@ -416,6 +416,15 @@ sub return($) {
 		$verbose and print "Everything ok with value.\n";
 		return 0;
 	}
+}
+
+sub gradeOR(@)
+{
+	foreach my $g (@_){ 
+				if ($g == 0) { return 0;}
+			  }
+
+return 1;
 }
 
 sub grade($;$$$$$) {

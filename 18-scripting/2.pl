@@ -23,7 +23,7 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="18-scripting";
 our $problem="2";
-our $description="Level:        Advanced
+our $description="Level:        Experienced
 
 Print out the number of directories in /etc.
 

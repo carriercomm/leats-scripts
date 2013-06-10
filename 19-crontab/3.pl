@@ -19,23 +19,15 @@
 ##along with Leats.  If not, see <http://www.gnu.org/licenses/>.
 #############
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
-our $author='Richard Gruber <richard.gruber@it-services.hu>';
+our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
-our $topic="18-scripting";
+our $topic="19-crontab";
 our $problem="3";
-our $description="Level:        Experienced
+our $description="Level:        Beginner
 
-Print out the name of the actual user to STDERR
+- User victoria has to run /bin/date on every monday at 01:05.";
 
-(You can use Shell or Perl. It will run with a 'random' user.)
-(During the check the number of directories can be modified.)
-
-	E.g.:
-	[testuser1\@server tmp]\$ /tmp/testscript
-	testuser1
-";
-our $hint="I recommend to look after the following command: whoami
-Mind that is has to be written to STDERR and not to STDOUT";
+our $hint="Add the given entry to the users cron. (crontab)";
 #
 #
 #
@@ -54,11 +46,9 @@ use File::Basename;
 use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
-use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use Disk qw(&Exist &CreateFile &Move &Delete &CreateDirectory);
-use Scripting qw(&CheckScriptOutput $verbose);
-use UserGroup qw(&checkUserFilePermission &setupUser &delUser );
-#####
+use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription &gradeOR);
+use UserGroup qw( &checkUserCrontabDenied &setupGroup &setupUser &delUser &delGroup &checkUserCrontab );
+######
 ###Options
 ###
 GetOptions("help|?|h" => \$help,
@@ -66,7 +56,7 @@ GetOptions("help|?|h" => \$help,
 		"b|break" => \$break,
 		"g|grade" => \$grade,
 		"hint" => \$hint,
-		 "d|description" => \$desc,
+		"d|description" => \$desc,
 	  );
 
 #####
@@ -74,7 +64,12 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-	&pre(); #Reseting server machine...
+	&pre(); #Reseting Server machine
+
+
+        $verbose and print "Running pre section\n";
+        $verbose and print "Create user william..\n";
+        setupUser("victoria","","","","","","/bin/bash","true","pw123");
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -84,18 +79,21 @@ sub break() {
 
 sub grade() {
 
+	system("clear");
+	print "Grade has been selected";
 	my $Student = Framework::getStudent();
 
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
 	$result_file="/ALTS/RESULTS/${Student}/${T}-${problem}"; #Empty the result file
-		my $fn; open($fn,">","$result_file"); close($fn);
+
+	my $fn; open($fn,">","$result_file"); close($fn);
 	my $now = strftime "%Y/%m/%d %H:%M:%S", localtime;
 	$exercise_number = 0;
 	$exercise_success = 0;
 
 	my $L=80;
-	
+
 
 	print "="x$L."=========\n";
 	print "Student:\t$Student\n\n";
@@ -108,18 +106,10 @@ sub grade() {
 	my $USERDATA=decryptFile("$student_file");
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
-	my $TmpUser="$topic-$problem-User123";
-	setupUser("$TmpUser","","","","","","","","pw123");
 
-	printS("Checking Script is executable","$L");	
-	Framework::grade(UserGroup::checkUserFilePermission("root","/tmp/testscript","r*x"));
+	printS("Victoria run \"/bin/date\" on every monday at 01:05","$L");
+	Framework::grade((checkUserCrontab("victoria","5","1","*","*","1","/bin/date")));
 
-	my $Commands="#!/bin/bash\nwhoami >&2";
-
-	printS("Checking Script output","$L");
-	Framework::grade(Scripting::CheckScriptOutput("$TmpUser","/tmp/testscript","$Commands","","STDERR_ONLY"));
-
-	delUser("$TmpUser");
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
@@ -139,16 +129,16 @@ sub grade() {
 		exit 1;
 	}
 
-	
+
 
 }
 
 sub pre() {
 ### Prepare the machine 
+
 	$verbose and print "Running pre section\n";
         $verbose and print "Reset server\n";
         system("/ALTS/RESET");
-
 }
 
 sub post() {
@@ -168,6 +158,7 @@ if ( $hint ) {
 if ( $desc ) {
         Framework::showdescription;
 }
+
 
 if ( $grade and $break ) {
 	print "Break and grade cannot be requested at one time.\n";

@@ -8,7 +8,7 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="echo -e '[local]\nname=Local Repo\nbaseurl=http://desktop\ngpgcheck=0\nenabled=1' > /etc/yum.repos.d/local.repo";
+my $Command="rpm -ivh /root/mc-4.7.0.2-3.el6.x86_64.rpm";
 
 
 sub ssh_connect() {

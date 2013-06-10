@@ -8,7 +8,9 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="echo 'william' >> /etc/cron.deny; echo \"25 5 * * * /bin/echo 'crontab exam test'\" > /tmp/crontabtenpfile.txt; crontab -u tihamer /tmp/crontabtenpfile.txt; echo \"16 * * * * 'whoami'\" > /tmp/crontabtenpfile.txt; crontab -u rudolf /tmp/crontabtenpfile.txt; rm -rf /tmp/crontabtenpfile.txt;";
+my $Command="echo \"10 13 * * *     /bin/echo 'hello world'\" > /tmp/crontabtenpfile.txt; 
+crontab -u cronuser1 /tmp/crontabtenpfile.txt;
+rm -rf /tmp/crontabtenpfile.txt;";
 
 
 sub ssh_connect() {

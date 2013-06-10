@@ -181,10 +181,26 @@ sub CheckRepoAttribute($$$)
 	my $Attribute =$_[1];
 	my $Value =$_[2];
 
-	if ( GetRepoAttribute("$Repo_ID","$Attribute") eq $Value ) { return 0; }
+	my $RepoAttributeValue = GetRepoAttribute("$Repo_ID","$Attribute");	
+	
+	if ($Attribute eq "baseurl") 
+	{
+		$RepoAttributeValue=extendWithSlash("$RepoAttributeValue");
+		$Value=extendWithSlash("$Value");
+	}
+
+	if ( $RepoAttributeValue eq $Value ) { return 0; }
 	return 1;
 
 }
+
+sub extendWithSlash($)
+{
+    my $A = "${_[0]}/";    
+    $A =~ s/\/\//\//g;
+    return $A;
+}
+
 
 #
 # CheckPackageInstalled

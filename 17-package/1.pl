@@ -23,11 +23,13 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="17-package";
 our $problem="1";
-our $description="Level:        Advanced
+our $description="Level:        Beginner
 
-Create a repository named 'Local Repo' with ID [local]
-The baseurl has to be 'http://desktop', gpgcheck has to be disabled.";
-our $hint="Create the .repo file under /etc/yum.repos.d/. Don't forget to activate it!";
+Install midnight commander (mc).
+The rpm package can be found under /root/.
+
+";
+our $hint="Install the package. (rpm or yum)";
 #
 #
 #
@@ -47,7 +49,8 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use Packages qw(&CreateRepo &CheckRepoExist &GetRepoAttribute &CheckRepoAttribute);
+use Packages qw(&CreateRepo &CheckPackageInstalled &RemovePackage &InstallPackage);
+
 #####
 ###Options
 ###
@@ -66,14 +69,19 @@ sub break() {
 	print "Break has been selected.\n";
 	&pre(); #Reseting server machine...
 
-        my $RepoAvailable=`GET http://1.1.1.1/Packages >/dev/null 2>&1; echo \$?`;
+
+        my $RepoAvailable=`GET http://1.1.1.1/repository/Packages >/dev/null 2>&1; echo \$?`;
         chomp($RepoAvailable);
         if ($RepoAvailable ne "0" ) {
                                         $verbose and print "httpd isn't running..It will be restarted now..\n";
                                         my $output=`service httpd restart 2>&1`;
-					$verbose and print "$output\n";
+                                        $verbose and print "$output\n";
                                     }
-	
+
+	my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("rm -rf /etc/yum.repos.d/local.repo; cd /root; wget http://desktop/repository/Packages/mc-4.7.0.2-3.el6.x86_64.rpm");
+	$verbose and print "$output\n";
+
 	$verbose and print "Pre complete breaking\n";	
 	print "Your task: $description\n";
 }
@@ -81,15 +89,7 @@ sub break() {
 sub grade() {
 
 	my $Student = Framework::getStudent();
-
-        my $RepoAvailable=`GET http://1.1.1.1/Packages >/dev/null 2>&1; echo \$?`;
-        chomp($RepoAvailable);
-        if ($RepoAvailable ne "0" ) { 
-                                        $verbose and print "httpd isn't running..It will be restarted now..\n";
-                                        my $output=`service httpd restart 2>&1`;
-                                        $verbose and print "$output\n";				
-				    }
-
+	
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
 	$result_file="/ALTS/RESULTS/${Student}/${T}-${problem}"; #Empty the result file
@@ -99,7 +99,6 @@ sub grade() {
 	$exercise_success = 0;
 
 	my $L=70;
-
 
 	print "="x$L."=========\n";
 	print "Student:\t$Student\n\n";
@@ -113,20 +112,9 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-#	Packages::CreateRepo("local.repo","local","Local Repo","http://desktop",0,"",1);
+	printS("Checking mc is installed","$L");
+	Framework::grade(Packages::CheckPackageInstalled("mc"));
 
-	printS("Checking Repo exist and activated","$L");
-	Framework::grade(Packages::CheckRepoExist("local","enabled"));
-
-	printS("Checking Repos gpgcheck is disabled","$L");
-	Framework::grade(Packages::CheckRepoAttribute("local","gpgcheck","0"));
-
-        printS("Checking Repos name is 'Local Repo'","$L");
-        Framework::grade(Packages::CheckRepoAttribute("local","name","Local Repo"));	
-
-        printS("Checking Repos baseurl is http://desktop/","$L");
-        Framework::grade(Packages::CheckRepoAttribute("local","baseurl","http://desktop"));
-	
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";

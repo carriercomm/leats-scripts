@@ -300,6 +300,26 @@ if ($User ~~ @USER_DENY) { return 0; }
 else { return 1; }
 }
 
+
+sub removeFirst0($)
+{
+my $N=$_[0];
+
+ $N=~s/00/0/g;
+ $N=~s/01/1/g;
+ $N=~s/02/2/g;
+ $N=~s/03/3/g;
+ $N=~s/04/4/g;
+ $N=~s/05/5/g;
+ $N=~s/06/6/g;
+ $N=~s/07/7/g;
+ $N=~s/08/8/g;
+ $N=~s/09/9/g;
+
+return $N;
+
+}
+
 #Check Users crontab
 #
 #1.Parameter: Username (not ID!)
@@ -316,11 +336,11 @@ sub checkUserCrontab($$$$$$$)
 {
 	my $User = $_[0];
 	if (userExist($User) != 0 ) { return 1;  }
-	my $T_minute=$_[1];
-	my $T_hour=$_[2];
-	my $T_day=$_[3];
-	my $T_month=$_[4];
-	my $T_dayofweek=$_[5];
+	my $T_minute=removeFirst0($_[1]);
+	my $T_hour=removeFirst0($_[2]);
+	my $T_day=removeFirst0($_[3]);
+	my $T_month=removeFirst0($_[4]);
+	my $T_dayofweek=removeFirst0($_[5]);
 	my $Command=$_[6];
 
 	my $ssh=Framework::ssh_connect;
@@ -332,8 +352,13 @@ sub checkUserCrontab($$$$$$$)
 	{
 		#print "\n++++++++++++ ENTRY: $Cronentry ++++++++++++++\n";
 		my @A = $Cronentry =~ m/\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/;
+		$A[0]=removeFirst0($A[0]);
+		$A[1]=removeFirst0($A[1]);
+		$A[2]=removeFirst0($A[2]);
+ 	 	$A[3]=removeFirst0($A[3]);
+		$A[4]=removeFirst0($A[4]);
 		if (($A[0] eq "$T_minute")&&($A[1] eq "$T_hour")&&($A[2] eq "$T_day")&&($A[3] eq "$T_month")&&($A[4] eq "$T_dayofweek")) 
-		{	
+		{				
 			$verbose and print "Time OK\n";			
 			my $ACommand=$A[5];
 			#print "\nWant:   $User | $T_minute $T_hour $T_day $T_month $T_dayofweek $Command\n";

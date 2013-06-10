@@ -25,13 +25,10 @@ our $topic="17-package";
 our $problem="2";
 our $description="Level:        Beginner
 
-Install the 'nano' package.
-Remove the package 'wget'.
-Update 'mc' (midnight commander) to version 4.7.0.2-3.
+Remove the nano text editor (nano).
 
-The required package(s) can be found under http://desktop/Packages.
-(It is already configured as a yum repository.)";
-our $hint="The yum repository has been configured up, so you can use yum and rpm also.";
+";
+our $hint="Uninstall the package. (rpm or yum)";
 #
 #
 #
@@ -71,19 +68,18 @@ sub break() {
 	print "Break has been selected.\n";
 	&pre(); #Reseting server machine...
 
- 	Packages::CreateRepo("local.repo","local","Local Repo","http://desktop",0,"",1);
 
-	Packages::RemovePackage("nano");
-
-	Packages::InstallPackage("mc-4.6.1a-35.el5.x86_64.rpm","http://1.1.1.1/Packages/");
-
-        my $RepoAvailable=`GET http://1.1.1.1/Packages >/dev/null 2>&1; echo \$?`;
+        my $RepoAvailable=`GET http://1.1.1.1/repository/Packages >/dev/null 2>&1; echo \$?`;
         chomp($RepoAvailable);
         if ($RepoAvailable ne "0" ) {
                                         $verbose and print "httpd isn't running..It will be restarted now..\n";
                                         my $output=`service httpd restart 2>&1`;
                                         $verbose and print "$output\n";
                                     }
+
+	my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("rm -rvf /etc/yum.repos.d/local.repo");
+	$verbose and print "$output\n";
 
 	$verbose and print "Pre complete breaking\n";	
 	print "Your task: $description\n";
@@ -115,14 +111,9 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-	printS("Checking nano is installed","$L");
-	Framework::grade(Packages::CheckPackageInstalled("nano"));
+	printS("Checking nano has been removed","$L");
+	Framework::grade(!Packages::CheckPackageInstalled("nano"));
 
-	printS("Checking mc has been updated","$L");
-	Framework::grade(Packages::CheckPackageInstalled("mc","4.7.0.2-3"));
-
-        printS("Checking wget has been removed","$L");
-        Framework::grade(!Packages::CheckPackageInstalled("wget"));	
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";

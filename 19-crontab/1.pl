@@ -19,18 +19,15 @@
 ##along with Leats.  If not, see <http://www.gnu.org/licenses/>.
 #############
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
-our $author='Richard Gruber <richard.gruber@it-services.hu>';
+our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="19-crontab";
 our $problem="1";
-our $description="Level:        Advanced
+our $description="Level:        Beginner
 
-- User william's crontab has to be denied
-- User tihamer has to run \"/bin/echo 'crontab exam test'\" every day at 5:25
-- User rudolf has to run \"whoami\" in every hours 16th minute";
-our $hint="Add william into /etc/cron.deny. 
-Add the given entry to the cron of tihamer. (crontab)
-Add the given entry to rudolfs cron. (crontab)";
+- User cronuser1 has to run \"/bin/echo 'hello world'\" every day at 13:10";
+
+our $hint="Add the given entry to the users cron. (crontab)";
 #
 #
 #
@@ -72,12 +69,7 @@ sub break() {
 
         $verbose and print "Running pre section\n";
         $verbose and print "Create user william..\n";
-        setupUser("william","3446","","","","","/bin/bash","true","pw123");
-        $verbose and print "Create user tihamer..\n";
-        setupUser("tihamer","4999","tihamer","ftp","/home/tihamer","This is Tihamer","/bin/bash","true","pw123");
-        $verbose and print "Create user rudolf..\n";
-        setupUser("rudolf","7929","","","","","/bin/bash","true","pw123");
-
+        setupUser("cronuser1","","","","","","/bin/bash","true","pw123");
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -115,15 +107,8 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-
-	printS("william's crontab is denied","$L");
-	Framework::grade(UserGroup::checkUserCrontabDenied("william"));
-
-	printS("tihamer run \"/bin/echo 'crontab exam test'\" every day at 5:25","$L");
-	Framework::grade(checkUserCrontab("tihamer","25","5","*","*","*","/bin/echo 'crontab exam test'"));
-
-	printS("rudolf run \"whoami\" in every hours 16th minute","$L");
-	Framework::grade(checkUserCrontab("rudolf","16","*","*","*","*","whoami"));
+	printS("cronuser1 run \"/bin/echo 'hello world'\" every day at 13:10","$L");
+	Framework::grade(checkUserCrontab("cronuser1","10","13","*","*","*","/bin/echo 'hello world'"));
 
 
 	print "\n"."="x$L."=========\n";
