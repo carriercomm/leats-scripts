@@ -22,14 +22,21 @@
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
-our $problem="3";
-our $description="Level:        Beginner
+our $problem="5";
+our $description="Level:        Experienced
 
-The CPU utilisation of a process is too high.
-Find the process and kill it.";
+There is a script which runs with 50 instances. 
+- The script named 'Replicator.pl'.
+- If you kill one instance the others will remake it. 
 
-our $hint="Find the process and get the Process ID. (top)
-Kill it. (kill)";
+Stop it!";
+
+our $hint="Find the PIDs of the processes (ps, grep, awk)
+Give the PIDs to kill (xargs)
+
+OR
+
+kill the processes at once (killall)";
 #
 #
 #
@@ -70,9 +77,9 @@ sub break() {
 
         $verbose and print "Running pre section\n";
 
-	System::CopyFromDesktop("/ALTS/ExerciseScripts/CStress.pl","/usr/bin/CStress.pl","755","root","root");
-	System::CopyFromDesktop("/ALTS/ExerciseScripts/CStress-service.sh","/etc/init.d/ALTS","755","root","root");
-        my $ssh=Framework::ssh_connect;
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/Replicator.pl","/usr/bin/Replicator.pl","755","root","root");
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/Replicator-service.sh","/etc/init.d/ALTS","755","root","root");
+	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture('ln -s /etc/init.d/ALTS /etc/rc3.d/S99ALTS; ln -s /etc/init.d/ALTS /etc/rc5.d/S99ALTS; /etc/init.d/ALTS start >/dev/null 2>&1 &');
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
@@ -111,8 +118,8 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-	printS("The script doesn't running anymore","$L");
-	Framework::grade(System::checkProcessIsntRunning("CStress.pl"));
+	printS("Check 'Replicator.pl' isn't running anymore","$L");
+	Framework::grade(System::checkProcessIsntRunning("Replicator.pl"));
 
 
 	print "\n"."="x$L."=========\n";

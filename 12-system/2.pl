@@ -28,7 +28,7 @@ our $description="Level:        Beginner
 There is only a few free memory left on the system.
 Find the process, which use the memory and kill it.";
 
-our $hint="Find the process and get its PID. (top)
+our $hint="Find the process and get the Process ID. (top)
 Kill it. (kill)";
 #
 #
@@ -71,14 +71,15 @@ sub break() {
         $verbose and print "Running pre section\n";
 
 	System::CopyFromDesktop("/ALTS/ExerciseScripts/MEater.pl","/usr/bin/MEater.pl","755","root","root");
-	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("/usr/bin/MEater.pl >/dev/null&");
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/MEater-service.sh","/etc/init.d/ALTS","755","root","root");
 
+        my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture('ln -s /etc/init.d/ALTS /etc/rc3.d/S99ALTS; ln -s /etc/init.d/ALTS /etc/rc5.d/S99ALTS; /etc/init.d/ALTS start >/dev/null 2>&1 &');
 
+	sleep 5;
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
 	$verbose and print "Pre complete breaking\n";	
-	sleep 15;
 	print "Your task: $description\n";
 }
 

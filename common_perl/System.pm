@@ -27,7 +27,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Packages::ISA         = qw( Exporter );
-    	@Packages::EXPORT      = qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop );
+    	@Packages::EXPORT      = qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop &checkZombieProcesses );
     	@Packages::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name );
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 #	close(STDERR);
@@ -35,6 +35,12 @@ BEGIN {
 use vars qw ($verbose $topic $author $version $hint $problem $name);
 
 
+#
+# Returns the number of running processes
+#
+# 1. Parameter: Process (or part of it)
+#
+#
 sub getProcessNum($)
 {
         my $Process=$_[0];
@@ -55,7 +61,12 @@ return $PN;
 
 }
 
-
+#
+# Checks if process is running
+#
+# 1. Parameter: Process (or part of it)
+#
+#
 sub checkProcessIsRunning($)
 {
 	my $Process=$_[0];
@@ -66,6 +77,11 @@ sub checkProcessIsRunning($)
 	else { return 1; }
 }
 
+#
+# Checks if process isn't running
+#
+# 1. Parameter: Process (or part of it)
+#
 sub checkProcessIsntRunning($)
 {
         my $Process=$_[0];
@@ -74,6 +90,30 @@ sub checkProcessIsntRunning($)
 
         if ($PN==0) { return 0; }
         else { return 1; }
+}
+
+#
+# Checks Zombie Processes
+#
+# Returns 0 if there isn't any.
+#
+sub checkZombieProcesses()
+{
+
+  my $ssh=Framework::ssh_connect;
+  my $output=$ssh->capture("ps aux");
+
+  my $ZN=0;
+  my @Ps = split("\n",$output);
+        foreach my $p (@Ps)
+        {
+                if ($p =~ m/(?:\S+\s+){6}\s+Z\s+.*/) { $ZN++; }
+        }
+
+ if ($ZN==0) { return 0; }
+
+ return 1;
+
 }
 
 #

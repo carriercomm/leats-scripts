@@ -8,7 +8,8 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="kill `ps -ef | grep CStress.pl | grep -v grep | awk '{ print \$2 }'`";
+#my $Command="kill `ps -ef | grep Replicator.pl | grep -v grep | awk '{ print \$2 }'`";
+my $Command="killall Replicator.pl";
 
 
 sub ssh_connect() {

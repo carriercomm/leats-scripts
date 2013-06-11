@@ -22,13 +22,13 @@
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
-our $problem="3";
+our $problem="4";
 our $description="Level:        Beginner
 
-The CPU utilisation of a process is too high.
-Find the process and kill it.";
+There are some zombie processes in the system.
+Find them and kill them!";
 
-our $hint="Find the process and get the Process ID. (top)
+our $hint="Find the process and get the Process ID. (top,ps)
 Kill it. (kill)";
 #
 #
@@ -49,7 +49,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use System qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop );
+use System qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop &checkZombieProcesses );
 ######
 ###Options
 ###
@@ -70,8 +70,8 @@ sub break() {
 
         $verbose and print "Running pre section\n";
 
-	System::CopyFromDesktop("/ALTS/ExerciseScripts/CStress.pl","/usr/bin/CStress.pl","755","root","root");
-	System::CopyFromDesktop("/ALTS/ExerciseScripts/CStress-service.sh","/etc/init.d/ALTS","755","root","root");
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/CreateZombie.pl","/usr/bin/CZ.pl","755","root","root");
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/CreateZombie-service.sh","/etc/init.d/ALTS","755","root","root");
         my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture('ln -s /etc/init.d/ALTS /etc/rc3.d/S99ALTS; ln -s /etc/init.d/ALTS /etc/rc5.d/S99ALTS; /etc/init.d/ALTS start >/dev/null 2>&1 &');
 
@@ -111,8 +111,8 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-	printS("The script doesn't running anymore","$L");
-	Framework::grade(System::checkProcessIsntRunning("CStress.pl"));
+	printS("There are no zombie processes:","$L");
+	Framework::grade(System::checkZombieProcesses());
 
 
 	print "\n"."="x$L."=========\n";
