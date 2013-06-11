@@ -22,14 +22,19 @@
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
-our $problem="1";
-our $description="Level:        Beginner
+our $problem="3";
+our $description="Level:        Experienced
 
-There is a script running named 'MyScript.pl'.
-Find it and kill it.";
+There is a script which runs in 50 instances and if you kill one it reborns. 
+The script named 'Replicator.pl'. 
+Stop it!";
 
-our $hint="Find the process. (ps, grep)
-Check the Process ID and kill it. (kill)";
+our $hint="Find the PIDs of the processes (ps, grep, awk)
+Give the PIDs to kill (xargs)
+
+OR
+
+kill the processes at once (killall)";
 #
 #
 #
@@ -70,9 +75,10 @@ sub break() {
 
         $verbose and print "Running pre section\n";
 
-	System::CopyFromDesktop("/ALTS/ExerciseScripts/12-system-1.pl","/usr/bin/MyScript.pl","755","root","root");
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/Replicator.pl","/usr/bin/Replicator.pl","755","root","root");
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/Replicator-service.sh","/etc/init.d/ALTS","755","root","root");
 	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("/usr/bin/MyScript.pl >/dev/null");
+        my $output=$ssh->capture('ln -s /etc/init.d/ALTS /etc/rc3.d/S99ALTS; ln -s /etc/init.d/ALTS /etc/rc5.d/S99ALTS; /etc/init.d/ALTS start');
 
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
@@ -111,8 +117,8 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-	printS("Check 'MyScript.pl' isn't running anymore","$L");
-	Framework::grade(System::checkProcessIsntRunning("MyScript.pl"));
+	printS("Check 'Replicator.pl' isn't running anymore","$L");
+	Framework::grade(System::checkProcessIsntRunning("Replicator.pl"));
 
 
 	print "\n"."="x$L."=========\n";

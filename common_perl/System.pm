@@ -27,7 +27,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Packages::ISA         = qw( Exporter );
-    	@Packages::EXPORT      = qw( &checkProcessRun &CopyFromDesktop );
+    	@Packages::EXPORT      = qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop );
     	@Packages::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name );
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 #	close(STDERR);
@@ -35,14 +35,46 @@ BEGIN {
 use vars qw ($verbose $topic $author $version $hint $problem $name);
 
 
-sub checkProcessRun($)
+sub getProcessNum($)
 {
-	my $Process=$_[0];
+        my $Process=$_[0];
 
-	print "PROCESS: $Process\n";
+	my $PN=0;
+
+	my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("ps -ef");
+        $verbose and print "$output";
+	
+	my @Ps = split("\n",$output);
+	foreach my $p (@Ps)
+	{
+		if ($p =~ m/(?:\S+\s+){6}\s+.*$Process.*/) { $PN++; }
+	} 
+
+return $PN;
 
 }
 
+
+sub checkProcessIsRunning($)
+{
+	my $Process=$_[0];
+
+	my $PN=&getProcessNum($Process);
+
+	if ($PN>0) { return 0; }
+	else { return 1; }
+}
+
+sub checkProcessIsntRunning($)
+{
+        my $Process=$_[0];
+
+        my $PN=&getProcessNum($Process);
+
+        if ($PN==0) { return 0; }
+        else { return 1; }
+}
 
 #
 # Copy a file form Desktop machine to the Server machine
@@ -65,13 +97,10 @@ sub CopyFromDesktop($$$$$)
 
 	$verbose and print "Copy $Source -> root\@1.1.1.2:/$Destination\n";
 
-	my $output=`scp $Source root\@1.1.1.2:/$Destination`;
-	$verbose and print "$output";
+	system("scp $Source root\@1.1.1.2:/$Destination >/dev/null 2>&1");
 
 	my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture("chmod $Permissions $Destination; chown $Owner $Destination; chgrp $Group $Destination");
-
-
 }
 
 #### We need to end with success
