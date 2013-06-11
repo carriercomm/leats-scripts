@@ -22,14 +22,14 @@
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
-our $problem="1";
+our $problem="2";
 our $description="Level:        Beginner
 
-There is a script running named 'MyScript.pl'.
-Find it and kill it.";
+There is only a few free memory left on the system.
+Find the process, which use the memory and kill it.";
 
-our $hint="Find the process. (ps, grep)
-Check the Process ID and kill it. (kill)";
+our $hint="Find the process and get its PID. (top)
+Kill it. (kill)";
 #
 #
 #
@@ -70,14 +70,15 @@ sub break() {
 
         $verbose and print "Running pre section\n";
 
-	System::CopyFromDesktop("/ALTS/ExerciseScripts/SimpleDaemon.pl","/usr/bin/MyScript.pl","755","root","root");
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/MEater.pl","/usr/bin/MEater.pl","755","root","root");
 	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("/usr/bin/MyScript.pl >/dev/null");
+        my $output=$ssh->capture("/usr/bin/MEater.pl >/dev/null&");
 
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
 	$verbose and print "Pre complete breaking\n";	
+	sleep 15;
 	print "Your task: $description\n";
 }
 
@@ -111,8 +112,8 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-	printS("Check 'MyScript.pl' isn't running anymore","$L");
-	Framework::grade(System::checkProcessIsntRunning("MyScript.pl"));
+	printS("The script doesn't running anymore","$L");
+	Framework::grade(System::checkProcessIsntRunning("MEater.pl"));
 
 
 	print "\n"."="x$L."=========\n";
