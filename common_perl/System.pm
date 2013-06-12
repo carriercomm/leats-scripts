@@ -140,7 +140,7 @@ sub CopyFromDesktop($$$$$)
 	system("scp $Source root\@1.1.1.2:/$Destination >/dev/null 2>&1");
 
 	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("chmod $Permissions $Destination; chown $Owner $Destination; chgrp $Group $Destination");
+        my $output=$ssh->capture("chmod -R $Permissions $Destination; chown -R $Owner $Destination; chgrp -R $Group $Destination");
 }
 
 #### We need to end with success

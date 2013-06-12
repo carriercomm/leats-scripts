@@ -8,7 +8,7 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="cp /etc/issue /tmp/issue; chown alice /tmp/issue";
+my $Command="cp /etc/issue /tmp/test; cp /etc/crontab /tmp/test2; chown tihamer:group1 /tmp/test; ln -s /etc/group /tmp/testsymlink; mkdir /tmp/testdir; chgrp group1 /tmp/testdir; chmod g+s /tmp/testdir; chmod 770 /tmp/test; chmod 770 /tmp/test2; chgrp group1 /tmp/test2; chmod u+s /tmp/test2";
 
 
 sub ssh_connect() {

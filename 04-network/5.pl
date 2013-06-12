@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.8";
 our $topic="04-network";
 our $problem="5";
-our $description="Level:        Advanced
+our $description="Level:        Experienced
 
 - Setup 2.2.2.1 for nameserver.
 - Define test1machine into hosts file as 1.1.1.1.

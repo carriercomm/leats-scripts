@@ -8,7 +8,11 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="cp /etc/issue /tmp/issue; chown alice /tmp/issue";
+my $Command="mkdir -p /mnt/dir1/dir2/dir3/dir4/;
+mv /mnt/files/2.alert_catp.log /mnt/dir1/dir2/dir3/dir4/2.alert_catp.log;
+chgrp group01 /mnt/dir1/dir2/dir3/dir4/2.alert_catp.log;
+chown jesse /mnt/dir1/dir2/dir3/dir4/2.alert_catp.log;
+chmod 460 /mnt/dir1/dir2/dir3/dir4/2.alert_catp.log;";
 
 
 sub ssh_connect() {

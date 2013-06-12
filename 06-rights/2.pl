@@ -22,13 +22,20 @@
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="06-rights";
-our $problem="1";
+our $problem="2";
 our $description="Level:	Beginner
 
-- Copy /etc/issue to /tmp/issue
-- Change the owner of /tmp/issue tp ftp.
+- Create directory /mnt/dir1/dir2/dir3/dir4/
+- Move /mnt/files/2.alert_catp.log to /mnt/dir1/dir2/dir3/dir4/
+- Change the owner group to group01
+- The members of group01 have to be able to write it
+- Change the owner of the file to jesse
+- User jesse can only read the files
+- Others should not have any rights on the file
 ";
-our $hint="Copy the given files (cp). Change the owners and groups (chown).";
+
+our $hint="Move the given file (mv). Change the owners and groups (chown, chgrp).
+Change permissions (chmod).";
 #
 #
 #
@@ -50,7 +57,8 @@ our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
 use UserGroup qw($verbose &userExist &groupExist &getUserAttribute &checkUserAttribute &checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &setupUser &setupGroup &delGroup &delUser &checkUserFilePermission &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes );
-use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy);
+use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy &CreateDirectory );
+use System qw(&CopyFromDesktop);
 ######
 ###Options
 ###
@@ -70,7 +78,10 @@ sub break() {
 
 	&pre();	#Reset server machine
 
-        setupUser("alice","5382","","","/home/alice","Alice","/bin/bash","");
+	CreateDirectory("/mnt/files","","","");
+	setupGroup("group01","","");
+        setupUser("jesse","","","","","","","");
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/logs/*","/mnt/files/","","","");	
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 	$verbose and print "Pre complete breaking\n";
@@ -103,13 +114,34 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
+	my $Dir="/mnt/dir1/dir2/dir3/dir4";
+	my $File="$Dir/2.alert_catp.log";
 
-	printS("/etc/issue equals /tmp/issue","$L");
-	Framework::grade(fileEqual("/etc/issue","/tmp/issue"));
+	printS("Directory $Dir exist","$L");
+	Framework::grade(checkType("$Dir","directory"));
+
+        printS("$File exist","$L");
+        Framework::grade(checkType("$File","regular file"));
+
+	printS("/mnt/files/2.alert_catp.log not exist","$L");
+        Framework::grade(!checkType("/mnt/files/2.alert_catp.log","regular file"));
 
 
-	printS("The owner of /tmp/issue is alice","$L");
-	Framework::grade(checkOwner("/tmp/issue","alice"));
+	printS("The owner group is group01","$L");
+	Framework::grade(checkGroup("$File","group01"));
+
+        printS("Group01 can write it","$L");
+        Framework::grade(checkGroupFilePermission("group01","$File","*w*"));
+ 
+        printS("The owner is jesse","$L");
+        Framework::grade(checkOwner("$File","jesse"));
+ 
+        printS("Jesse can only read it","$L");
+        Framework::grade(checkUserFilePermission("jesse","$File","r--") );
+  
+        printS("Other can't read, write or execute it","$L");
+        Framework::grade(checkOtherFilePermission("$File","---"));
+
 
 
 

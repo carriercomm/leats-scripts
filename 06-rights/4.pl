@@ -20,15 +20,30 @@
 #############
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <gruberrichard@gmail.com>';
-our $version="v0.9";
+our $version="v0.2";
 our $topic="06-rights";
-our $problem="1";
-our $description="Level:	Beginner
+our $problem="4";
+our $description="Level:	Experienced
 
-- Copy /etc/issue to /tmp/issue
-- Change the owner of /tmp/issue tp ftp.
+Make sure that the following settings are set up
+- Copy /etc/issue to /tmp as test
+- Copy /etc/crontab to /tmp as test2
+- User tihamer can write /tmp/test
+- The owner of /tmp/test must be tihamer
+- The group of /tmp/test must be group1
+- Create a symlink to /etc/group with the name /tmp/testsymlink
+- Create a directory /tmp/testdir
+- The group of every newly created file in /tmp/testdir is group1
+- Members of group1 can read and write /tmp/test
+- Members of group1 can read, write and execute /tmp/test2
+- SETUID has to be set on /tmp/test2
+- STICKY must not be set on /tmp/test
+- Other can't read, write or execute /tmp/test and /tmp/test2
 ";
-our $hint="Copy the given files (cp). Change the owners and groups (chown).";
+our $hint="Copy the given files (cp). Change the owners and groups (chown, chgrp).
+Create the symlink (ln). Create the directory (mkdir). 
+Set the SETGID bit and the group on the directory. (chmod, chgrp)
+Set the SETUID bit on the file (chmod). Modify the others permission (chmod).";
 #
 #
 #
@@ -70,7 +85,10 @@ sub break() {
 
 	&pre();	#Reset server machine
 
-        setupUser("alice","5382","","","/home/alice","Alice","/bin/bash","");
+        setupGroup("group1","5678","tihamer");
+        setupUser("tihamer","4999","tihamer","ftp","/home/tihamer","This is Tihamer","/bin/bash","true");
+        Delete("/tmp/test","/tmp/test2","/tmp/testsymlink","/tmp/testdir");
+
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 	$verbose and print "Pre complete breaking\n";
@@ -103,14 +121,44 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
+	printS("/etc/issue equals /tmp/test","$L");
+	Framework::grade(fileEqual("/etc/issue","/tmp/test"));
 
-	printS("/etc/issue equals /tmp/issue","$L");
-	Framework::grade(fileEqual("/etc/issue","/tmp/issue"));
+	printS("/etc/crontab equals /tmp/test2","$L");
+	Framework::grade(fileEqual("/etc/crontab","/tmp/test2"));
 
+	printS("User tihamer can write /tmp/test","$L");
+	Framework::grade(checkUserFilePermission("tihamer","/tmp/test","*w*"));
 
-	printS("The owner of /tmp/issue is alice","$L");
-	Framework::grade(checkOwner("/tmp/issue","alice"));
+	printS("The owner of /tmp/test is tihamer","$L");
+	Framework::grade(checkOwner("/tmp/test","tihamer"));
 
+	printS("The group of /tmp/test is group1","$L");
+	Framework::grade(checkGroup("/tmp/test","group1"));		
+
+	printS("Symlink from /etc/group to /tmp/testsymlink","$L");
+	Framework::grade(checkSymlink("/etc/group","/tmp/testsymlink"));
+
+	printS("Directory /tmo/testdir exist","$L");
+	Framework::grade(checkType("/tmp/testdir","directory"));
+
+	printS("The group of every newly created file in this directory is group1","$L");
+	Framework::grade(checkNewlyCreatedFilesAttributes("/tmp/testdir","group1","","","","",""));
+
+	printS("Members of group1 can read and write /tmp/test","$L");
+	Framework::grade(checkGroupFilePermission("group1","/tmp/test","rw*"));
+
+	printS("Members of group1 can read, write and execute /tmp/test2","$L");
+	Framework::grade(checkGroupFilePermission("group1","/tmp/test2","rwx"));
+
+	printS("SETUID set on /tmp/test2","$L");
+	Framework::grade(checkUserFileSpecialPermission("/tmp/test2","SETUID"));
+
+	printS("STICKY not set on /tmp/test","$L");
+	Framework::grade(checkUserFileSpecialPermission("/tmp/test","NO_STICKY"));	
+
+	printS("Other can't read, write or execute both","$L");
+	Framework::grade(checkOtherFilePermission("/tmp/test","---"),checkOtherFilePermission("/tmp/test2","---"));
 
 
 	print "\n"."="x$L."=========\n";

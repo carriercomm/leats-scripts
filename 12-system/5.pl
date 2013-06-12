@@ -73,7 +73,7 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-#	&pre(); #Reseting Server machine
+	#&pre(); #Reseting Server machine
 
         $verbose and print "Running pre section\n";
 

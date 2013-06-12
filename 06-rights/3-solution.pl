@@ -8,7 +8,13 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="cp /etc/issue /tmp/issue; chown alice /tmp/issue";
+my $Command="cp /mnt/files/* /home/craig;
+rm -rf /home/craig/2.bckp.log;
+mkdir /home/craig/backup;
+chgrp admingroup01 /home/craig/;
+chmod +r /home/craig;
+chmod +x /home/craig;
+chmod 744 /home/craig/backup";
 
 
 sub ssh_connect() {

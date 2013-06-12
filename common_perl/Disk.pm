@@ -28,7 +28,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Disk::ISA         = qw(Exporter);
-    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk &Exist &CreateFile &CreateDirectory);
+    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk &Exist &CreateFile &CreateDirectory &checkPartitionMaxUsedSpace);
     	@Disk::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name);
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 	close(STDERR);
@@ -1098,6 +1098,30 @@ my $VGName =$_[3] || "vg_desktop";
 		$verbose and print "Creating $LVName\n";
                 lv_create("$LVName","$Size","$Target","$VGName");
                 print "Disk attached to server. Local disk is vdb\n";
+
+}
+
+#
+# Check free disk space on the given partition (mountpoint)
+#
+# 1. Parameter: Mountpoint E.g. /mnt/data
+# 2. Parameter: Maximal Used in % E.g. 90 (default is 90%)
+#
+sub checkPartitionMaxUsedSpace($;$)
+{
+my $Mountpoint=$_[0];
+my $MaxUsed=$_[1] || "90";
+
+#print "MOUNTPOINT: $Mountpoint || MAXUSED: $MaxUsed\n";
+
+my $ssh=Framework::ssh_connect;
+my $output=$ssh->capture("df $Mountpoint | tail -1");
+
+my @A = $output =~ m/.*\s+(\d+)%.*/;
+
+if ((defined $A[0]) and ($A[0]<$MaxUsed)) { return 0; }
+
+return 1;
 
 }
 
