@@ -8,7 +8,11 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="cp /etc/issue /tmp/test; cp /etc/crontab /tmp/test2; chown tihamer:group1 /tmp/test; ln -s /etc/group /tmp/testsymlink; mkdir /tmp/testdir; chgrp group1 /tmp/testdir; chmod g+s /tmp/testdir; chmod 770 /tmp/test; chmod 770 /tmp/test2; chgrp group1 /tmp/test2; chmod u+s /tmp/test2";
+my $Command="mv /mnt/files/longman_top_3000_words.txt /mnt/files/TOP3000.txt;
+chown nathan /mnt/files/TOP3000.txt;
+chgrp tmpgroup /mnt/files/TOP3000.txt;
+chmod 644 /mnt/files/TOP3000.txt
+chmod 755 /mnt/files";
 
 
 sub ssh_connect() {

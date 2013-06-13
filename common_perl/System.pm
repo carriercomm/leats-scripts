@@ -30,7 +30,7 @@ BEGIN {
     	@Packages::EXPORT      = qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop &checkZombieProcesses );
     	@Packages::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name );
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
-#	close(STDERR);
+	#close(STDERR);
 }
 use vars qw ($verbose $topic $author $version $hint $problem $name);
 
@@ -124,16 +124,22 @@ sub checkZombieProcesses()
 # 3. Parameter:  Permissions E.g. 755
 # 4. Parameter:  Owner E.g. john
 # 5. Parameter:  Group E.g. group1
+# 6. Parameter:	 Action E.g. 
+# 			- decompressTGZ (tar+gzip)
+# 			- compressTGZ (tar+gzip)
+# 			- decomressGZ (gunzip)
+# 			- compressGZ (gzip)
 #
 #
 #
-sub CopyFromDesktop($$$$$)
+sub CopyFromDesktop($$$$$;$)
 {
 	my $Source=$_[0];
 	my $Destination=$_[1];
 	my $Permissions=$_[2] || "755";
 	my $Owner=$_[3] || "root";
 	my $Group=$_[4] || "root";
+	my $Action=$_[5] || "";
 
 	$verbose and print "Copy $Source -> root\@1.1.1.2:/$Destination\n";
 
@@ -141,6 +147,15 @@ sub CopyFromDesktop($$$$$)
 
 	my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture("chmod -R $Permissions $Destination; chown -R $Owner $Destination; chgrp -R $Group $Destination");
+
+	my @D = $Destination =~ m/(.*)\/([^\/]*)/;
+	my $Dir=$D[0];
+	my $File=$D[1] || "*";
+
+	if ($Action eq "compressGZ") 	{ $output=$ssh->capture("cd $Dir; gzip ./$File");  }
+	elsif ($Action eq "decompressGZ")	{ $output=$ssh->capture("cd $Dir; gunzip ./$File"); }
+	elsif ($Action eq "compressTGZ")       { $output=$ssh->capture("cd $Dir; tar -czvf /tmp/compressed.tgz ./$File); rm -rf ./*; mv /tmp/compressed.tgz ./compressed.tgz"); }
+	elsif ($Action eq "decompressTGZ" )   { $output=$ssh->capture("cd $Dir; tar -xzvf $File; rm -rf ./$File"); }
 }
 
 #### We need to end with success

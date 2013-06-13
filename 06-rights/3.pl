@@ -36,7 +36,9 @@ our $hint="Copy the given files (cp).
 Remove the given file (rm).
 Create directory (mkdir)
 Change the owners and groups if neccessary (chown, chgrp).
-Change permissions (chmod).";
+Change permissions (chmod).
+Don't forget that the permissions on a files are not enough, 
+if the user hasn't sufficient right on the containing folder.";
 #
 #
 #
@@ -83,7 +85,7 @@ sub break() {
 	setupGroup("admingroup01","","");
         setupUser("craig","","","","","","","");
 	setupUser("allen","","","","","","","");
-	System::CopyFromDesktop("/ALTS/ExerciseScripts/logs/*.trc","/mnt/files/","400","","");	
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/logs/TGZ/ONLY_TRC.tgz","/mnt/files/compressed.tgz","700","","","decompressTGZ");
 	System::CopyFromDesktop("/ALTS/ExerciseScripts/logs/2.bckp.log","/mnt/files/","400","","");
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");

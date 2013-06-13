@@ -81,7 +81,7 @@ sub break() {
 	CreateDirectory("/mnt/files","","","");
 	setupGroup("group01","","");
         setupUser("jesse","","","","","","","");
-	System::CopyFromDesktop("/ALTS/ExerciseScripts/logs/*","/mnt/files/","","","");	
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/logs/TGZ/ALL.tgz","/mnt/files/compressed.tgz","700","","","decompressTGZ");
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 	$verbose and print "Pre complete breaking\n";

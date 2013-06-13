@@ -20,30 +20,21 @@
 #############
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <gruberrichard@gmail.com>';
-our $version="v0.2";
+our $version="v0.9";
 our $topic="06-rights";
 our $problem="4";
-our $description="Level:	Experienced
+our $description="Level:	Beginner
 
-Make sure that the following settings are set up
-- Copy /etc/issue to /tmp as test
-- Copy /etc/crontab to /tmp as test2
-- User tihamer can write /tmp/test
-- The owner of /tmp/test must be tihamer
-- The group of /tmp/test must be group1
-- Create a symlink to /etc/group with the name /tmp/testsymlink
-- Create a directory /tmp/testdir
-- The group of every newly created file in /tmp/testdir is group1
-- Members of group1 can read and write /tmp/test
-- Members of group1 can read, write and execute /tmp/test2
-- SETUID has to be set on /tmp/test2
-- STICKY must not be set on /tmp/test
-- Other can't read, write or execute /tmp/test and /tmp/test2
+- Rename /mnt/files/longman_top_3000_words.txt to TOP3000.txt
+- Nathan can read, write the file
+- Change the owner group to tmpgroup
+- Members if tmpgroup can only read the file
+- Others can read the file
 ";
-our $hint="Copy the given files (cp). Change the owners and groups (chown, chgrp).
-Create the symlink (ln). Create the directory (mkdir). 
-Set the SETGID bit and the group on the directory. (chmod, chgrp)
-Set the SETUID bit on the file (chmod). Modify the others permission (chmod).";
+
+our $hint="Rename the given file (mv, rename).
+Change the owners and groups if neccessary (chown, chgrp).
+Change permissions (chmod).";
 #
 #
 #
@@ -65,7 +56,8 @@ our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
 use UserGroup qw($verbose &userExist &groupExist &getUserAttribute &checkUserAttribute &checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &setupUser &setupGroup &delGroup &delUser &checkUserFilePermission &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes );
-use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy);
+use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy &CreateDirectory &fileEqual );
+use System qw(&CopyFromDesktop);
 ######
 ###Options
 ###
@@ -85,10 +77,10 @@ sub break() {
 
 	&pre();	#Reset server machine
 
-        setupGroup("group1","5678","tihamer");
-        setupUser("tihamer","4999","tihamer","ftp","/home/tihamer","This is Tihamer","/bin/bash","true");
-        Delete("/tmp/test","/tmp/test2","/tmp/testsymlink","/tmp/testdir");
-
+	CreateDirectory("/mnt/files","","","");
+	setupGroup("tmpgroup","","");
+        setupUser("nathan","","","","","","","");
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/logs/TGZ/ALL.tgz","/mnt/files/compressed.tgz","700","","","decompressTGZ");	
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 	$verbose and print "Pre complete breaking\n";
@@ -107,7 +99,7 @@ sub grade() {
 	$exercise_number = 0;
 	$exercise_success = 0;
 
-	my $L=65;
+	my $L=75;
 
 	print "="x$L."=========\n";
 	print "Student:\t$Student\n\n";
@@ -120,45 +112,29 @@ sub grade() {
 	my $USERDATA=decryptFile("$student_file");
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
+	System::CopyFromDesktop("/ALTS/ExerciseScripts/logs/longman_top_3000_words.txt","/tmp/12345.txt","400","","");
 
-	printS("/etc/issue equals /tmp/test","$L");
-	Framework::grade(fileEqual("/etc/issue","/tmp/test"));
+	my $File1="/mnt/files/longman_top_3000_words.txt";
+	my $File2="/mnt/files/TOP3000.txt";
+	my $File3="/tmp/12345.txt";
 
-	printS("/etc/crontab equals /tmp/test2","$L");
-	Framework::grade(fileEqual("/etc/crontab","/tmp/test2"));
+	printS("longman_top_3000_words.txt has been renamed","$L");
+        Framework::grade((!checkType("$File1","regular file")),(fileEqual("$File2","$File3")));
 
-	printS("User tihamer can write /tmp/test","$L");
-	Framework::grade(checkUserFilePermission("tihamer","/tmp/test","*w*"));
+	printS("Nathan can read and write $File2","$L");
+        Framework::grade(checkUserFilePermission("nathan","$File2","rw*") );
 
-	printS("The owner of /tmp/test is tihamer","$L");
-	Framework::grade(checkOwner("/tmp/test","tihamer"));
+	printS("The owner group is tmpgroup","$L");
+	Framework::grade(checkGroup("$File2","tmpgroup"));
 
-	printS("The group of /tmp/test is group1","$L");
-	Framework::grade(checkGroup("/tmp/test","group1"));		
+        printS("Members of tmpgroup can read $File2","$L");
+        Framework::grade(checkGroupFilePermission("tmpgroup","$File2","r**"));
 
-	printS("Symlink from /etc/group to /tmp/testsymlink","$L");
-	Framework::grade(checkSymlink("/etc/group","/tmp/testsymlink"));
+   	printS("Others can read the file","$L");
+        Framework::grade(checkOtherFilePermission("$File2","r**"));
 
-	printS("Directory /tmo/testdir exist","$L");
-	Framework::grade(checkType("/tmp/testdir","directory"));
-
-	printS("The group of every newly created file in this directory is group1","$L");
-	Framework::grade(checkNewlyCreatedFilesAttributes("/tmp/testdir","group1","","","","",""));
-
-	printS("Members of group1 can read and write /tmp/test","$L");
-	Framework::grade(checkGroupFilePermission("group1","/tmp/test","rw*"));
-
-	printS("Members of group1 can read, write and execute /tmp/test2","$L");
-	Framework::grade(checkGroupFilePermission("group1","/tmp/test2","rwx"));
-
-	printS("SETUID set on /tmp/test2","$L");
-	Framework::grade(checkUserFileSpecialPermission("/tmp/test2","SETUID"));
-
-	printS("STICKY not set on /tmp/test","$L");
-	Framework::grade(checkUserFileSpecialPermission("/tmp/test","NO_STICKY"));	
-
-	printS("Other can't read, write or execute both","$L");
-	Framework::grade(checkOtherFilePermission("/tmp/test","---"),checkOtherFilePermission("/tmp/test2","---"));
+ 
+	Disk::Delete("$File3");	
 
 
 	print "\n"."="x$L."=========\n";
