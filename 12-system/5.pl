@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
 our $problem="5";
-our $description="Level:        Experienced
+our $description="LEVEL:        Experienced
 
 There is a script which runs with 50 instances. 
 - The script named 'Replicator.pl'.

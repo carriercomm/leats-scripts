@@ -31,7 +31,8 @@ There are two ext3 partitions on it (/dev/vdb1 and /dev/vdb2).
 - Mount /dev/vdb1 partition as 'rw' under /mnt/mountpoint1.
 - Umount /mnt/mountpoint2";
 
-our $hint="Mount the partition with 'rw' option. (mount)";
+our $hint="Mount the partition with 'rw' option. (mount)
+Umount the given partition (umount)";
 #
 #
 #

@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.2";
 our $topic="06-rights";
 our $problem="6";
-our $description="Level:	Experienced
+our $description="LEVEL:	Experienced
 
 Make sure that the following settings are set up
 - Copy /etc/issue to /tmp as test

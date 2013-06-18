@@ -23,7 +23,7 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="17-package";
 our $problem="7";
-our $description="Level:        Experienced
+our $description="LEVEL:        Experienced
 
 Create a repository named 'Local Repo' with ID [local]
 The baseurl has to be 'http://desktop/', gpgcheck has to be disabled.";
@@ -66,13 +66,13 @@ sub break() {
 	print "Break has been selected.\n";
 	&pre(); #Reseting server machine...
 
-        my $RepoAvailable=`GET http://1.1.1.1/Packages >/dev/null 2>&1; echo \$?`;
-        chomp($RepoAvailable);
-        if ($RepoAvailable ne "0" ) {
-                                        $verbose and print "httpd isn't running..It will be restarted now..\n";
-                                        my $output=`service httpd restart 2>&1`;
-					$verbose and print "$output\n";
-                                    }
+#        my $RepoAvailable=`GET http://1.1.1.1/Packages >/dev/null 2>&1; echo \$?`;
+#        chomp($RepoAvailable);
+#        if ($RepoAvailable ne "0" ) {
+#                                        $verbose and print "httpd isn't running..It will be restarted now..\n";
+#                                        my $output=`service httpd restart 2>&1`;
+#					$verbose and print "$output\n";
+#                                    }
 	
 	$verbose and print "Pre complete breaking\n";	
 	print "Your task: $description\n";

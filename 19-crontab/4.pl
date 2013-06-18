@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="19-crontab";
 our $problem="4";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 - User george has to run '/bin/ls /tmp' on every 10th and 17th february at 16:02.";
 

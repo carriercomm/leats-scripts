@@ -23,7 +23,7 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="17-package";
 our $problem="4";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 Find the package what provides '/bin/traceroute' and remove it.
 
@@ -69,13 +69,13 @@ sub break() {
 	&pre(); #Reseting server machine...
 
 
-        my $RepoAvailable=`GET http://1.1.1.1/repository/Packages >/dev/null 2>&1; echo \$?`;
-        chomp($RepoAvailable);
-        if ($RepoAvailable ne "0" ) {
-                                        $verbose and print "httpd isn't running..It will be restarted now..\n";
-                                        my $output=`service httpd restart 2>&1`;
-                                        $verbose and print "$output\n";
-                                    }
+#        my $RepoAvailable=`GET http://1.1.1.1/repository/Packages >/dev/null 2>&1; echo \$?`;
+#        chomp($RepoAvailable);
+#        if ($RepoAvailable ne "0" ) {
+#                                        $verbose and print "httpd isn't running..It will be restarted now..\n";
+#                                        my $output=`service httpd restart 2>&1`;
+#                                        $verbose and print "$output\n";
+#                                    }
 
 	Packages::CreateRepo("local.repo","local","Local Repo","http://desktop/repository",0,"",1);
 	

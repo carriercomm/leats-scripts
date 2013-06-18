@@ -23,7 +23,7 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="17-package";
 our $problem="1";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 Install midnight commander (mc).
 The rpm package can be found under /root/.
@@ -70,13 +70,13 @@ sub break() {
 	&pre(); #Reseting server machine...
 
 
-        my $RepoAvailable=`GET http://1.1.1.1/repository/Packages >/dev/null 2>&1; echo \$?`;
-        chomp($RepoAvailable);
-        if ($RepoAvailable ne "0" ) {
-                                        $verbose and print "httpd isn't running..It will be restarted now..\n";
-                                        my $output=`service httpd restart 2>&1`;
-                                        $verbose and print "$output\n";
-                                    }
+#        my $RepoAvailable=`GET http://1.1.1.1/repository/Packages >/dev/null 2>&1; echo \$?`;
+#        chomp($RepoAvailable);
+#        if ($RepoAvailable ne "0" ) {
+#                                        $verbose and print "httpd isn't running..It will be restarted now..\n";
+#                                        my $output=`service httpd restart 2>&1`;
+#                                        $verbose and print "$output\n";
+#                                    }
 
 	my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture("rm -rf /etc/yum.repos.d/local.repo; cd /root; wget http://desktop/repository/Packages/mc-4.7.0.2-3.el6.x86_64.rpm");

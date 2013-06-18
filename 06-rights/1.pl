@@ -23,10 +23,10 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="06-rights";
 our $problem="1";
-our $description="Level:	Beginner
+our $description="LEVEL:	Beginner
 
 - Copy /etc/issue to /tmp/issue
-- Change the owner of /tmp/issue tp ftp.
+- Change the owner of /tmp/issue to alice.
 ";
 our $hint="Copy the given files (cp). Change the owners and groups (chown).";
 #

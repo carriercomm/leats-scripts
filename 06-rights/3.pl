@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="06-rights";
 our $problem="3";
-our $description="Level:	Beginner
+our $description="LEVEL:	Beginner
 
 - Copy every file from /mnt/files to /home/craig/
 - Remove /home/craig/2.bckp.log
@@ -37,7 +37,7 @@ Remove the given file (rm).
 Create directory (mkdir)
 Change the owners and groups if neccessary (chown, chgrp).
 Change permissions (chmod).
-Don't forget that the permissions on a files are not enough, 
+Don't forget that the permissions on the files are not enough, 
 if the user hasn't sufficient right on the containing folder.";
 #
 #

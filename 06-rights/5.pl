@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="06-rights";
 our $problem="5";
-our $description="Level:	Beginner
+our $description="LEVEL:	Beginner
 
 - Change the permissions of /mnt/files/GetUID to run as tom user.
 (Even if you run it with another user.)
@@ -71,7 +71,7 @@ GetOptions("help|?|h" => \$help,
 sub break() {
 	print "Break has been selected.\n";
 
-	#&pre();	#Reset server machine
+	&pre();	#Reset server machine
 
 	setupUser("tom","","","","","","","");
 	CreateDirectory("/mnt/files","","","755");

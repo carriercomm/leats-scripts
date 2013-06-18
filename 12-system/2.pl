@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
 our $problem="2";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 There is only a few free memory left on the system.
 Find the process, which use the memory and kill it.";
@@ -76,7 +76,7 @@ sub break() {
         my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture('ln -s /etc/init.d/ALTS /etc/rc3.d/S99ALTS; ln -s /etc/init.d/ALTS /etc/rc5.d/S99ALTS; /etc/init.d/ALTS start >/dev/null 2>&1 &');
 
-	sleep 5;
+	sleep 15;
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
 	$verbose and print "Pre complete breaking\n";	

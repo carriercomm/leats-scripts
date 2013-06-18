@@ -23,9 +23,10 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="18-scripting";
 our $problem="2";
-our $description="Level:        Experienced
+our $description="LEVEL:        Experienced
 
-Print out the number of directories in /etc.
+Create a script named /tmp/testscript:
+- Print out the number of directories in /etc.
 
 (You can use Shell or Perl. It will run as root.)
 (During the check the number of directories can be modified.)

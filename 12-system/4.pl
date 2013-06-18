@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
 our $problem="4";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 There are some zombie processes in the system.
 Find them and kill them!";

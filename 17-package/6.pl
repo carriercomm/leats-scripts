@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="17-package";
 our $problem="6";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 Find the package what provides '/usr/bin/dig' and update it.
 
@@ -76,13 +76,13 @@ sub break() {
 
 #	Packages::InstallPackage("mc-4.6.1a-35.el5.x86_64.rpm","http://1.1.1.1/Packages/");
 
-        my $RepoAvailable=`GET http://1.1.1.1/repository/Packages >/dev/null 2>&1; echo \$?`;
-        chomp($RepoAvailable);
-        if ($RepoAvailable ne "0" ) {
-                                        $verbose and print "httpd isn't running..It will be restarted now..\n";
-                                        my $output=`service httpd restart 2>&1`;
-                                        $verbose and print "$output\n";
-                                    }
+#        my $RepoAvailable=`GET http://1.1.1.1/repository/Packages >/dev/null 2>&1; echo \$?`;
+#        chomp($RepoAvailable);
+#        if ($RepoAvailable ne "0" ) {
+#                                        $verbose and print "httpd isn't running..It will be restarted now..\n";
+#                                        my $output=`service httpd restart 2>&1`;
+#                                        $verbose and print "$output\n";
+#                                    }
 
 	$verbose and print "Pre complete breaking\n";	
 	print "Your task: $description\n";

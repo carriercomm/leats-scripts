@@ -41,8 +41,8 @@ A disk has been attached (/dev/vdb).
 our $hint="Create a partition on the disk. (fdisk)
 Mind that you have to use extended partition, because
 you can define only 4 primary partitions and now you need 5.
-Create a filesystem on it. (mkfs)
-Mount it. (mount)";
+Create a filesystem on them. (mkfs)
+Mount them. (mount)";
 
 #
 #

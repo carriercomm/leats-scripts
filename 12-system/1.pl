@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
 our $problem="1";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 There is a script running named 'MyScript.pl'.
 Find it and kill it.";

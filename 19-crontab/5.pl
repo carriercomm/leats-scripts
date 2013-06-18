@@ -23,9 +23,9 @@ our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="19-crontab";
 our $problem="5";
-our $description="Level:        Experienced
+our $description="LEVEL:        Experienced
 
-- User william's crontab has to be denied
+- User william can't modify his crontab
 - User tihamer has to run \"/bin/echo 'crontab exam test'\" every day at 5:25
 - User rudolf has to run \"whoami\" in every hours 16th minute";
 our $hint="Add william into /etc/cron.deny. 

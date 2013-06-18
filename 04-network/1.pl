@@ -22,7 +22,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="04-network";
 our $problem="1";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 - Define 'mycomputer' into hosts file as 1.1.1.33
 - Switch on the eth1 interface.";
@@ -67,6 +67,8 @@ sub break() {
 	print "Break has been selected.\n";
 	&pre(); #Reset server
 	
+	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
+
 	print "Your task: $description\n";
 }
 

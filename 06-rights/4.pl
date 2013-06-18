@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="06-rights";
 our $problem="4";
-our $description="Level:	Beginner
+our $description="LEVEL:	Beginner
 
 - Rename /mnt/files/longman_top_3000_words.txt to TOP3000.txt
 - Nathan can read, write the file
@@ -34,7 +34,9 @@ our $description="Level:	Beginner
 
 our $hint="Rename the given file (mv, rename).
 Change the owners and groups if neccessary (chown, chgrp).
-Change permissions (chmod).";
+Change permissions (chmod).
+Don't forget that the permissions on the files are not enough,
+if the user hasn't sufficient right on the containing folder.";
 #
 #
 #

@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="04-network";
 our $problem="2";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 - Configure up the eth1 interface as follows:
 
@@ -74,6 +74,8 @@ sub break() {
 	print "Break has been selected.\n";
 	&pre(); #Reset server
 	
+	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
+
 	print "Your task: $description\n";
 }
 

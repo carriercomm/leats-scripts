@@ -31,7 +31,8 @@ A test file was created, which should be left on the filesystem.
 Do not destroy the filesystem and just recreate it.
 It has to be reboot persistent.";
 
-our $hint="With fdisk delete the partition and just recreate it from same starting sector. (fdisk)
+our $hint="Umount the partition. (umount)
+With fdisk delete the partition and just recreate it from same starting sector. (fdisk)
 No metadata will be deleted. Then just use resize2fs.
 Don't forget to put it into /etc/fstab.";
 #

@@ -84,8 +84,8 @@ sub grade() {
 	print "Grade has been selected.\n";
 	print "rebooting server:";
 
-#	Framework::restart;
-#	Framework::timedconTo("120");
+	Framework::restart;
+	Framework::timedconTo("120");
 
 ## Checking if mounted
 

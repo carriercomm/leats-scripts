@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
 our $problem="3";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 The CPU utilisation of a process is too high.
 Find the process and kill it.";

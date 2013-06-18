@@ -22,7 +22,7 @@
 our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.95";
 our $topic="05-user-group";
-our $problem="3";
+our $problem="6";
 our $description='LEVEL: Beginner
 
 - Create a user named "jennifer"

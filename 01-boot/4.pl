@@ -23,7 +23,7 @@ Krisztian Banhidy <krisztian@banhidy.hu>';
 #our $author='Richard Gruber <richard.gruber@it-services.hu>';
 our $version="v0.9";
 our $topic="01-boot";
-our $problem="3";
+our $problem="4";
 our $description="LEVEL:  Experienced
 
 Server isn't booting. Solve the problem persistently.";

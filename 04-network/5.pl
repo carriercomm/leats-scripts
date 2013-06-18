@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.8";
 our $topic="04-network";
 our $problem="5";
-our $description="Level:        Experienced
+our $description="LEVEL:        Experienced
 
 - Setup 2.2.2.1 for nameserver.
 - Define test1machine into hosts file as 1.1.1.1.
@@ -83,6 +83,8 @@ sub break() {
 	&pre(); #Reset server
         my $ssh=Framework::ssh_connect;
         my $output=$ssh->capture(" sed 's/^nameserver 1.1.1.1/#nameserver 1.1.1.1/g' /etc/resolv.conf > /tmp/test123233.txt; cat /tmp/test123233.txt > /etc/resolv.conf; sed 's/^hosts:      files dns/hosts:      dns files/g' /etc/nsswitch.conf > /tmp/test123233.txt;  cat /tmp/test123233.txt > /etc/nsswitch.conf; rm -rf /tmp/test123233.txt; cat /etc/sysconfig/network-scripts/ifcfg-eth0 | grep -v DNS1 > /tmp/1234; cat /tmp/1234 > /etc/sysconfig/network-scripts/ifcfg-eth0");
+
+	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 	
 	print "Your task: $description\n";
 }

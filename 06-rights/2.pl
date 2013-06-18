@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="06-rights";
 our $problem="2";
-our $description="Level:	Beginner
+our $description="LEVEL:	Beginner
 
 - Create directory /mnt/dir1/dir2/dir3/dir4/
 - Move /mnt/files/2.alert_catp.log to /mnt/dir1/dir2/dir3/dir4/

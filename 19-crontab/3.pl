@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="19-crontab";
 our $problem="3";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 - User victoria has to run /bin/date on every monday at 01:05.";
 

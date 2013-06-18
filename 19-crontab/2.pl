@@ -23,7 +23,7 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="19-crontab";
 our $problem="2";
-our $description="Level:        Beginner
+our $description="LEVEL:        Beginner
 
 - User jane has to run \"/usr/bin/du -sh /home\" every day at 07:05";
 

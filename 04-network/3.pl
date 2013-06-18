@@ -22,8 +22,8 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 
 our $version="v0.9";
 our $topic="04-network";
-our $problem="2";
-our $description="Level:        Beginner
+our $problem="3";
+our $description="LEVEL:        Beginner
 
 - Configure up the eth1 interface with DHCP (Dynamic Host Configuration Protocoll).
 - The interface has to be in 'up' status after a reboot.
@@ -78,6 +78,8 @@ echo 'IPADDR=1.1.1.55' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
 echo 'NETMASK=255.255.255.0' >> /etc/sysconfig/network-scripts/ifcfg-eth1;
 service network restart;
 ");
+
+	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
 	print "Your task: $description\n";
 }
