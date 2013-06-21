@@ -34,7 +34,7 @@ our $description='LEVEL: Beginner
 
 our $hint="Create the users and groups and create the users with the given parameters. (useradd, groupadd, usermod; groupmod)
 Change the passwords of the users (passwd)
-Modify the account expiration of the user (chage)";
+Delete the given group (groupdel)";
 #
 #
 #

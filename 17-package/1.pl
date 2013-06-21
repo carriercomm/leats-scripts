@@ -82,6 +82,8 @@ sub break() {
         my $output=$ssh->capture("rm -rf /etc/yum.repos.d/local.repo; cd /root; wget http://desktop/repository/Packages/mc-4.7.0.2-3.el6.x86_64.rpm");
 	$verbose and print "$output\n";
 
+	system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
+
 	$verbose and print "Pre complete breaking\n";	
 	print "Your task: $description\n";
 }

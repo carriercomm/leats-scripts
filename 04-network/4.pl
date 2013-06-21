@@ -89,9 +89,9 @@ sub grade() {
 	my $Student = Framework::getStudent();
 	print "Grade has been selected.\n";
 
-#	print "rebooting server:";
-#	Framework::restart;
-#	Framework::timedconTo("120");
+	print "rebooting server:";
+	Framework::restart;
+	Framework::timedconTo("120");
 
 	system("clear");
 	my $T=$topic; $T =~ s/\s//g;
