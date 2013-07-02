@@ -189,25 +189,47 @@ sub checkService($;$)
 }
 
 #
+# Checking service in a given runlevel
+#
+# 1. Parameter: Service name  E.g. httpd
+# 2. Parameter: Status (default is running) running/stopped
+# 3. Parameter: Runlevel
+#
+#
+sub checkServiceInRunlevel($$$)
+{
+ my $service=$_[0];
+ my $status=$_[1] || "running";
+ my $runlevel=$_[2];
+
+ my $ssh=Framework::ssh_connect;
+ my $output=$ssh->capture("init $runlevel; sleep 5");
+
+
+ my $S=checkService($service,$status);
+
+ return $S;
+
+}
+
+#
 #
 # Checking chkconfig
 #
 # 1. Parameter: service name (E.g. nfs)
 # 2. Parameter: RC0: on/off/* *=don't care
-# 2. Parameter: RC1: on/off/* *=don't care
-# 3. Parameter: RC2: on/off/* *=don't care
-# 4. Parameter: RC3: on/off/* *=don't care
-# 5. Parameter: RC4: on/off/* *=don't care
-# 6. Parameter: RC5: on/off/* *=don't care
-# 7. Parameter: RC6: on/off/* *=don't care
+# 3. Parameter: RC1: on/off/* *=don't care
+# 4. Parameter: RC2: on/off/* *=don't care
+# 5. Parameter: RC3: on/off/* *=don't care
+# 6. Parameter: RC4: on/off/* *=don't care
+# 7. Parameter: RC5: on/off/* *=don't care
+# 8. Parameter: RC6: on/off/* *=don't care
 #
-#
-#  TODO: TEST IT
-sub checkChkconfig($$$$$$$)
+sub checkChkconfig($$$$$$$$)
 { 
 	my ($service,@RC) = @_;
 
-	 print "Parameters: $service,0:$RC[0],1:$RC[1],2:$RC[2],3:$RC[3],4:$RC[4],5:$RC[5],6:$RC[6]";
+#	 print "Parameters: $service,0:$RC[0],1:$RC[1],2:$RC[2],3:$RC[3],4:$RC[4],5:$RC[5],6:$RC[6]";
 
 	 my $ssh=Framework::ssh_connect;
          my $output=$ssh->capture("chkconfig --list $service");

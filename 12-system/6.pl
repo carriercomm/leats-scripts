@@ -22,10 +22,10 @@
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
-our $problem="5";
+our $problem="6";
 our $description="LEVEL:        Beginner
 
-- Nobody can ssh into you server machine.
+- Nobody can ssh into you server machine. 
 
 Solve the issue.";
 

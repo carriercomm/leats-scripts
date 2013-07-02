@@ -22,15 +22,12 @@
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
-our $problem="5";
-our $description="LEVEL:        Experienced
+our $problem="7";
+our $description="LEVEL:        Beginner
 
-- Only root can ssh into you server machine.
-- The ssh is impossible to all non-root users.
+- Httpd must run automatically in runlevel 5, but in runlevel 3 it should not run!";
 
-Solve the issue.";
-
-our $hint="If the /etc/nologin file exist, then only root can login via ssh. Delete the file.";
+our $hint="Set up chkconfig for httpd. (chkconfig)";
 #
 #
 #
@@ -50,7 +47,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use System qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop &checkZombieProcesses &checkService &checkSSHConnection);
+use System qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop &checkZombieProcesses &checkService &checkChkconfig);
 use UserGroup qw(&setupUser);
 ######
 ###Options
@@ -68,13 +65,12 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-#	&pre(); #Reseting Server machine
+	&pre(); #Reseting Server machine
 
         $verbose and print "Running pre section\n";
 
-	setupUser("morgan","","","","","","","");
 	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture('mkdir -p /home/morgan/.ssh/; chown morgan:morgan /home/morgan/.ssh/; cp -f /root/.ssh/authorized_keys /home/morgan/.ssh/authorized_keys; touch /etc/nologin');
+        my $output=$ssh->capture('yum -y install httpd; chkconfig --level 3 httpd on; service httpd start');
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -112,8 +108,14 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-	printS("morgan can ssh into server machine:","$L");
-	Framework::grade(System::checkSSHConnection("morgan","pass123","1.1.1.2"));
+	printS("Checking chkconfig of httpd:","$L");
+	Framework::grade(System::checkChkconfig("httpd","*","*","*","off","*","on","*"));
+
+	printS("httpd is running in init 5:","$L");
+	Framework::grade(System::checkServiceInRunlevel("httpd","running","5"));
+
+	printS("httpd is stopped in init 3:","$L");
+        Framework::grade(System::checkServiceInRunlevel("httpd","stopped","3"));
 
 	print "\n"."="x$L."=========\n";
 	print "\n\tNumber of exercises: \t$exercise_number\n";
