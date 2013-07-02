@@ -488,7 +488,7 @@ print "
    <td class=\"Button_Description\">REINSTALL</td>
 </tr>
 <tr align=\"center\">
-	<td style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"http://localhost:8080/results/rigruber_results.tgz\"></a></td>
+	<td style=\"text-align: center\"><a id=\"btn_dload\" class=\"btn\" href=\"http://localhost:8080/results/${USER}_results.tgz\"></a></td>
 	<td>&nbsp</td>
 	<td style=\"text-align: center\"><a id=\"btn_break\" class=\"btn\" href=\"?RESET\"></a></td>
 	<td style=\"text-align: center\"><a id=\"btn_reinstall\" class=\"btn\" href=\"?REINSTALL\"></a></td>

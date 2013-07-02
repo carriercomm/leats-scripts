@@ -18,6 +18,7 @@ use strict;
 use warnings;
 use Sys::Virt;
 use Term::ANSIColor;
+use Net::OpenSSH;
 use XML::Simple;
 use Data::Dumper;
 use Switch;
@@ -27,7 +28,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Packages::ISA         = qw( Exporter );
-    	@Packages::EXPORT      = qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop &checkZombieProcesses );
+    	@Packages::EXPORT      = qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop &checkZombieProcesses &checkService);
     	@Packages::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name );
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 	#close(STDERR);
@@ -157,6 +158,75 @@ sub CopyFromDesktop($$$$$;$)
 	elsif ($Action eq "compressTGZ")       { $output=$ssh->capture("cd $Dir; tar -czvf /tmp/compressed.tgz ./$File); rm -rf ./*; mv /tmp/compressed.tgz ./compressed.tgz"); }
 	elsif ($Action eq "decompressTGZ" )   { $output=$ssh->capture("cd $Dir; tar -xzvf $File; rm -rf ./$File"); }
 }
+
+
+#
+# Checking service status
+#
+# 1. Parameter: service name
+# 2. Parameter: service status; default: running
+#
+#
+# E.g.
+#      checkService("nfs","running");
+#      checkService("nfs","stopped");
+sub checkService($;$)
+{
+	my $service=$_[0];
+	my $status=$_[1] || "running";
+
+	my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("service $service status >/dev/null 2>&1; echo \$?");
+	chomp($output);
+
+	#print "output= $output";
+	#print "status= $status";
+
+	if (($output eq "0") && ($status eq "running") )  { return 0;}
+	if (($output ne "0") && ($status eq "stopped") )  { return 0;}
+
+	return 1;
+}
+
+#
+#
+# Checking chkconfig
+#
+# 1. Parameter: service name (E.g. nfs)
+# 2. Parameter: RC0: on/off/* *=don't care
+# 2. Parameter: RC1: on/off/* *=don't care
+# 3. Parameter: RC2: on/off/* *=don't care
+# 4. Parameter: RC3: on/off/* *=don't care
+# 5. Parameter: RC4: on/off/* *=don't care
+# 6. Parameter: RC5: on/off/* *=don't care
+# 7. Parameter: RC6: on/off/* *=don't care
+#
+#
+#  TODO: TEST IT
+sub checkChkconfig($$$$$$$)
+{ 
+	my ($service,@RC) = @_;
+
+	 print "Parameters: $service,0:$RC[0],1:$RC[1],2:$RC[2],3:$RC[3],4:$RC[4],5:$RC[5],6:$RC[6]";
+
+	 my $ssh=Framework::ssh_connect;
+         my $output=$ssh->capture("chkconfig --list $service");
+	
+	if (my @A = $output =~ m/$service\s+0:(\S+)\s+1:(\S+)\s+2:(\S+)\s+3:(\S+)\s+4:(\S+)\s+5:(\S+)\s+6:(\S+)\s+/) {  
+		my $i;
+		for($i=0;$i<7;$i++)
+		{
+			if ((($RC[$i] eq "on") && ("$A[$i]" ne "on")) || ( ($RC[$i] eq "off") && ("$A[$i]" ne "off")  ))  { return 1; }
+		}
+	}
+	else
+	{
+		return 1;
+	}
+return 0;
+}
+
+
 
 #### We need to end with success
 1

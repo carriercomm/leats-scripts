@@ -8,8 +8,7 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-#my $Command="kill `ps -ef | grep Replicator.pl | grep -v grep | awk '{ print \$2 }'`";
-my $Command="killall Replicator.pl";
+my $Command="service crond stop; service saslauthd start";
 
 
 sub ssh_connect() {

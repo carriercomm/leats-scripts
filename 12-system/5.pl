@@ -23,20 +23,12 @@ our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.95";
 our $topic="12-system";
 our $problem="5";
-our $description="LEVEL:        Experienced
+our $description="LEVEL:        Beginner
 
-There is a script which runs with 50 instances. 
-- The script named 'Replicator.pl'.
-- If you kill one instance the others will remake it. 
+-Stop the crond service.
+-Start the saslauthd service";
 
-Stop it!";
-
-our $hint="Find the PIDs of the processes (ps, grep, awk)
-Give the PIDs to kill (xargs)
-
-OR
-
-kill the processes at once (killall)";
+our $hint="Start and stop the given services. (service)";
 #
 #
 #
@@ -56,7 +48,7 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use System qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop );
+use System qw( &checkProcessIsRunning &checkProcessIsntRunning &CopyFromDesktop &checkZombieProcesses &checkService );
 ######
 ###Options
 ###
@@ -73,14 +65,9 @@ GetOptions("help|?|h" => \$help,
 #
 sub break() {
 	print "Break has been selected.\n";
-	#&pre(); #Reseting Server machine
+	&pre(); #Reseting Server machine
 
         $verbose and print "Running pre section\n";
-
-	System::CopyFromDesktop("/ALTS/ExerciseScripts/Replicator.pl","/usr/bin/Replicator.pl","755","root","root");
-	System::CopyFromDesktop("/ALTS/ExerciseScripts/Replicator-service.sh","/etc/init.d/ALTS","755","root","root");
-	my $ssh=Framework::ssh_connect;
-	my $output=$ssh->capture('ln -s /etc/init.d/ALTS /etc/rc3.d/S99ALTS; ln -s /etc/init.d/ALTS /etc/rc5.d/S99ALTS; /etc/init.d/ALTS start >/dev/null 2>&1 &');
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 
@@ -118,8 +105,11 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-	printS("Check 'Replicator.pl' isn't running anymore","$L");
-	Framework::grade(System::checkProcessIsntRunning("Replicator.pl"));
+	printS("crond service is stopped:","$L");
+	Framework::grade(System::checkService("crond","stopped"));
+
+        printS("saslauthd service is running:","$L");
+        Framework::grade(System::checkService("saslauthd","running"));	
 
 
 	print "\n"."="x$L."=========\n";
