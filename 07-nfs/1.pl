@@ -25,9 +25,10 @@ our $topic="07-nfs";
 our $problem="1";
 our $description="LEVEL:	Beginner
 
-- XYZ
+- Share your /tmp/shareMe directory via NFS.
+(It has to reachable from the desktop machine.)
 ";
-our $hint="";
+our $hint="Set up youe share in /etc/exports and restart the nfs service. (service)";
 #
 #
 #
@@ -48,7 +49,8 @@ use POSIX qw/strftime/;
 our $name=basename($0);
 use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
-use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy);
+use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy &checkNFS &CreateDirectory);
+use System qw(&checkService);
 ######
 ###Options
 ###
@@ -66,9 +68,12 @@ GetOptions("help|?|h" => \$help,
 sub break() {
 	print "Break has been selected.\n";
 
-	&pre();	#Reset server machine
+#	&pre();	#Reset server machine
 
-        setupUser("alice","5382","","","/home/alice","Alice","/bin/bash","");
+	CreateDirectory("/tmp/shareMe","","","755");
+
+	my $ssh=Framework::ssh_connect;
+        my $output=$ssh->capture("yum -y install nfs-utils; service rpcbind start;");
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 	$verbose and print "Pre complete breaking\n";
@@ -101,12 +106,12 @@ sub grade() {
 	cryptText2File("<ROOT>$USERDATA<DATE>$now</DATE><TOPIC>$topic</TOPIC><PROBLEM>$problem</PROBLEM><DESCRIPTION>$description</DESCRIPTION>","$result_file");
 
 
-	printS("/etc/issue equals /tmp/issue","$L");
-	Framework::grade(fileEqual("/etc/issue","/tmp/issue"));
+	printS("The nfs service is running:","$L");
+        Framework::grade(System::checkService("nfs","running"));
 
-	printS("The owner of /tmp/issue is alice","$L");
-	Framework::grade(checkOwner("/tmp/issue","alice"));
 
+	printS("1.1.1.2:/tmp/shareMe is available","$L");
+	Framework::grade(checkNFS("1.1.1.2","/tmp/shareMe","desktop"));
 
 
 	print "\n"."="x$L."=========\n";

@@ -28,7 +28,7 @@ BEGIN {
 	use Framework qw($verbose $topic $author $version $hint $problem $name);
 
     	@Disk::ISA         = qw(Exporter);
-    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk &Exist &CreateFile &CreateDirectory &checkPartitionMaxUsedSpace);
+    	@Disk::EXPORT      = qw( &lvm_free &lv_count &base &lv_remove &lv_create &xml_parse &checkMount &checkFilesystemType &checkPartitionSize &checkPartitionSize &getFilerMountedFrom &getFilesystemParameter &checkFilesystemParameter &checkMountedWithUUID &checkMountedWithLABEL &fileEqual &checkMountOptions &getInfo &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo &Copy &Move &checkSwapSize &checkVGExist &getVGData &checkVGData &checkLVExist &getLVData &checkLVData &CreatePartition &RecreateVDisk &Exist &CreateFile &CreateDirectory &checkPartitionMaxUsedSpace &checkNFS);
     	@Disk::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name);
 	## We need to colse STDERR since Linux::LVM prints information to STDERR that is not relevant.
 	close(STDERR);
@@ -616,14 +616,17 @@ sub checkMount($$)
 
 	my $ssh=Framework::ssh_connect;
 	my $output=$ssh->capture("df -P -B M $mount_to | tail -1");
+
 	my @A = $output =~ m/(\S+)\s+\d+M\s+\d+M\s+\d+M\s+\S+\s+(\S+)/;
 
 	my $mounted_from = extendWithSlash($A[0]);
 	my $mounted_to = extendWithSlash($A[1]);
 
+
 	if (($mounted_from =~ m/$mount_from/) && ($mounted_to eq $mount_to)) { return 0; }
 	else { return 1; }
 }
+
 
 #
 #
@@ -1123,6 +1126,47 @@ if ((defined $A[0]) and ($A[0]<$MaxUsed)) { return 0; }
 
 return 1;
 
+}
+
+
+#
+# Check NFS Settings
+#
+# 1. Parameter Qtree E.g. 1.1.1.2
+# 2. Parameter Qtree E.g. /sharedDriectory
+# 3. Parameter Destination: desktop|server
+#
+sub checkNFS($$;$)
+{
+	my $Qtree_Server=$_[0];	
+	my $Qtree_Directory=$_[1];
+	my $Destination=$_[2] || "desktop";
+
+	if ($Destination eq "desktop")
+	{
+		my $ret=system("showmount -e $Qtree_Server >/dev/null 2>&1"); $ret = $ret>>8;
+		if ($ret ne "0") { 
+					$verbose && print "\n$Qtree_Server showmount failed! Probably the nfs service isn't running..";
+					return 1; 
+				} 
+
+		my $mount_from="$Qtree_Server:$Qtree_Directory";
+
+		my $Destination="/tmp/abc12345fgh/";
+		$ret=system("mkdir -p $Destination  >/dev/null 2>&1; mount $mount_from $Destination  >/dev/null 2>&1"); $ret = $ret>>8;
+
+		my $output = `df -P -B M $Destination | tail -1`;
+		my @A = $output =~ m/(\S+)\s+\d+M\s+\d+M\s+\d+M\s+\S+\s+(\S+)/;
+		my $mounted_from = extendWithSlash($A[0]);
+		my $mounted_to = extendWithSlash($A[1]);
+
+		system("umount $Destination  >/dev/null 2>&1; rmdir $Destination >/dev/null 2>&1");
+
+		if (($mounted_from =~ m/$mount_from/) && ($mounted_to eq $Destination)) { return 0; }
+		else { return 1; }
+	}
+	
+return 1;
 }
 
 #### We need to end with success
