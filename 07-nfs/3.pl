@@ -22,14 +22,16 @@
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="07-nfs";
-our $problem="1";
+our $problem="3";
 our $description="LEVEL:	Beginner
 
 - Share your /tmp/shareMe directory via NFS.
+- Remotely it should not be writable.
 (It has to be reachable from the desktop machine.)
 ";
 our $hint="Set up youe share in /etc/exports and reload the nfs share list. (exportfs)
-Do not forget to start the nfs service";
+Do not forget to start the nfs service.
+Mind that read-only option must be set.";
 #
 #
 #
@@ -111,8 +113,11 @@ sub grade() {
         Framework::grade(System::checkService("nfs","running"));
 
 
-	printS("1.1.1.2:/tmp/shareMe is available","$L");
+	printS("1.1.1.2:/tmp/shareMe is available:","$L");
 	Framework::grade(checkNFS("1.1.1.2","/tmp/shareMe","desktop"));
+
+	printS("1.1.1.2:/tmp/shareMe is read-only:","$L");
+        Framework::grade(checkNFS("1.1.1.2","/tmp/shareMe","desktop","read-only"));
 
 
 	print "\n"."="x$L."=========\n";

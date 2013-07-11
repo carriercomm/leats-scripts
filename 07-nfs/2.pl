@@ -22,14 +22,16 @@
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="07-nfs";
-our $problem="1";
+our $problem="2";
 our $description="LEVEL:	Beginner
 
 - Share your /tmp/shareMe directory via NFS.
+- The root (of Desktop) has to have all rights on it.
 (It has to be reachable from the desktop machine.)
 ";
 our $hint="Set up youe share in /etc/exports and reload the nfs share list. (exportfs)
-Do not forget to start the nfs service";
+Do not forget to start the nfs service.
+Mind that the no_root_squash option must be set.";
 #
 #
 #
@@ -113,6 +115,9 @@ sub grade() {
 
 	printS("1.1.1.2:/tmp/shareMe is available","$L");
 	Framework::grade(checkNFS("1.1.1.2","/tmp/shareMe","desktop"));
+
+	printS("Check root can work as root on it","$L");
+        Framework::grade(checkNFS("1.1.1.2","/tmp/shareMe","desktop","no_root_squash"));
 
 
 	print "\n"."="x$L."=========\n";

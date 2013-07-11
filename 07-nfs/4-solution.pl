@@ -8,7 +8,7 @@ use Net::OpenSSH;
 use MIME::Base64;
 
 
-my $Command="echo '/tmp/shareMe    *(rw,no_root_squash)' > /etc/exports; exportfs -va; service nfs start";
+my $Command="chmod 777 /tmp/shareMe; echo '/tmp/shareMe    *(rw,root_squash)' > /etc/exports; exportfs -va; service nfs start";
 
 
 sub ssh_connect() {

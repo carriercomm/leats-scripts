@@ -22,14 +22,18 @@
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
 our $topic="07-nfs";
-our $problem="1";
+our $problem="4";
 our $description="LEVEL:	Beginner
 
 - Share your /tmp/shareMe directory via NFS.
+- root (on Desktop) should have only the rights of nfsnobody on it.
+- It has to be writable by nfsnobody user.
 (It has to be reachable from the desktop machine.)
 ";
 our $hint="Set up youe share in /etc/exports and reload the nfs share list. (exportfs)
-Do not forget to start the nfs service";
+Do not forget to start the nfs service
+Mind that root_squash option must be set.
+Check the local directory permissions on server machine.";
 #
 #
 #
@@ -110,9 +114,11 @@ sub grade() {
 	printS("The nfs service is running:","$L");
         Framework::grade(System::checkService("nfs","running"));
 
-
-	printS("1.1.1.2:/tmp/shareMe is available","$L");
+	printS("1.1.1.2:/tmp/shareMe is available:","$L");
 	Framework::grade(checkNFS("1.1.1.2","/tmp/shareMe","desktop"));
+
+	printS("root can write 1.1.1.2:/tmp/shareMe as 'nfsnobody':","$L");
+        Framework::grade(checkNFS("1.1.1.2","/tmp/shareMe","desktop","root_squash"));
 
 
 	print "\n"."="x$L."=========\n";

@@ -864,6 +864,29 @@ sub getInfo($$)
 	return $output;
 }
 
+
+sub getDesktopInfo($$)
+{
+        my $File=$_[0];
+        my $parameter=uc($_[1]);
+
+        my $output;
+        switch($parameter) {
+                case "OWNER"  {
+                        $output=`stat -c %U $File`; chomp($output);
+                }
+                case "GROUP"  {
+                        $output=`stat -c %G $File`; chomp($output);
+                }
+                case "TYPE"  {
+                        $output=`stat -c %F $File`; chomp($output);
+                }
+
+        }
+
+        return $output;
+}
+
 #
 #
 # Checks the owner of the given file or directory
@@ -880,6 +903,26 @@ sub checkOwner($$)
 	else {return 1; }
 }
 
+
+#
+#
+# Checks the owner of the given file or directory on the Desktop machine
+#
+# 1. Parameter: File or directory
+# 2. Parameter: Owner
+#
+sub checkDesktopOwner($$)
+{
+        my $File=$_[0];
+        my $Owner=$_[1];
+
+#	print "\n*$Owner*|*".getDesktopInfo("$File","OWNER")."*\n";
+
+        if ($Owner eq getDesktopInfo("$File","OWNER")) { return 0; }
+        else {return 1; }
+}
+
+
 #
 #
 # Checks the owner of the given file or directory
@@ -895,6 +938,24 @@ sub checkGroup($$)
 
 	if ($Group eq getInfo("$File","GROUP")) { return 0; }
 	else {return 1; }
+
+}
+
+#
+#
+# Checks the owner of the given file or directory on the Desktop machine
+#
+# 1. Parameter: File or directory
+# 2. Parameter: Owner
+#
+#
+sub checkDesktopGroup($$)
+{
+        my $File=$_[0];
+        my $Group=$_[1];
+
+        if ($Group eq getDesktopInfo("$File","GROUP")) { return 0; }
+        else {return 1; }
 
 }
 
@@ -916,12 +977,28 @@ sub checkType($$)
 }
 
 #
+# Checks the type on Desktop machine
+#
+# 1. Parameter: File, directory or symlink
+# 2. Parameter: regular file/directory/symbolic link
+#
+sub checkDesktopType($$)
+{
+        my $File=$_[0];
+        my $Type=$_[1];
+
+        if ($Type eq getDesktopInfo("$File","TYPE")) { return 0; }
+        else {return 1; }
+}
+
+
+#
 # Checks symlink
 #
 # 1. Parameter: Source
 # 2. Parameter: Symlinks path
 #
-#  
+# 
 sub checkSymlink($$)
 {
 	my $File=$_[0];
@@ -1135,16 +1212,19 @@ return 1;
 # 1. Parameter Qtree E.g. 1.1.1.2
 # 2. Parameter Qtree E.g. /sharedDriectory
 # 3. Parameter Destination: desktop|server
+# 4. Parameter Other special check:   no_root_squash
+# 				      root_squash
 #
-sub checkNFS($$;$)
+sub checkNFS($$$;$)
 {
 	my $Qtree_Server=$_[0];	
 	my $Qtree_Directory=$_[1];
 	my $Destination=$_[2] || "desktop";
+	my $Special=$_[3] || "";
 
 	if ($Destination eq "desktop")
 	{
-		my $ret=system("showmount -e $Qtree_Server >/dev/null 2>&1"); $ret = $ret>>8;
+		my $ret=system("umount $Qtree_Server:$Qtree_Directory >/dev/null 2>&1; showmount -e $Qtree_Server >/dev/null 2>&1"); $ret = $ret>>8;
 		if ($ret ne "0") { 
 					$verbose && print "\n$Qtree_Server showmount failed! Probably the nfs service isn't running..";
 					return 1; 
@@ -1154,16 +1234,37 @@ sub checkNFS($$;$)
 
 		my $Destination="/tmp/abc12345fgh/";
 		$ret=system("mkdir -p $Destination  >/dev/null 2>&1; mount $mount_from $Destination  >/dev/null 2>&1"); $ret = $ret>>8;
-
+		if ($ret>0) {return 1;}
 		my $output = `df -P -B M $Destination | tail -1`;
 		my @A = $output =~ m/(\S+)\s+\d+M\s+\d+M\s+\d+M\s+\S+\s+(\S+)/;
 		my $mounted_from = extendWithSlash($A[0]);
 		my $mounted_to = extendWithSlash($A[1]);
 
-		system("umount $Destination  >/dev/null 2>&1; rmdir $Destination >/dev/null 2>&1");
+		my $R=1;
+		if (($mounted_from =~ m/$mount_from/) && ($mounted_to eq $Destination)) { 
 
-		if (($mounted_from =~ m/$mount_from/) && ($mounted_to eq $Destination)) { return 0; }
-		else { return 1; }
+			my $TestFile="shsaljhasld873iue8273e.txt";
+			if ($Special eq "") { $R=0; }
+
+			elsif ($Special eq "read-only") {   
+								$ret=system("touch $Destination/$TestFile >/dev/null 2>&1"); $ret = $ret>>8;
+								if ($ret!=0) { $R=0; }
+								system("rm -f $Destination/$TestFile >/dev/null 2>&1");
+							}
+			elsif ($Special eq "no_root_squash") {  
+								$ret=system("touch $Destination/$TestFile >/dev/null 2>&1"); $ret = $ret>>8;
+								$R=checkDesktopOwner("$Destination/$TestFile","root");
+								system("rm -f $Destination/$TestFile >/dev/null 2>&1");
+							     }
+			elsif ($Special eq "root_squash") {								
+   								$ret=system("touch $Destination/$TestFile >/dev/null 2>&1"); $ret = $ret>>8;
+                                                                $R=checkDesktopOwner("$Destination/$TestFile","nfsnobody");
+                                                                system("rm -f $Destination/$TestFile >/dev/null 2>&1");
+							  }
+			
+		}
+		system("umount $Destination  >/dev/null 2>&1; rmdir $Destination >/dev/null 2>&1");
+		return $R;
 	}
 	
 return 1;
