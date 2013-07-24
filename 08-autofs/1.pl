@@ -21,11 +21,16 @@
 #our $author='Krisztian Banhidy <krisztian@banhidy.hu>';
 our $author='Richard Gruber <gruberrichard@gmail.com>';
 our $version="v0.9";
-our $topic="07-nfs";
+our $topic="08-autofs";
 our $problem="1";
 our $description="LEVEL:	Beginner
 
-- Share your /tmp/shareMe directory via NFS.
+- Configure autofs on your server machine.
+
+User for testing your settings:
+User: 		ldapuser1
+Password: 	ldapuser1
+
 (It has to be reachable from the desktop machine.)
 ";
 our $hint="Set up youe share in /etc/exports and reload the nfs share list. (exportfs)
@@ -52,6 +57,7 @@ use lib '/scripts/common_perl/';
 use Framework qw($verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success $student_file $result_file &printS &cryptText2File &decryptFile &EncryptResultFile $description &showdescription);
 use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &Move &Copy &checkNFS &CreateDirectory);
 use System qw(&checkService);
+use UserGroup qw(&createLDAPUser);
 ######
 ###Options
 ###
@@ -69,12 +75,14 @@ GetOptions("help|?|h" => \$help,
 sub break() {
 	print "Break has been selected.\n";
 
-	&pre();	#Reset server machine
+#	&pre();	#Reset server machine
 
-	CreateDirectory("/tmp/shareMe","","","755");
+#	CreateDirectory("/tmp/shareMe","","","755");
 
-	my $ssh=Framework::ssh_connect;
-        my $output=$ssh->capture("yum -y install nfs-utils; service rpcbind start;");
+#	my $ssh=Framework::ssh_connect;
+#        my $output=$ssh->capture("yum -y install nfs-utils; service rpcbind start;");
+
+	UserGroup::createLDAPUser("1.1.1.1");
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 	$verbose and print "Pre complete breaking\n";
@@ -109,7 +117,6 @@ sub grade() {
 
 	printS("The nfs service is running:","$L");
         Framework::grade(System::checkService("nfs","running"));
-
 
 	printS("1.1.1.2:/tmp/shareMe is available","$L");
 	Framework::grade(checkNFS("1.1.1.2","/tmp/shareMe","desktop"));

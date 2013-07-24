@@ -20,13 +20,14 @@ use Term::ANSIColor;
 use Data::Dumper;
 use POSIX qw(ceil);
 use Switch;
+use Net::LDAPS;
 use Time::Local;
 
 BEGIN {
 	use Exporter;
 
 	@UserGroup::ISA         = qw(Exporter);
-	@UserGroup::EXPORT      = qw( &userExist &groupExist &getUserAttribute &checkUserAttribute &checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &setupUser &setupGroup &delGroup &delUser &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes &checkUserCrontabDenied &checkUserCrontab &checkUserUnlocked );
+	@UserGroup::EXPORT      = qw( &userExist &groupExist &getUserAttribute &checkUserAttribute &checkUserPassword &checkUserGroupMembership &checkUserSecondaryGroupMembership &checkUserPrimaryGroup &checkGroupNameAndID &checkUserChageAttribute &checkUserLocked &setupUser &setupGroup &delGroup &delUser &checkUserFilePermission &checkUserHasNoShellAccess &checkGroupFilePermission &checkOtherFilePermission &checkUserFileSpecialPermission &checkNewlyCreatedFilesAttributes &checkUserCrontabDenied &checkUserCrontab &checkUserUnlocked &createLDAPUser );
 	@UserGroup::EXPORT_OK   = qw( $verbose $topic $author $version $hint $problem $name $exercise_number $exercise_success);
 	
 	use Disk qw(&fileEqual &checkOwner &checkGroup &checkType &checkSymlink &Delete &getInfo);
@@ -893,6 +894,108 @@ sub checkNewlyCreatedFilesAttributes($$$$$$$)
 	$ssh->capture("rm -rf $Directory/$FileName");
 
 	return 0;
+}
+
+sub createLDAPUser($)
+{
+my $server=$_[0];
+
+my $R=checkLDAPUserExist($server,"ldapuser2");
+
+#$R=getLDAPUserAttribute("$server","ldapuser2","homeDirectory");
+
+print "\n\n\n#### RETURN: $R\n\n\n\n\n";
+
+#$R=getLDAPUserAttribute("$server","ldadfpuser2","homeDirectorffy");
+
+print "\n\n\n#### RETURN: $R\n\n\n\n\n";
+
+
+}
+
+
+#
+#  Check if LDAP User exist
+#
+#  1. Parameter:  server (E.g. 1.1.1.1), default: 1.1.1.1
+#  2. Parameter:  username
+#
+#
+sub checkLDAPUserExist($$)
+{
+my $server=$_[0] || "localhost";
+my $user=$_[1];
+
+
+#dn: uid=ldapuser3,ou=people,dc=pelda,dc=hu
+#objectClass: top
+#objectClass: account
+#objectClass: posixAccount
+#objectClass: shadowAccount
+#uid: ldapuser3
+#cn: ldapuser3
+#uidNumber: 553
+#gidNumber: 500
+#gecos: ldapuser3
+#loginShell: /bin/bash
+#homeDirectory: /home/ldapuser3
+#shadowExpire: -1
+#shadowFlag: 0
+#shadowWarning: 7
+#shadowMin: 0
+#shadowMax: 99999
+#shadowLastChange: 15825
+#
+
+	my $ldap = Net::LDAP->new( "$server") or die "$@";
+     	my $mesg = $ldap->bind( 'cn=admin,dn=pelda,dn=hu', password => '@lts33' );					
+
+	$mesg = $ldap->search (    base   => "ou=people,dc=pelda,dc=hu",				  
+				   filter => "uid=$user",
+                          	   attrs  => [ 'cn' ],
+	                       );
+
+	if ( scalar($mesg->entries) == 1 ) {  $mesg = $ldap->unbind; return 0; }
+	$mesg = $ldap->unbind;
+	return 1;
+}
+
+#
+# Get LDAP User Attribute
+#
+# 1. Parameter:  server (E.g. 1.1.1.1), default: 1.1.1.1
+# 2. Parameter:  username
+# 3. Parameter: attribute (E.g. uidNumber)
+#
+#
+sub getLDAPUserAttribute($$$)
+{
+
+my $server=$_[0] || "localhost";
+my $user=$_[1];
+my $attribute=$_[2];
+
+
+my $ldap = Net::LDAP->new( "$server") or die "$@";
+my $mesg = $ldap->bind( 'cn=admin,dn=pelda,dn=hu', password => '@lts33' );
+
+$mesg = $ldap->search (    base   => "ou=people,dc=pelda,dc=hu",
+		  	   filter => "uid=$user",
+ 	  		   attrs  => [ "$attribute" ],
+		      );
+
+my $ReturnValue;
+
+foreach my $entry ($mesg->entries) {
+
+#$entry->dump;
+	$ReturnValue = $entry->get_value("$attribute");
+}
+
+
+$mesg = $ldap->unbind;
+return $ReturnValue;
+
 }
 
 #We need to end with success
