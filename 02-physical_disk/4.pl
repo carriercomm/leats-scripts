@@ -32,9 +32,9 @@ A disk has been attached (/dev/vdb).
 - Mount it under /tmp/test2
 - Create a 30M large ext3 partition on it. (vdb3)
 - Mount it under /tmp/test3
-- Create a 40M large ext4 partition on it. (vdb4)
+- Create a 40M large ext4 partition on it. (vdb5)
 - Mount it under /tmp/test4
-- Create a 50M large ext4 partition on it. (vdb5)
+- Create a 50M large ext4 partition on it. (vdb6)
 - Mount it under /tmp/test5
 ";
 

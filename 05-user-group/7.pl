@@ -27,7 +27,7 @@ our $description='LEVEL:	Experienced
 
 - Create a user named nicole with /home/nicole home directory.
 - Create a user named robin.
-- Set the password of Nicole to "pass1234".
+- Set the password of nicole to "pass1234".
 - Robin shall not have access to any shell.';
 our $hint="Create the users with the given parameters. (useradd, usermod)
 Change the passwords of the user (passwd)

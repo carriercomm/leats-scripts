@@ -82,7 +82,7 @@ sub break() {
 #	my $ssh=Framework::ssh_connect;
 #        my $output=$ssh->capture("yum -y install nfs-utils; service rpcbind start;");
 
-	UserGroup::createLDAPUser("1.1.1.1");
+	UserGroup::createLDAPUser("1.1.1.1","ldapuserX","7744","1000","","");
 
         system("cp -p /ALTS/EXERCISES/$topic/$problem-grade /var/www/cgi-bin/Grade 1>/dev/null 2>&1; chmod 6555 /var/www/cgi-bin/Grade");
 	$verbose and print "Pre complete breaking\n";

@@ -896,19 +896,37 @@ sub checkNewlyCreatedFilesAttributes($$$$$$$)
 	return 0;
 }
 
-sub createLDAPUser($)
+
+
+#
+# Create an LDAP User
+#
+# 1. Parameter:  LDAP server 	E.g. 1.1.1.1, default: lcoalhost
+# 2. Parameter:  Username	E.g ldapuser1 
+# 3. Parameter:  UserID		E.g. 5672
+# 4. Parameter:	 GroupID	E.g. 1000
+# 5. Parameter:	 Default Shell	E.g. /bin/bash
+# 6. Parameter:	 Home dirextory E.g. /home/username, default /home/LDAP/{Username}
+#
+#
+sub createLDAPUser($$$$$$)
 {
-my $server=$_[0];
+my $server=$_[0] || "localhost";
+my $user=$_[1];
+my $UID=$_[2];
+my $GID=$_[3];
+my $SHELL=$_[4] || "/bin/bash";
+my $HOME=$_[5] || "/home/LDAP/$user";
 
-my $R=checkLDAPUserExist($server,"ldapuser2");
 
-#$R=getLDAPUserAttribute("$server","ldapuser2","homeDirectory");
+my $R;
 
-print "\n\n\n#### RETURN: $R\n\n\n\n\n";
+print "Create user $server $user $UID $GID $SHELL $HOME ...\n";
 
-#$R=getLDAPUserAttribute("$server","ldadfpuser2","homeDirectorffy");
 
-print "\n\n\n#### RETURN: $R\n\n\n\n\n";
+
+#$R=checkLDAPUserAttribute($server,"ldapuser2","loginShell","/bin/bash");
+#print "\n\n\n#### RETURN: $R\n\n\n\n\n";
 
 
 }
@@ -995,6 +1013,19 @@ foreach my $entry ($mesg->entries) {
 
 $mesg = $ldap->unbind;
 return $ReturnValue;
+
+}
+
+sub checkLDAPUserAttribute($$$$)
+{
+
+my $server=$_[0] || "localhost";
+my $user=$_[1];
+my $attribute=$_[2];
+my $value=$_[3];
+
+if (getLDAPUserAttribute($server,$user,$attribute) eq $value) { return 0;}
+return 1;
 
 }
 

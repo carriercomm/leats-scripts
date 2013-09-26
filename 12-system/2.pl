@@ -25,7 +25,7 @@ our $topic="12-system";
 our $problem="2";
 our $description="LEVEL:        Beginner
 
-There is only a few free memory left on the system.
+There is only a few free bytes of memory left on the system.
 Find the process, which use the memory and kill it.";
 
 our $hint="Find the process and get the Process ID. (top)
